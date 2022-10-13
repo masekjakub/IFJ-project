@@ -1,4 +1,4 @@
-typedef union
+typedef struct
 {
     char* string;
     int length;
