@@ -7,17 +7,18 @@ int main()
 {
     Token *tokenArr = initTokens();
 
-    Token token = getTokenSim(tokenArr);
-    printf("%s\n", token.atribute.dString->string);
-
-    token = getTokenSim(tokenArr);
-    printf("%d\n", token.atribute.keyword);
-
-    token = getTokenSim(tokenArr);
-    printf("%d\n", token.atribute.intV);
-
-    token = getTokenSim(tokenArr);
-    printf("%d\n", token.atribute.intV);
+    Token token = getTokenSim();
+    
+    while(token.atribute.keyword == KEYWORD_EOF){
+        serveSymTable(token);
+        if (token.type == TYPE_DOUBLE || token.type == TYPE_INT){
+            
+        }
+    }
 
     return 0;
+}
+
+serveSymTable(){
+
 }

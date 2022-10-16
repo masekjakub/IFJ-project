@@ -1,3 +1,14 @@
+/**
+ * @file getTokenSim.c
+ * @author Jakub Mašek
+ * @brief simulation of scanner
+ * @version 0.1
+ * @date 16-10-2022
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include "getTokenSim.h"
 
 //max size of token array
@@ -7,7 +18,7 @@ int outIndex = 0;
 int inIndex = 0;
 
 /**
- * @brief save tokens to token array
+ * @brief save test tokens to token array
  * 
  * @param tokensArr array to save into
  * @return Token array
