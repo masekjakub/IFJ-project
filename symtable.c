@@ -15,12 +15,12 @@
  * @param tableSize Size of the symbol table
  * @return Index in ST the key maps to
  */
-unsigned int ST_hashFunction(char *key, int tableSize){
+unsigned int ST_hashFunction(char *key, unsigned int tableSize){
     unsigned int index = 0;
     for(int i = 0; key[i] != '\0'; i++){
         index += key[i];
     }
-    return index % tableSize;
+    return (index % tableSize);
 }
 
 /**
@@ -113,12 +113,12 @@ void ST_freeTable(Symtable *table){
  * @return Ptr to the found item | NULL if not found
  */
 STItem *ST_searchTable(Symtable *table, char *key){
-    unsigned int index = ST_hashFunction(key, table);
+    unsigned int index = ST_hashFunction(key, table->size);
     if(table->items[index] == NULL){
         return NULL;
     }
     STItem *curItem = table->items[index];
-    while(!strcmp(curItem->key,key)){
+    while(strcmp(curItem->key,key)){
         curItem = curItem->nextItem;
         if(curItem == NULL) return NULL;
     }
@@ -135,7 +135,7 @@ STItem *ST_searchTable(Symtable *table, char *key){
  */
 void ST_insertItem(Symtable* table, char* key, STItemType type, STItemData data){
     unsigned int index = ST_hashFunction(key, table->size);
-    STItem *newItem = ST_initializeItem(key, type, data);
+    STItem *newItem = ST_initItem(key, type, data);
     if(table->items[index] == NULL){
         table->items[index] = newItem;
     }else{
@@ -155,7 +155,7 @@ void ST_insertItem(Symtable* table, char* key, STItemType type, STItemData data)
  */
 void ST_removeItem(Symtable *table, char *key){
     //Search for item
-    unsigned int index = ST_hashFunction(key, table);
+    unsigned int index = ST_hashFunction(key, table->size);
     if(table->items[index] == NULL){
         return;
     }
