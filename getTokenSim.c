@@ -1,10 +1,17 @@
 #include "getTokenSim.h"
 
+//max size of token array
 int maxTokens = 100;
 
 int outIndex = 0;
 int inIndex = 0;
 
+/**
+ * @brief save tokens to token array
+ * 
+ * @param tokensArr array to save into
+ * @return Token array
+ */
 Token *defineTokens(Token *tokensArr)
 {
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var", 3);
@@ -13,6 +20,17 @@ Token *defineTokens(Token *tokensArr)
     return tokensArr;
 }
 
+/**
+ * @brief asign local token to array
+ * 
+ * @param tokensArr pointer to array of tokens
+ * @param type type of tokens
+ * @param keyWord keyword to save
+ * @param intV integer value to save
+ * @param doubleV double value to save
+ * @param string string to save
+ * @param len lenght of string
+ */
 void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, double doubleV, char *string, int len)
 {
     Token token;
@@ -43,6 +61,11 @@ void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, doub
     return;
 }
 
+/**
+ * @brief init array of tokens
+ * 
+ * @return Token array
+ */
 Token *initTokens()
 {
     Token *tokenArr = (Token *)malloc(maxTokens * sizeof(Token)); // edit max size if needed!
@@ -55,7 +78,14 @@ Token *initTokens()
     return tokenArr;
 }
 
+/**
+ * @brief simulate function of scanner (send new token each call)
+ * 
+ * @param tokenArr array of tokens
+ * @return Token 
+ */
 Token getTokenSim(Token *tokenArr){
+    // reading out of array
     if(outIndex >= inIndex){
         printf("ERROR: Reading out of simulated array!\n");
         exit(1);
