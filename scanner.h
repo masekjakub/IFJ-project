@@ -2,7 +2,8 @@
 
 typedef enum {
     KEYWORD_IF,
-    KEYWORD_EQ
+    KEYWORD_EQ,
+    KEYWORD_EOF
 
 }KeyWord;
 
@@ -11,7 +12,8 @@ typedef enum {
     TYPE_DOUBLE,
     TYPE_ID,
     TYPE_OPERATION,
-    TYPE_KEYWORD
+    TYPE_KEYWORD,
+    TYPE_FLAG
 
 }TokenType;
 

@@ -1,3 +1,14 @@
+/**
+ * @file getTokenSim.h
+ * @author Jakub Mašek
+ * @brief header file for getTokenSim.c
+ * @version 0.1
+ * @date 16-10-2022
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #ifndef TOKENSIM
 #define TOKENSIM
 
