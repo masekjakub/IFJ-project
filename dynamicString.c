@@ -9,7 +9,7 @@
 #include "dynamicString.h"
 
 DynamicString DS_init();
-
+//sheeeesh
 DynamicString DS_apend();
 
 void DS_deleteChar();
