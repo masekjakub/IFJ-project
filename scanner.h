@@ -2,20 +2,28 @@
 
 typedef enum {
     KEYWORD_IF,
-    KEYWORD_EQ,
-    KEYWORD_EOF
+    KEYWORD_WHILE
 
 }KeyWord;
 
-typedef enum {
+typedef enum
+{
     TYPE_INT,
     TYPE_DOUBLE,
     TYPE_ID,
-    TYPE_OPERATION,
     TYPE_KEYWORD,
-    TYPE_FLAG
+    TYPE_EOF,
 
-}TokenType;
+
+    // oparators
+    TYPE_ADD,
+    TYPE_SUB,
+    TYPE_MUL,
+    TYPE_DIV,
+    TYPE_MOD,
+    TYPE_EQ
+
+} TokenType;
 
 typedef union
 {

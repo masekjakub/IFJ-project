@@ -29,7 +29,7 @@ int main()
 
     Token token = getTokenSim(tokenArr);
     Symtable *globalST = ST_initTable(10);
-    while(token.atribute.keyword != KEYWORD_EOF){
+    while(token.type != TYPE_EOF){
         printf("%d\n",token.type);
         serveSymTable(globalST,token);
         token = getTokenSim(tokenArr);
@@ -40,7 +40,7 @@ int main()
         printf("NULL");
         return 1;
     }
-        printf("Key: %d\n", item->type);
+        printf("ID: %s\n", item->key);
 
     return 0;
 }

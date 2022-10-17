@@ -26,10 +26,10 @@ int inIndex = 0;
 Token *defineTokens(Token *tokensArr)
 {
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var", 3);
-    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_EQ, 0, 0, NULL, 0);
+    makeToken(tokensArr, TYPE_EQ, 0, 0, 0, NULL, 0);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL, 0);
 
-    makeToken(tokensArr, TYPE_FLAG, KEYWORD_EOF, 0, 0, NULL, 0);
+    makeToken(tokensArr, TYPE_EOF, 0, 0, 0, NULL, 0);
     return tokensArr;
 }
 
@@ -64,11 +64,8 @@ void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, doub
             strcpy(token.atribute.dString->string,string);
             token.atribute.dString->length = len;
             break;
-        case TYPE_FLAG:
-            token.atribute.keyword = keyWord;
-            break;
         default:
-            printf("ERROR: Type %d not found!", type);
+            
             break;
     }
 
