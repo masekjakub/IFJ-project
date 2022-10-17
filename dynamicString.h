@@ -1,5 +1,6 @@
 typedef struct
 {
-    char* string;
+    char *string;
+    int numOfChars;
     int length;
 } DynamicString;
