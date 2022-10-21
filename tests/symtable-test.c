@@ -52,6 +52,7 @@ TEST(test_insertItem, "Inserting items")
 	ASSERT(!strcmp(items[0].key,itemFound->key), "The key of first inserted item does not have the right key!")
 	ASSERT(items[0].type == itemFound->type, "The type of first inserted item does not have the right type!")
 	ASSERT(items[0].data.varData.VarType == itemFound->data.varData.VarType, "The data of first inserted item differ!")
+	ASSERT(table->count == 1, "Table count is not right!")
 
 	//Inserting second item
 	ST_insertItem(table, items[1].key, items[1].type, items[1].data);
@@ -60,6 +61,7 @@ TEST(test_insertItem, "Inserting items")
 	ASSERT(!strcmp(items[1].key,itemFound->key), "The key of second inserted item does not have the right key!")
 	ASSERT(items[1].type == itemFound->type, "The type of second inserted item does not have the right type!")
 	ASSERT(items[1].data.varData.VarType == itemFound->data.varData.VarType, "The data of second inserted item differ!")
+	ASSERT(table->count == 2, "Table count is not right!")
 
 	//Inserting 2 items mapping to the same index
 	ST_insertItem(table, items[2].key, items[2].type, items[2].data);
@@ -67,10 +69,12 @@ TEST(test_insertItem, "Inserting items")
 	ASSERT(ST_searchTable(table, items[2].key),"Inserted 2 items mapping to same index. First was not found!")
 	ASSERT(ST_searchTable(table, items[3].key),"Inserted 2 items mapping to same index. Second was not found!")
 	ASSERT(ST_searchTable(table, items[2].key)->nextItem != NULL, "Inserted 2 items mapping to same index. They're not on the same index!")
+	ASSERT(table->count == 4, "Table count is not right!")
 
 	//Inserting item with its index occupied
 	ST_insertItem(table, items[4].key, items[4].type, items[4].data);
 	ASSERT(ST_searchTable(table, items[2].key),"Inserted third item mapping to occupied index. It was not found!")
+	ASSERT(table->count == 5, "Table count is not right!")
 ENDTEST
 
 TEST(test_removeItem, "Adding and removing items")
@@ -79,19 +83,35 @@ TEST(test_removeItem, "Adding and removing items")
 	ST_insertItem(table, items[2].key, items[2].type, items[2].data);
 	ST_insertItem(table, items[3].key, items[3].type, items[3].data);
 	ST_insertItem(table, items[4].key, items[4].type, items[4].data);
-
+	ASSERT(table->count == 5, "Table count is not right!")
+	
 	//Removing 1 item
+	ST_removeItem(table, items[1].key);
+	ASSERT(ST_searchTable(table, items[1].key) == NULL,"Removed item was found!")
 	ST_removeItem(table, items[0].key);
 	ASSERT(ST_searchTable(table, items[0].key) == NULL,"Removed item was found!")
+	ASSERT(table->count == 3, "Table count is not right!")
 
-	//Removing items on the same index
+	//Removing first item of two on the same index
+	ST_removeItem(table, items[2].key);
+	ASSERT(ST_searchTable(table, items[2].key) == NULL,"Removed item was found!")
+	ASSERT(ST_searchTable(table, items[3].key) != NULL,"Non-removed item was not found!")
+	ASSERT(ST_searchTable(table, items[4].key) != NULL,"Non-removed item was not found!")
+	ASSERT(table->count == 2, "Table count is not right!")
+	ST_insertItem(table, items[2].key, items[2].type, items[2].data);
+
+	//Removing middle item of 3 on the same index ([3]->[4]->[2])
+	ST_removeItem(table, items[4].key);
+	ASSERT(ST_searchTable(table, items[4].key) == NULL,"Removed item was found!")
+	ASSERT(ST_searchTable(table, items[2].key) != NULL,"Non-removed item was not found!")
+	ASSERT(ST_searchTable(table, items[3].key) != NULL,"Non-removed item was not found!")
+	ASSERT(table->count == 2, "Table count is not right!")
+	
+	//Removing the last of 2 items on the same index ([3]->[2])
 	ST_removeItem(table, items[3].key);
 	ASSERT(ST_searchTable(table, items[3].key) == NULL,"Removed item was found!")
 	ASSERT(ST_searchTable(table, items[2].key) != NULL,"Non-removed item was not found!")
-	ASSERT(ST_searchTable(table, items[4].key) != NULL,"Non-removed item was not found!")
-	ST_removeItem(table, items[2].key);
-	ASSERT(ST_searchTable(table, items[2].key) == NULL,"Removed item was found!")
-
+	ASSERT(table->count == 1, "Table count is not right!")
 ENDTEST
 
 int main()

@@ -155,13 +155,25 @@ void ST_insertItem(Symtable* table, char* key, STItemType type, STItemData data)
  * @param key Key of the item to be removed
  */
 void ST_removeItem(Symtable *table, char *key){
-    //Search for item
+    //Get item's index
     unsigned int index = ST_hashFunction(key, table->size);
     if(table->items[index] == NULL){
         return;
     }
+
+    //Removement if item is first
     STItem *curItem = table->items[index];
-    STItem *prevItem = NULL;
+    if(!strcmp(curItem->key, key)){
+        table->items[index] = curItem->nextItem;
+        table->count--;
+        ST_freeItem(curItem);
+        return;
+    }
+    
+
+    //Removement if item is within list
+    STItem *prevItem = curItem;
+    curItem = curItem->nextItem;
     while(strcmp(curItem->key,key)){
         prevItem = curItem;
         curItem = curItem->nextItem;
