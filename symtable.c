@@ -34,7 +34,7 @@ unsigned int ST_hashFunction(char *key, unsigned int tableSize){
 STItem *ST_initItem(char *key, STItemType type, STItemData data){
     STItem *item = (STItem *)malloc(sizeof(STItem));
     if(item == NULL){
-        exit(99);        //TODO Replace with defined error
+        exit(ERR_INTERN);
     }
     item->key = key;
     item->type = type;
@@ -46,13 +46,13 @@ STItem *ST_initItem(char *key, STItemType type, STItemData data){
 /**
  * @brief Allocates and initializes a new symbol table
  * 
- * @param size Size of ST / Number of indicies in ST
+ * @param size Size of ST / Number of indicies in ST (Preferably a power of 2)
  * @return Ptr to the created table
  */
 Symtable *ST_initTable(unsigned int size){
     Symtable *table = (Symtable *)malloc(sizeof(Symtable));
     if(table == NULL){
-        exit(99);        //TODO Replace with defined error
+        exit(ERR_INTERN);
     }
     table->size = size;
     table->items = (STItem **)calloc(size, sizeof(STItem *));
@@ -68,7 +68,7 @@ Symtable *ST_initTable(unsigned int size){
  * @param item Ptr to the item to be freed
  */
 void ST_freeItem(STItem *item){
-    free(item->key);
+    //free(item->key);  //TODO key malloced?
     if(item->type == ST_ITEM_TYPE_FUNCTION){
         free(item->data.funData.funTypes);
     }
@@ -145,6 +145,7 @@ void ST_insertItem(Symtable* table, char* key, STItemType type, STItemData data)
         }
         curItem->nextItem = newItem;
     }
+    table->count++;
 }
 
 /**
@@ -161,13 +162,14 @@ void ST_removeItem(Symtable *table, char *key){
     }
     STItem *curItem = table->items[index];
     STItem *prevItem = NULL;
-    while(!strcmp(curItem->key,key)){
+    while(strcmp(curItem->key,key)){
         prevItem = curItem;
         curItem = curItem->nextItem;
         if(curItem == NULL) return;
     }
     //Connect items after deleted item (beforeDelItem -> AfterDelItem)
     prevItem->nextItem = curItem->nextItem;
+    table->count--;
     //Free deleted item
     ST_freeItem(curItem);
 }

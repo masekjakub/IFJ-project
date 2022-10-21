@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "error.h" //TODO Add once error.h is finished
+#include "error.h"
 
 //Data of variable type symtable item
 typedef struct{
@@ -20,6 +20,7 @@ typedef struct{
     char VarType;
     //Index within a structure
     int VarPosition;
+    bool initialized;
 }STVarData;
 
 //Data of function type symtable item
@@ -72,14 +73,21 @@ typedef struct symtable{
     STItem **items;
     //Number of indicies
     unsigned int size;
+    //Number of items
+    unsigned int count;
 }Symtable;
 
 
+//TODO Differentiate "Private"/"Public" functions
+//TODO Expanding and shrinking the table
+//TODO Fix removing first item on table index
+//TODO Item key malloced? (Free it or not)
+
 unsigned int ST_hashFunction(char *, unsigned int);
 
-STItem *ST_initItem(char *, STItemType, STItemData);
-
 Symtable *ST_initTable(unsigned int);
+
+STItem *ST_initItem(char *, STItemType, STItemData);
 
 void ST_freeItem(STItem *);
 
