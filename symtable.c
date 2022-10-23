@@ -12,7 +12,7 @@
  * @brief Function for mapping key to a ST index
  * 
  * @param key String used for calculating the index 
- * @param tableSize Size of the symbol table
+ * @param tableSize Size of the ST
  * @return Index in ST the key maps to
  */
 unsigned int ST_hashFunction(char *key, unsigned int tableSize){
@@ -46,7 +46,7 @@ STItem *ST_initItem(char *key, STItemType type, STItemData data){
 /**
  * @brief Allocates and initializes a new symbol table
  * 
- * @param size Size of ST / Number of indicies in ST (Preferably a power of 2)
+ * @param size Size of ST / Number of indicies in ST !!! Preferably a power of 2 !!!
  * @return Ptr to the created table
  */
 Symtable *ST_initTable(unsigned int size){
@@ -56,6 +56,9 @@ Symtable *ST_initTable(unsigned int size){
     }
     table->size = size;
     table->items = (STItem **)calloc(size, sizeof(STItem *));
+    if(table->items == NULL){
+        exit(ERR_INTERN);
+    }
     for(unsigned int i = 0; i < size; i++){
         table->items[i] = NULL;
     }
@@ -65,7 +68,7 @@ Symtable *ST_initTable(unsigned int size){
 /**
  * @brief Frees allocated memory for one item
  * 
- * @param item Ptr to the item to be freed
+ * @param item Item to be freed
  */
 void ST_freeItem(STItem *item){
     //free(item->key);  //TODO key malloced?
@@ -93,7 +96,7 @@ void ST_freeItemList(STItem *firstItem){
 /**
  * @brief Frees the allocated memory for ST and all it's items
  * 
- * @param table Ptr to the table to be freed
+ * @param table ST to be freed
  */
 void ST_freeTable(Symtable *table){
     for(unsigned int i = 0; i < table->size; i++){
@@ -106,9 +109,99 @@ void ST_freeTable(Symtable *table){
 }
 
 /**
+ * @brief Resizes ST to a bigger well chosen size
+ * 
+ * @param table ST to resize
+ */
+void ST_expand(Symtable *table){
+    //EXPANDING
+    unsigned int newSize = table->size * 2; //TODO Expand size to the next prime number
+    table->items = (STItem **)realloc(table->items, newSize * sizeof(STItem *));
+    if(table->items == NULL){
+        exit(ERR_INTERN);
+    }
+    unsigned int oldSize = table->size;
+    table->size = newSize;
+
+    //REHASHING
+    STItem *rehashItem = NULL;  //Item being rehashed
+    STItem *prevItem = NULL;    //Previous item to rehashItem in item list on cur. index
+    STItem *curItem = NULL;     //Cursor for going through item lists
+    unsigned int newIndex;
+    for(unsigned int i = 0; i < oldSize; i++){
+        //Check for empty index
+        if(table->items[i] == NULL) continue;
+
+        //REHASHING THE FIRST item on cur. index (while the new first item needs to be moved)
+        rehashItem = table->items[i];
+        newIndex = ST_hashFunction(rehashItem->key, table->size);
+        while(newIndex != i){
+            //POP rehashed item
+            table->items[i] = rehashItem->nextItem;
+            rehashItem->nextItem = NULL;
+            
+            //REINSERT it
+            if(table->items[newIndex] == NULL){
+                table->items[newIndex] = rehashItem;
+            }else{
+                curItem = table->items[newIndex];
+                while(curItem->nextItem != NULL){
+                    curItem = curItem->nextItem;
+                }
+                curItem->nextItem = rehashItem;
+            }
+
+            //NEXT CYCLE
+            rehashItem = table->items[i];
+            if(rehashItem == NULL) break;
+            newIndex = ST_hashFunction(rehashItem->key, table->size);
+        }
+        if(rehashItem == NULL) continue;    //If list was emptied
+
+        //REHASHING THE REST of the items in list on cur. index
+        prevItem = rehashItem;              //First item (doesn't need to be moved)
+        rehashItem = rehashItem->nextItem;  //Second item (rehashing)
+        while(rehashItem != NULL){
+            newIndex = ST_hashFunction(rehashItem->key, table->size);
+            if(newIndex != i){
+                //POP rehashed item
+                prevItem->nextItem = rehashItem->nextItem;
+                rehashItem->nextItem = NULL;
+
+                //REINSERT it
+                if(table->items[newIndex] == NULL){
+                    table->items[newIndex] = rehashItem;
+                }else{
+                    curItem = table->items[newIndex];
+                    while(curItem->nextItem != NULL){
+                        curItem = curItem->nextItem;
+                    }
+                    curItem->nextItem = rehashItem;
+                }
+                //NEXT CYCLE (if moving)
+                rehashItem = prevItem->nextItem;
+                continue;
+            }
+            //NEXT CYCLE (if not moving)
+            prevItem = rehashItem;
+            rehashItem = rehashItem->nextItem;
+        }
+    }
+}
+
+/**
+ * @brief Resizes ST to a smaller well chosen size
+ * 
+ * @param table ST to resize
+ */
+void ST_shrink(Symtable *table){
+    return;
+}
+
+/**
  * @brief Searches for an item in ST with a specific key
  * 
- * @param table Ptr to the ST to search
+ * @param table ST to search in
  * @param key Key by which to search
  * @return Ptr to the found item | NULL if not found
  */
@@ -146,13 +239,16 @@ void ST_insertItem(Symtable* table, char* key, STItemType type, STItemData data)
         curItem->nextItem = newItem;
     }
     table->count++;
+    if(table->count / table->size >= 3){
+        ST_expand(table);
+    }
 }
 
 /**
- * @brief Removes an item from ST
+ * @brief Removes an item from ST and frees it
  * 
  * @param table ST to remove from
- * @param key Key of the item to be removed
+ * @param key Key of the item to be removed and freed
  */
 void ST_removeItem(Symtable *table, char *key){
     //Get item's index
@@ -169,7 +265,6 @@ void ST_removeItem(Symtable *table, char *key){
         ST_freeItem(curItem);
         return;
     }
-    
 
     //Removement if item is within list
     STItem *prevItem = curItem;
@@ -181,7 +276,10 @@ void ST_removeItem(Symtable *table, char *key){
     }
     //Connect items after deleted item (beforeDelItem -> AfterDelItem)
     prevItem->nextItem = curItem->nextItem;
-    table->count--;
     //Free deleted item
     ST_freeItem(curItem);
+    table->count--;
+    if(table->count / table->size <= 1){
+        ST_shrink(table);
+    }
 }
