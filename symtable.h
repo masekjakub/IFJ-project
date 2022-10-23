@@ -82,8 +82,6 @@ typedef struct symtable{
 //TODO Expand size to the next prime number
 //TODO Copy key string to item->key
 //TODO ST_insertItem() should return poiter to item
-//TODO Add ST_popItem(Symtable *, char *)?
-//TODO Add ST_insertExistingItem(Symtable *, STItem *)?
 
 unsigned int ST_hashFunction(char *, unsigned int);
 

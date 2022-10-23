@@ -38,11 +38,14 @@ const STItem ITEMS[] = {
 	{.key="aab", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
 	{.key="aba", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
 	{.key="baa", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
+
+	{.key="var3", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
+	{.key="var4", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
 };
 
 void test_ST_printTable(Symtable *table){
 	STItem *curItem;
-	//printf("ST hash table:\n");
+	printf("Table\n");
 	for(unsigned int i = 0; i < table->size; i++){
 		printf("|-[%d]",i);
 		curItem = table->items[i];
@@ -131,7 +134,6 @@ TEST(test_removeItem, "Adding and removing items")
 	ASSERT(table->count == 1, "Table count is not right!")
 ENDTEST
 
-/*!!!! BREAKS IN FREETABLE() !!!! ["x10"] POINTS OT IT SELF !!!! TODO*/
 TEST(test_expand, "Adding items to resize ST")
 	//Creating and inserting filler  until expansion
 	STItem fillerItems[3*TABLE_SIZE];
@@ -142,17 +144,8 @@ TEST(test_expand, "Adding items to resize ST")
 		//Allocating names: x0,x1,x2,...
 		if(0 > asprintf(&fillerItems[i].key, "x%d", i)) exit(1);
 		ST_insertItem(table, fillerItems[i].key, fillerItems[i].type, fillerItems[i].data);
-		//Print before expansion
-		/*if(i == (3*TABLE_SIZE)-2){
-			printf("ST before expansion ===============================\n");
-			test_ST_printTable(table);
-		}*/
 	}
 	ASSERT(table->size != TABLE_SIZE, "ST did not expand!")
-	
-	//Print after expansion
-	/*printf("ST after expansion =================================\n");
-	test_ST_printTable(table);*/
 
 	//Searching for filler items
 	for(int i = 0; i < fillerItemCount; i++){
@@ -170,7 +163,29 @@ TEST(test_expand, "Adding items to resize ST")
 ENDTEST
 
 TEST(test_shrink, "Removing items to resize ST")
-	ASSERT(false, "WIP")
+	//Inserting 7 items
+	for(int i = 0; i < 7; i++){
+		ST_insertItem(table, ITEMS[i].key, ITEMS[i].type, ITEMS[i].data);
+	}
+	ASSERT(table->count == 7, "ST doesn't have the right item count!")
+	ASSERT(table->size == TABLE_SIZE, "ST doesn't have the right size!")
+
+	//Removing 1 item
+	ST_removeItem(table, ITEMS[6].key);
+	ASSERT(table->size == TABLE_SIZE, "Removed 1 item. ST shouldn't have shrunk!")
+
+	//Removing 2 more items (ST should shrink)
+	ST_removeItem(table, ITEMS[5].key);
+	ST_removeItem(table, ITEMS[0].key);
+	ASSERT(table->size < TABLE_SIZE, "ST didn't shrink!")
+
+	ST_insertItem(table, ITEMS[0].key, ITEMS[0].type, ITEMS[0].data);
+	ASSERT(table->size < TABLE_SIZE, "ST should't have expanded")
+
+	//Searching for items after shrinking
+	for(int i = 0; i < 5; i++){
+		ASSERT(ST_searchTable(table, ITEMS[i].key) != NULL, "Item after shrinking was not found!");
+	}
 ENDTEST
 
 int main()

@@ -195,7 +195,77 @@ void ST_expand(Symtable *table){
  * @param table ST to resize
  */
 void ST_shrink(Symtable *table){
-    return;
+    //REHASHING
+    unsigned int newSize = table->size / 2;
+    STItem *rehashItem = NULL;  //Item being rehashed
+    STItem *prevItem = NULL;    //Previous item to rehashItem in item list on cur. index
+    STItem *curItem = NULL;     //Cursor for going through item lists
+    unsigned int newIndex;
+    for(unsigned int i = 0; i < table->size; i++){
+        //Check for empty index
+        if(table->items[i] == NULL) continue;
+
+        //REHASHING THE FIRST item on cur. index (while the new first item needs to be moved)
+        rehashItem = table->items[i];
+        newIndex = ST_hashFunction(rehashItem->key, newSize);
+        while(newIndex != i){
+            //POP rehashed item
+            table->items[i] = rehashItem->nextItem;
+            rehashItem->nextItem = NULL;
+            
+            //REINSERT it
+            if(table->items[newIndex] == NULL){
+                table->items[newIndex] = rehashItem;
+            }else{
+                curItem = table->items[newIndex];
+                while(curItem->nextItem != NULL){
+                    curItem = curItem->nextItem;
+                }
+                curItem->nextItem = rehashItem;
+            }
+
+            //NEXT CYCLE
+            rehashItem = table->items[i];
+            if(rehashItem == NULL) break;
+            newIndex = ST_hashFunction(rehashItem->key, newSize);
+        }
+        if(rehashItem == NULL) continue;    //If list was emptied
+
+        //REHASHING THE REST of the items in list on cur. index
+        prevItem = rehashItem;              //First item (doesn't need to be moved)
+        rehashItem = rehashItem->nextItem;  //Second item (rehashing)
+        while(rehashItem != NULL){
+            newIndex = ST_hashFunction(rehashItem->key, newSize);
+            if(newIndex != i){
+                //POP rehashed item
+                prevItem->nextItem = rehashItem->nextItem;
+                rehashItem->nextItem = NULL;
+
+                //REINSERT it
+                if(table->items[newIndex] == NULL){
+                    table->items[newIndex] = rehashItem;
+                }else{
+                    curItem = table->items[newIndex];
+                    while(curItem->nextItem != NULL){
+                        curItem = curItem->nextItem;
+                    }
+                    curItem->nextItem = rehashItem;
+                }
+                //NEXT CYCLE (if moving)
+                rehashItem = prevItem->nextItem;
+                continue;
+            }
+            //NEXT CYCLE (if not moving)
+            prevItem = rehashItem;
+            rehashItem = rehashItem->nextItem;
+        }
+    }
+
+    table->items = (STItem **)realloc(table->items, newSize * sizeof(STItem *));
+    if(table->items == NULL){
+        exit(ERR_INTERN);
+    }
+    table->size = newSize;
 }
 
 /**
@@ -261,8 +331,12 @@ void ST_removeItem(Symtable *table, char *key){
     STItem *curItem = table->items[index];
     if(!strcmp(curItem->key, key)){
         table->items[index] = curItem->nextItem;
-        table->count--;
+        
         ST_freeItem(curItem);
+        table->count--;
+        if((double)(table->count) / (double)(table->size) <= 0.25){
+            ST_shrink(table);
+        }
         return;
     }
 
@@ -279,7 +353,7 @@ void ST_removeItem(Symtable *table, char *key){
     //Free deleted item
     ST_freeItem(curItem);
     table->count--;
-    if(table->count / table->size <= 1){
+    if((double)(table->count) / (double)(table->size) <= 0.25){
         ST_shrink(table);
     }
 }
