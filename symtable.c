@@ -295,8 +295,9 @@ STItem *ST_searchTable(Symtable *table, char *key){
  * @param key Key of the new item
  * @param type Type of the new item
  * @param data Correct data for the given type of new item
+ * @return Ptr to the new item in ST
  */
-void ST_insertItem(Symtable* table, char* key, STItemType type, STItemData data){
+STItem *ST_insertItem(Symtable* table, char* key, STItemType type, STItemData data){
     unsigned int index = ST_hashFunction(key, table->size);
     STItem *newItem = ST_initItem(key, type, data);
     if(table->items[index] == NULL){
@@ -312,6 +313,7 @@ void ST_insertItem(Symtable* table, char* key, STItemType type, STItemData data)
     if(table->count / table->size >= 3){
         ST_expand(table);
     }
+    return newItem;
 }
 
 /**

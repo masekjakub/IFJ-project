@@ -101,7 +101,7 @@ void ST_shrink(Symtable *);
 
 STItem *ST_searchTable(Symtable *, char *);
 
-void ST_insertItem(Symtable *, char *, STItemType, STItemData);
+STItem *ST_insertItem(Symtable *, char *, STItemType, STItemData);
 
 void ST_removeItem(Symtable *, char *);
 
