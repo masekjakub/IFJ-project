@@ -80,8 +80,6 @@ typedef struct symtable{
 
 //TODO Differentiate "Private"/"Public" functions
 //TODO Expand size to the next prime number
-//TODO Copy key string to item->key
-//TODO ST_insertItem() should return poiter to item
 
 unsigned int ST_hashFunction(char *, unsigned int);
 

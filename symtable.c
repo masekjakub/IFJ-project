@@ -26,7 +26,7 @@ unsigned int ST_hashFunction(char *key, unsigned int tableSize){
 /**
  * @brief Allocates and initializes a new ST item
  * 
- * @param key Key of created item
+ * @param key Key of created item (contents of string are coppied)
  * @param type Type of created item (variable/function/label)
  * @param data Data of the correct item type
  * @return Ptr to the created item
@@ -36,7 +36,8 @@ STItem *ST_initItem(char *key, STItemType type, STItemData data){
     if(item == NULL){
         exit(ERR_INTERN);
     }
-    item->key = key;
+    item->key = (char *)malloc((strlen(key)+1) * sizeof(char));
+    strcpy(item->key, key);
     item->type = type;
     item->data = data;
     item->nextItem = NULL;
@@ -71,7 +72,7 @@ Symtable *ST_initTable(unsigned int size){
  * @param item Item to be freed
  */
 void ST_freeItem(STItem *item){
-    //free(item->key);  //TODO key malloced?
+    free(item->key);
     if(item->type == ST_ITEM_TYPE_FUNCTION){
         free(item->data.funData.funTypes);
     }
