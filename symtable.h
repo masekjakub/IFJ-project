@@ -79,9 +79,7 @@ typedef struct symtable{
 
 
 //TODO Differentiate "Private"/"Public" functions
-//TODO Expanding and shrinking the table
-//TODO Fix removing first item on table index
-//TODO Item key malloced? (Free it or not)
+//TODO Expand size to the next prime number
 
 unsigned int ST_hashFunction(char *, unsigned int);
 
@@ -95,9 +93,13 @@ void ST_freeItemList(STItem *);
 
 void ST_freeTable(Symtable *);
 
+void ST_expand(Symtable *);
+
+void ST_shrink(Symtable *);
+
 STItem *ST_searchTable(Symtable *, char *);
 
-void ST_insertItem(Symtable *, char *, STItemType, STItemData);
+STItem *ST_insertItem(Symtable *, char *, STItemType, STItemData);
 
 void ST_removeItem(Symtable *, char *);
 
