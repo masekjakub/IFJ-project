@@ -62,6 +62,36 @@ DynamicString DS_append(DynamicString dynamicString, char character)
 }
 
 /**
+ * @brief Function appends dynamic string by inserted string.
+ * If string is full, function doubles it´s length and adds length to it.
+ *
+ * @param dynamicString Dynamic structure of DynamicString type.
+ * @param string String appending the Dynamic string.
+ * @return DynamicString
+ */
+DynamicString DS_insertString(DynamicString dynamicString, char *string, int length)
+{
+    if (dynamicString.length <= dynamicString.numOfChars + length)
+    {
+        if (realloc(dynamicString.string, length + 2 * dynamicString.length * sizeof(char)) == NULL)
+        {
+            exit(ERR_INTERN);
+        }
+        else
+        {
+            dynamicString.length = 2 * dynamicString.length + length;
+            for (int i = 0; i < length - 1; i++)
+            {
+                dynamicString.string[dynamicString.numOfChars + i] = string[i];
+            }
+            dynamicString.numOfChars + length;
+            dynamicString.string[dynamicString.numOfChars + length] = '\0';
+        }
+    }
+    return dynamicString;
+}
+
+/**
  * @brief Function erases last character of dynamic string.
  *
  * @param dynamicString Dynamic structure of DynamicString type.
