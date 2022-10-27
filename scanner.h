@@ -1,3 +1,17 @@
+/**
+ * @file scanner.h
+ * @authors Jakub Mašek, Filip Polomski, Martin Zelenák, Vojtěch Kuchař
+ * @brief header file for scanner.h
+ * @version 0.1
+ * @date 27-10-2022
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
+#ifndef _IFJ_SCANNER
+#define _IFJ_SCANNER
+
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -69,3 +83,5 @@ typedef struct
     TokenType type;
     TokenAttribute attribute;
 }Token;
+
+#endif
