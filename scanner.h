@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include "error.h"
 #include "dynamicString.h"
 
 typedef enum {
@@ -18,9 +22,13 @@ typedef enum
     TYPE_INT,
     TYPE_DOUBLE,
     TYPE_STRING,
+    TYPE_VOID,
     TYPE_ID,
+    TYPE_FUNID,
     TYPE_KEYWORD,
     TYPE_EOF,
+    TYPE_DECLARE_ST,    // declare strict types
+    TYPE_QMARK,         // for ?int var
     
     //Operators
     TYPE_ADD,           // +
@@ -29,8 +37,6 @@ typedef enum
     TYPE_DIV,           // /
     TYPE_MOD,           // %
     TYPE_ASSIGN,        // =
-    TYPE_EQ,            // ==
-    TYPE_NOTEQ,         // !=
     TYPE_EQTYPES,       // ===    
     TYPE_NOTEQTYPES,    // !==   
     TYPE_LESS,          // <
@@ -40,7 +46,6 @@ typedef enum
     TYPE_CONCAT,        // .
 
     //Special symbols
-    TYPE_UNDERSCORE,    // _
     TYPE_DOLLAR,        // $
     TYPE_AMPERSAND,     // &
     TYPE_NEG,           // !
