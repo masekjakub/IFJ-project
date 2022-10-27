@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef TOKENSIM
-#define TOKENSIM
+#ifndef _IFJ_TOKENSIM
+#define _IFJ_TOKENSIM
 
 #include "scanner.h"
 #include <stdio.h>
