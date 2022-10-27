@@ -25,10 +25,18 @@ int inIndex = 0;
  */
 Token *defineTokens(Token *tokensArr)
 {
-    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var", 3);
-    makeToken(tokensArr, TYPE_EQ, 0, 0, 0, NULL, 0);
-    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL, 0);
+    //prolog
+    makeToken(tokensArr, TYPE_BEGIN, 0, 0, 0, NULL, 0);
+    makeToken(tokensArr, TYPE_DECLARE_ST, 0, 0, 0, NULL, 0);
 
+    //$var = 5;
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var", 3);
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL, 0);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL, 0);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL, 0);
+
+    //epilog
+    makeToken(tokensArr, TYPE_END, 0, 0, 0, NULL, 0);
     makeToken(tokensArr, TYPE_EOF, 0, 0, 0, NULL, 0);
     return tokensArr;
 }
@@ -50,19 +58,19 @@ void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, doub
     token.type = type;
     switch (type){
         case TYPE_KEYWORD:
-            token.atribute.keyword = keyWord;
+            token.attribute.keyword = keyWord;
             break;
         case TYPE_INT:
-            token.atribute.intV = intV;
+            token.attribute.intV = intV;
             break;
         case TYPE_DOUBLE:
-            token.atribute.doubleV = doubleV;
+            token.attribute.doubleV = doubleV;
             break;
         case TYPE_ID:
-            token.atribute.dString = (DynamicString *)malloc(sizeof(char *)+sizeof(int));
-            token.atribute.dString->string = (char *)malloc((len+2) * sizeof(char));
-            strcpy(token.atribute.dString->string,string);
-            token.atribute.dString->length = len;
+            token.attribute.dString = (DynamicString *)malloc(sizeof(char *)+sizeof(int));
+            token.attribute.dString->string = (char *)malloc((len+2) * sizeof(char));
+            strcpy(token.attribute.dString->string,string);
+            token.attribute.dString->length = len;
             break;
         default:
             

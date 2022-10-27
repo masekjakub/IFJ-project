@@ -40,6 +40,7 @@ typedef enum
     TYPE_VOID,
     TYPE_ID,
     TYPE_FUNID,
+    TYPE_LABEL,
     TYPE_KEYWORD,
     TYPE_EOF,
     TYPE_DECLARE_ST,    // declare strict types
