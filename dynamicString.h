@@ -1,3 +1,14 @@
+/**
+ * @file dynamicString.h
+ * @author Vojtěch Kuchař
+ * @brief Dynamic string header file
+ * @version 1.0
+ * @date 2022-10-28
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #ifndef _IFJ_DS
 #define _IFJ_DS
 

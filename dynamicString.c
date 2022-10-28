@@ -2,7 +2,7 @@
  * @file dynamicString.c
  * @author Vojtěch Kuchař
  * @brief Functions operating dynamic string
- * @version 0.1
+ * @version 1.0
  * @date 2022-10-15
  *
  * @copyright Copyright (c) 2022
