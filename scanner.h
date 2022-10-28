@@ -91,7 +91,6 @@ typedef struct
 typedef enum
 {
     STATE_START,
-    STATE_PROLOG,
     STATE_EPILOG
 } State;
 
