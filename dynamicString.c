@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "scanner.h"
 
 /**
  * @brief Initializes a dynamic string with initial length of 8 chars.
@@ -116,6 +117,18 @@ void DS_deleteAll(DynamicString *dynamicString)
     {
         DS_deleteChar(dynamicString);
     }
+}
+/**
+ * @brief returns pointer to string in struct
+ * 
+ * @return pointer to string, NULL if string is empty
+ */
+char *DS_string(DynamicString *dstring){
+    if (dstring->numOfChars != 0)
+    {
+        return dstring->string;
+    }
+    return NULL;
 }
 
 /**
