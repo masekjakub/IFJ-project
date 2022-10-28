@@ -22,16 +22,13 @@ test-ds:
 	@gcc -std=c99 -Wall -Wextra tests/dynamicString-test.c dynamicString.c -o dynamicString-test
 	@./dynamicString-test
 
-<<<<<<< Updated upstream
 test-parser:
 	@gcc -std=c99 -Wall -Wextra tests/parser-test.c parser.c getTokenSim.c symtable.c scanner.h dynamicString.c -o parser-test
 	@./parser-test
 	@rm parser-test
-=======
 test-stack:
 	@gcc -std=c99 -Wall -Wextra tests/stack-test.c stack.c -o stack-test
 	@./stack-test
->>>>>>> Stashed changes
 
 clean:
 	rm -f parser
