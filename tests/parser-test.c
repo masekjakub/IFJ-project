@@ -4,8 +4,9 @@
     void NAME()                                  \
     {                                            \
         printf("[%s] %s\n", #NAME, DESCRIPTION); \
-        Token *tokensArr = (Token *)malloc(50 * sizeof(Token)); // edit max size if needed!
-        int returnedVal;
+        Token *tokensArr = (Token *)malloc(50 * sizeof(Token));\
+        int returnedVal;\
+        tokenSimIndexReset();\
 
 #define FAIL(REASON) printf("\x1b[31m[FAILED] %s\033[0m\n", REASON);
 #define PASS() printf("\x1b[32m[PASSED]\033[0m\n");
@@ -19,7 +20,7 @@
     }
 
 #define ENDTEST         \
-    free(tokensArr);     \
+    free(tokensArr);    \
     PASS()              \
     SUCCESSFUL_TESTS++; \
     }

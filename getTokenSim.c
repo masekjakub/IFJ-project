@@ -120,8 +120,18 @@ Token getTokenSim(Token *tokenArr){
         printf("ERROR: Reading out of simulated array!\n");
         exit(1);
     }
+    //printf("%d\n", outIndex);
     Token token = tokenArr[outIndex];
     outIndex++;
     
     return token;
+}
+/**
+ * @brief reset simulation indeces
+ * 
+ */
+void tokenSimIndexReset()
+{
+    outIndex = 0;
+    inIndex = 0;
 }

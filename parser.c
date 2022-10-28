@@ -12,7 +12,8 @@
 
 void freeAll(Symtable *globalST)
 {
-    ST_freeTable(globalST);
+    if (globalST != NULL)
+        ST_freeTable(globalST);
 }
 
 STItem *serveSymTable(Symtable *table, Token token)
@@ -20,22 +21,37 @@ STItem *serveSymTable(Symtable *table, Token token)
     STItem *item = ST_searchTable(table, DS_string(token.attribute.dString));
     if (item == NULL)
     {
-        if (token.type == TYPE_ID)
+        STItemData data;
+        switch (token.type)
         {
-            STItemData data;
+        case TYPE_ID: // TODO rozpoznavani typu
             data.varData.VarType = 'i';
             ST_insertItem(table, DS_string(token.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
-        }
+            break;
 
-    }else
+        case TYPE_FUNID: // TODO rozpoznavani typu
+            data.funData.defined = 0;
+            data.funData.funTypes = "";
+            ST_insertItem(table, DS_string(token.attribute.dString), ST_ITEM_TYPE_FUNCTION, data);
+            break;
+
+        case TYPE_LABEL: // TODO rozpoznavani typu
+            data.labData.found = 0;
+            ST_insertItem(table, DS_string(token.attribute.dString), ST_ITEM_TYPE_LABEL, data);
+            break;
+        default:
+            break;
+        }
+    }
+    else
     { // item found in ST
-        printf("Incoming item is already in globalST: %s\n",item->key);
+        printf("Incoming item is already in globalST: %s\n", item->key);
     }
 
     return item;
 }
 
-int checkProlog(Token *tokenArr) //remove tokenArr SIMULATION
+int checkProlog(Token *tokenArr) // remove tokenArr SIMULATION
 {
     Token token = getTokenSim(tokenArr);
     if (token.type != TYPE_BEGIN)
@@ -45,7 +61,8 @@ int checkProlog(Token *tokenArr) //remove tokenArr SIMULATION
     }
 
     token = getTokenSim(tokenArr); // simulation
-    while(token.type == TYPE_COMM){
+    while (token.type == TYPE_COMM)
+    {
         token = getTokenSim(tokenArr);
     }
 
@@ -62,15 +79,17 @@ int parser(Token *tokenArr) // getToken();
     int err;
     // check prolog
     err = checkProlog(tokenArr); // remove tokenArr SIMULATION
-    if (err != 0){
+    if (err != 0)
+    {
         return err;
     }
 
     Token token = getTokenSim(tokenArr); // simulation
     Symtable *globalST = ST_initTable(10);
+    //Symtable *localST = ST_initTable(10);
 
     // while tokens available
-    while (1)
+    while (token.type != TYPE_EOF)
     {
         if (token.type == TYPE_FUNID || token.type == TYPE_ID || token.type == TYPE_LABEL)
         {
@@ -85,7 +104,7 @@ int parser(Token *tokenArr) // getToken();
             {
                 fprintf(stderr, "Expected EOF after \"?>\"!\n");
                 freeAll(globalST);
-                return(ERR_SYN);
+                return (ERR_SYN);
             }
             break;
         }
@@ -99,6 +118,6 @@ int parser(Token *tokenArr) // getToken();
     } // while (token.type != TYPE_EOF)
 
     freeAll(globalST);
-    //printf("Parser OK!\n");
+    // printf("Parser OK!\n");
     return 0;
 }

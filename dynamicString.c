@@ -125,7 +125,7 @@ void DS_deleteAll(DynamicString *dynamicString)
  */
 char *DS_string(DynamicString *dynamicString)
 {
-    if (dynamicString->numOfChars != 0)
+    if (dynamicString != NULL)
     {
         return dynamicString->string;
     }
