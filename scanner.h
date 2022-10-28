@@ -45,6 +45,7 @@ typedef enum
     TYPE_EOF,
     TYPE_DECLARE_ST,    // declare strict types
     TYPE_QMARK,         // for ?int var
+    TYPE_COMM,          // // or /*
     
     //Operators
     TYPE_ADD,           // +
@@ -86,6 +87,14 @@ typedef struct
     TokenAttribute attribute;
 }Token;
 
+typedef enum
+{
+    STATE_START,
+    STATE_PROLOG,
+    STATE_EPILOG
+} State;
+
 //TODO pridat deklarace funkce/funkci
+Token getToken();
 
 #endif
