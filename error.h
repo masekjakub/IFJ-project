@@ -1,3 +1,6 @@
+#ifndef _IFJ_ERROR
+#define _IFJ_ERROR
+
 typedef enum {
     ERR_LEX = 1,
     ERR_SYN = 2,
@@ -20,3 +23,4 @@ typedef enum {
  * 8  - ostatní sémantické chyby.
  * 99 - interní chyba překladače tj. neovlivněná vstupním programem (např. chyba alokace paměti atd.).
  */
+#endif
