@@ -64,6 +64,10 @@ typedef enum
     TYPE_CONCAT,        // .
 
     //Special symbols
+    TYPE_LBRACKET,      // (
+    TYPE_RBRACKET,      // )
+    TYPE_LBRACES,       // {
+    TYPE_RBRACES,       // }
     TYPE_DOLLAR,        // $
     TYPE_AMPERSAND,     // &
     TYPE_NEG,           // !
@@ -91,10 +95,12 @@ typedef struct
 typedef enum
 {
     STATE_START,
-    STATE_EPILOG
+    STATE_STRING,
+    STATE_VAR
+    //STATE_EPILOG
 } State;
 
-//TODO pridat deklarace funkce/funkci
+void setSourceFile();
 Token getToken();
 
 #endif
