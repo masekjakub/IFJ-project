@@ -28,7 +28,8 @@ typedef enum {
     KEYWORD_STRING,
     KEYWORD_NULL,
     KEYWORD_FUNCTION,
-    KEYWORD_VOID
+    KEYWORD_VOID,
+    KEYWORD_RETURN
 
 }KeyWord;
 

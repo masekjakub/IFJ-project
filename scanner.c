@@ -59,6 +59,8 @@ Token getToken(){
             //    }
             //    fprintf(stderr, "Before prolog \"<?php\" can be only whitespaces!\n");
             //    exit(ERR_LEX);
+           
+            // Starting state of finite automat
             case STATE_START:
                 if (isspace(c)){
                     state = STATE_START;
@@ -73,26 +75,63 @@ Token getToken(){
                     }
                     else if (c == '*'){ 
                         c = getc(source);
-                        while (c != '*' && (c = getc(source)) != '/'){
+                        while (1){
+                            if (c == '*' && (c = getc(source)) == '/'){
+                                token.type = TYPE_COMM;
+                                return token;
+                            }
                             if (c == EOF){
                                 fprintf(stderr, "Expected end of comment: \"*/\"!\n");
                                 exit(ERR_LEX);
                             }
+                            c = getc(source);
                         }
-                        token.type = TYPE_COMM;
-                        return token;
                     }
                     ungetc(c, source);
                     token.type = TYPE_DIV;
                     return token;
                 }
-                else{
-                    printf("1\n");
+                else if (c == EOF){
+                    token.type = TYPE_EOF;
                     return token;
                 }
+                else if (c == '%'){
+                    token.type = TYPE_MOD;
+                    return token;
+                }
+                else if (c == '*'){
+                    token.type = TYPE_MUL;
+                    return token;
+                }
+                else if (c == '+'){
+                    token.type = TYPE_ADD;
+                    return token;
+                }
+                else if (c == '.'){
+                    token.type = TYPE_CONCAT;
+                    return token;
+                }
+                else if (c == ';'){
+                    token.type = TYPE_SEMICOLON;
+                    return token;
+                }
+                else if (c == '='){
+                    c = getc(source);
+                    if (c == '=' && (c = getc(source)) == '='){
+                        token.type = TYPE_EQTYPES;
+                        return token;
+                    }
+                    ungetc(c, source);
+                    token.type = TYPE_ASSIGN;
+                    return token;
+                }
+                else{
+                    token.type = 67;
+                    return token;
+                    break;
+                }
                 break;
-            //case 1:
-                
+            //case 1: 
         }
     }
 }
@@ -113,11 +152,10 @@ int main(int argc, char** argv){
     printf("Ahoj, svete\n");
 
     setSourceFile(f);
-    token = getToken();
-    printf("%d\n", token.type);
-    token = getToken();
-    printf("%d\n", token.type);
-    token = getToken();
+    for (int i = 0; i < 20; i++){
+        token = getToken();
+        printf("%d\n", token.type);
+    }
 
     fclose(f);
 }
