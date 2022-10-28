@@ -10,6 +10,9 @@ debug: $(ALL_FILES)
 parser: $(ALL_FILES)
 	gcc -std=c99 -Wall -Wextra $(ALL_FILES) -o parser
 
+scanner: $(ALL_FILES)
+	gcc -std=c99 -Wall -Wextra scanner.c dynamicString.c -o scanner
+
 test-symtable:
 	@gcc -std=c99 -Wall -Wextra tests/symtable-test.c symtable.c -o symtable-test
 	@./symtable-test
