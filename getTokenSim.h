@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void makeToken(Token*, TokenType, KeyWord, int, double, char *, int);
+void makeToken(Token*, TokenType, KeyWord, int, double, char *);
 Token *defineTokens(Token *);
 Token *initTokens();
 Token getTokenSim();

@@ -9,13 +9,18 @@
  * 
  */
 
-#ifndef PARSER
-#define PARSER
+#ifndef _IFJ_PARSER
+#define _IFJ_PARSER
 
 #include "getTokenSim.h" //simulation DELETE ME
 #include "scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "symtable.h"
+
+int parser(Token *);
+void freeAll(Symtable *);
+int checkProlog(Token *);
+STItem *serveSymTable(Symtable *, Token);
 
 #endif

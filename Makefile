@@ -8,7 +8,7 @@ debug: $(ALL_FILES)
 	gcc -std=c99 -Wall -Wextra -g $(ALL_FILES) -o parser
 
 parser: $(ALL_FILES)
-	gcc -std=c99 -Wall -Wextra $(ALL_FILES) -o parser
+	gcc -std=c99 -Wall -Wextra parser.c getTokenSim.c scanner.h dynamicString.c symtable.c -o parser
 
 scanner: $(ALL_FILES)
 	gcc -std=c99 -Wall -Wextra scanner.c dynamicString.c -o scanner
@@ -22,8 +22,14 @@ test-ds:
 	@gcc -std=c99 -Wall -Wextra tests/dynamicString-test.c dynamicString.c -o dynamicString-test
 	@./dynamicString-test
 
+test-parser:
+	@gcc -std=c99 -Wall -Wextra tests/parser-test.c parser.c getTokenSim.c symtable.c scanner.h dynamicString.c -o parser-test
+	@./parser-test
+	@rm parser-test
+
 clean:
 	rm -f parser
+	rm -f parser-test
 	rm -f symtable-test
 	rm -f dynamicString-test
 	rm -f translator

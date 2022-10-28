@@ -4,65 +4,101 @@
  * @brief parser for IFJ22 translator
  * @version 0.1
  * @date 16-10-2022
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #include "parser.h"
 
-void serveSymTable(Symtable *table, Token token){
-    if (token.type == TYPE_ID){
-        STItemData data;
-        data.varData.VarType = 'i';
-        ST_insertItem(table, token.attribute.dString->string, ST_ITEM_TYPE_VARIABLE, data);
-    }
+void freeAll(Symtable *globalST)
+{
+    ST_freeTable(globalST);
 }
 
-int main()
+STItem *serveSymTable(Symtable *table, Token token)
 {
-    Token *tokenArr = initTokens(); // simulation
-    
-    // check prolog
-    Token token = getTokenSim(tokenArr);//simulation
+    STItem *item = ST_searchTable(table, DS_string(token.attribute.dString));
+    if (item == NULL)
+    {
+        if (token.type == TYPE_ID)
+        {
+            STItemData data;
+            data.varData.VarType = 'i';
+            ST_insertItem(table, DS_string(token.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
+        }
+
+    }else
+    { // item found in ST
+        printf("Incoming item is already in globalST: %s\n",item->key);
+    }
+
+    return item;
+}
+
+int checkProlog(Token *tokenArr) //remove tokenArr SIMULATION
+{
+    Token token = getTokenSim(tokenArr);
     if (token.type != TYPE_BEGIN)
     {
-        fprintf(stderr,"Expected <?php at beggining of the file!\n");
-        exit (ERR_SYN);
+        fprintf(stderr, "Expected <?php at beggining of the file!\n");
+        return (ERR_SYN);
     }
+
     token = getTokenSim(tokenArr); // simulation
-    if (token.type != TYPE_DECLARE_ST)
-    {
-        fprintf(stderr, "Expected \"declare(strict_types=1);\" at beggining of the file!\n");
-        exit (ERR_SYN);
-    }
-
-    Symtable *globalST = ST_initTable(10);
-
-    //while tokens available
-    while (token.type != TYPE_EOF)
-    {
-        if (token.type == TYPE_FUNID || token.type == TYPE_ID){
-            serveSymTable(globalST,token);
-        }
-        if (token.type == TYPE_END){
-            token = getTokenSim(tokenArr);
-            if(token.type != TYPE_EOF){
-                fprintf(stderr, "Expected EOF after ?>!\n");
-                exit(ERR_SYN);
-            }
-            break;
-        }
+    while(token.type == TYPE_COMM){
         token = getTokenSim(tokenArr);
     }
 
-    //epilog
-
-    STItem *item = ST_searchTable(globalST, "var");
-    if(item == NULL){
-        printf("NULL");
-        return 1;
+    if (token.type != TYPE_DECLARE_ST)
+    {
+        fprintf(stderr, "Expected \"declare(strict_types=1);\" at beggining of the file!\n");
+        return (ERR_SYN);
     }
-        printf("ID: %s\n", item->key);
+    return 0;
+}
 
+int parser(Token *tokenArr) // getToken();
+{
+    int err;
+    // check prolog
+    err = checkProlog(tokenArr); // remove tokenArr SIMULATION
+    if (err != 0){
+        return err;
+    }
+
+    Token token = getTokenSim(tokenArr); // simulation
+    Symtable *globalST = ST_initTable(10);
+
+    // while tokens available
+    while (1)
+    {
+        if (token.type == TYPE_FUNID || token.type == TYPE_ID || token.type == TYPE_LABEL)
+        {
+            serveSymTable(globalST, token);
+        }
+
+        // epilog check
+        if (token.type == TYPE_END)
+        {
+            token = getTokenSim(tokenArr);
+            if (token.type != TYPE_EOF)
+            {
+                fprintf(stderr, "Expected EOF after \"?>\"!\n");
+                freeAll(globalST);
+                return(ERR_SYN);
+            }
+            break;
+        }
+
+        if (token.type == TYPE_FUNID || token.type == TYPE_ID || token.type == TYPE_LABEL)
+        {
+            DS_dispose(token.attribute.dString);
+        }
+
+        token = getTokenSim(tokenArr);
+    } // while (token.type != TYPE_EOF)
+
+    freeAll(globalST);
+    //printf("Parser OK!\n");
     return 0;
 }
