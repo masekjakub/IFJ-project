@@ -120,13 +120,14 @@ void DS_deleteAll(DynamicString *dynamicString)
 }
 /**
  * @brief returns pointer to string in struct
- * 
+ *
  * @return pointer to string, NULL if string is empty
  */
-char *DS_string(DynamicString *dstring){
-    if (dstring->numOfChars != 0)
+char *DS_string(DynamicString *dynamicString)
+{
+    if (dynamicString->numOfChars != 0)
     {
-        return dstring->string;
+        return dynamicString->string;
     }
     return NULL;
 }
