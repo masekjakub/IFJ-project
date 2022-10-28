@@ -23,23 +23,34 @@ int inIndex = 0;
  * @param tokensArr array to save into
  * @return Token array
  */
-Token *defineTokens(Token *tokensArr)
+/*Token *defineTokens(Token *tokensArr)
 {
     //prolog
-    makeToken(tokensArr, TYPE_BEGIN, 0, 0, 0, NULL, 0);
-    makeToken(tokensArr, TYPE_DECLARE_ST, 0, 0, 0, NULL, 0);
+    makeToken(tokensArr, TYPE_BEGIN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_COMM, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_COMM, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_DECLARE_ST, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_COMM, 0, 0, 0, NULL);
 
     //$var = 5;
-    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var", 3);
-    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL, 0);
-    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL, 0);
-    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL, 0);
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    //$var = 7+3.3;
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 7, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 7, 0, NULL);
+    makeToken(tokensArr, TYPE_DOUBLE, 0, 3.3, 0, NULL);
 
     //epilog
-    makeToken(tokensArr, TYPE_END, 0, 0, 0, NULL, 0);
-    makeToken(tokensArr, TYPE_EOF, 0, 0, 0, NULL, 0);
+    makeToken(tokensArr, TYPE_END, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_EOF, 0, 0, 0, NULL);
     return tokensArr;
-}
+}*/
 
 /**
  * @brief asign local token to array
@@ -52,7 +63,7 @@ Token *defineTokens(Token *tokensArr)
  * @param string string to save
  * @param len lenght of string
  */
-void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, double doubleV, char *string, int len)
+void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, double doubleV, char *string)
 {
     Token token;
     token.type = type;
@@ -67,10 +78,8 @@ void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, doub
             token.attribute.doubleV = doubleV;
             break;
         case TYPE_ID:
-            token.attribute.dString = (DynamicString *)malloc(sizeof(char *)+sizeof(int));
-            token.attribute.dString->string = (char *)malloc((len+2) * sizeof(char));
-            strcpy(token.attribute.dString->string,string);
-            token.attribute.dString->length = len;
+            token.attribute.dString = DS_init();
+            token.attribute.dString = DS_appendString(token.attribute.dString, string);
             break;
         default:
             
@@ -87,7 +96,7 @@ void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, doub
  * 
  * @return Token array
  */
-Token *initTokens()
+/*Token *initTokens()
 {
     Token *tokenArr = (Token *)malloc(maxTokens * sizeof(Token)); // edit max size if needed!
     if (tokenArr == NULL)
@@ -97,7 +106,7 @@ Token *initTokens()
     tokenArr = defineTokens(tokenArr);
 
     return tokenArr;
-}
+}*/
 
 /**
  * @brief simulate function of scanner (send new token each call)
@@ -111,8 +120,18 @@ Token getTokenSim(Token *tokenArr){
         printf("ERROR: Reading out of simulated array!\n");
         exit(1);
     }
+    //printf("%d\n", outIndex);
     Token token = tokenArr[outIndex];
     outIndex++;
     
     return token;
+}
+/**
+ * @brief reset simulation indeces
+ * 
+ */
+void tokenSimIndexReset()
+{
+    outIndex = 0;
+    inIndex = 0;
 }
