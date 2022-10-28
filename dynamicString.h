@@ -25,5 +25,6 @@ DynamicString *DS_appendString(DynamicString *dynamicString, char *string);
 void DS_deleteChar(DynamicString *dynamicString);
 void DS_deleteAll(DynamicString *dynamicString);
 void DS_dispose(DynamicString *dynamicString);
+char *DS_string(DynamicString *);
 
 #endif
