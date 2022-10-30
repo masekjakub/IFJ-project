@@ -73,7 +73,8 @@ typedef enum
     TYPE_AMPERSAND,     // &
     TYPE_NEG,           // !
     TYPE_SEMICOLON,     // ;
-    TYPE_COLON,         // ,
+    TYPE_COMMA,         // ,
+    TYPE_COLON,         // :    
     TYPE_BEGIN,         // <?php
     TYPE_END            // ?>
 
@@ -100,7 +101,9 @@ typedef enum
     STATE_START,
     STATE_STRING,
     STATE_VAR,
-    STATE_ID
+    STATE_ID,
+    STATE_INTEGER,
+    STATE_FLOAT
     //STATE_EPILOG
 } State;
 

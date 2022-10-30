@@ -25,6 +25,14 @@ void setSourceFile(FILE *f)
   source = f;
 }
 
+/**
+ * @brief 
+ * 
+ * @param dynamicString 
+ * @param token 
+ * @return true 
+ * @return false 
+ */
 bool isKeyword(DynamicString *dynamicString, Token *token){
     if (!strcmp(DS_string(dynamicString), "if")){
         token->type = TYPE_KEYWORD;
@@ -81,6 +89,8 @@ bool isKeyword(DynamicString *dynamicString, Token *token){
  */
 Token getToken(){
     int c;
+    int wasDot = 0;
+    int wasE = 0;
     State state = STATE_START;
     DynamicString *dynamicString = DS_init();
     while (1){
@@ -170,8 +180,21 @@ Token getToken(){
                     return token;
                 }
                 else if (c == ','){
+                    token.type = TYPE_COMMA;
+                    return token;
+                }
+                else if (c == ':'){
                     token.type = TYPE_COLON;
                     return token;
+                }
+                else if (c == '-'){
+                    token.type = TYPE_SUB;
+                    return token;
+                }
+                else if (isdigit(c)){
+                    state = STATE_INTEGER;
+                    ungetc(c, source);
+                    break;
                 }
                 //TODO typy stringu ?int ?string ?float
                 else if (c == '?'){
@@ -316,14 +339,16 @@ Token getToken(){
                     }
                 }
                 break;
-            // State for returning ID, KEYWORD or declare strict types
-            case STATE_ID://TODO dodelat vraceni 
+            // State for returning ID, KEYWORD or declare(strict_types=1)
+            case STATE_ID:
                 while (1){
                     if (isalnum(c) || c == '_' || c == '('){
                         if (c == '('){
+                            // Check if id == "declare" and if it is clear dynamic string for *
                             if (!strcmp(DS_string(dynamicString), "declare")){
                                 DS_deleteAll(dynamicString);
                                 c = getc(source);
+                                // * loading chars in brackets and then check if it is "strict_types=1"
                                 while (1){
                                     DS_append(dynamicString, c);
                                     c = getc(source);
@@ -336,24 +361,78 @@ Token getToken(){
                                         fprintf(stderr, "Unknown define of strict types on line %d!\nExpected: \"declare(strict_types=1)\"\n", token.rowNumber);
                                         exit(ERR_LEX);
                                     }
+                                    if (c == EOF){
+                                        fprintf(stderr, "Unclosed bracked on line %d!\nExpected: \")\"\n", token.rowNumber);
+                                        exit(ERR_LEX);
+                                    }
                                 }
                             }
+                            // If id != declare stop loading chars and *
                             break;
                         }
                         DS_append(dynamicString, c);
                         c = getc(source);
                         continue;
                     }
-                    if (isKeyword(dynamicString, &token)){
+                    break;
+                }
+                // *return FUNID if its not keyword, if it is return keyword in function "isKeyword" and return symbol ( back to queue
+                if (isKeyword(dynamicString, &token)){
                         ungetc(c, source);
                         DS_dispose(dynamicString);
                         return token;
+                }
+                ungetc(c, source);
+                token.type = TYPE_FUNID;
+                token.attribute.dString = dynamicString;
+                return token;
+            // State for returning integer or jump to float
+            case STATE_INTEGER:
+                while(1){
+                    if (isdigit(c) || c == 'e' || c == '.'){
+                        if (c == 'e' || c == '.'){
+                            state = STATE_FLOAT;
+                            break;
+                        }
+                        DS_append(dynamicString, c);
+                        c = getc(source);
+                        continue;
                     }
-                    ungetc(c, source);
-                    token.type = TYPE_FUNID;
-                    token.attribute.dString = dynamicString;
+                    token.type = TYPE_INT;
+                    token.attribute.intV = atoi(DS_string(dynamicString));
+                    DS_dispose(dynamicString);
                     return token;
                 }
+                break;
+            case STATE_FLOAT:
+                while (1){
+                    if (isdigit(c) || c == 'e' || c == '.' || c == '-'){
+                        if (c == 'e'){
+                            wasE = 1;
+                        }
+                        if (c == '.'){
+                            wasDot = 1;
+                        }
+                        // TODO doladit podminky zvlast pro e a tecku
+                        if ((c == 'e' || c == '.') && (wasE || wasDot || !isdigit(c = getc(source)) || c != '-')){
+                            fprintf(stderr, "Wrong float number on line %d!\nSymbol . or character e can be used only once in float!\nExpected: 1.2 or 1.2e10 or 1.2e-10\n", token.rowNumber);
+                            exit(ERR_LEX);
+                        }
+                        if (c == 'e' && (c = getc(source)) == '-'){
+                            DS_append(dynamicString, c);
+                        }
+                        DS_append(dynamicString, c);
+                        c = getc(source);
+                        if (c == '-'){
+                            ungetc(c, source);
+                            break;
+                        }
+                    }
+                    break;
+                }
+                token.type = TYPE_DOUBLE;
+                token.attribute.doubleV = atof(DS_string(dynamicString));
+                return token;
         }
     }
 }
@@ -371,15 +450,22 @@ int main(int argc, char** argv){
         fprintf(stderr, "Soubor neslo otevrit\n");
         return ERR_OTHER;
     }
-    printf("Ahoj, svete\n");
 
     setSourceFile(f);
-    for (int i = 0; i < 20; i++){
+    for (int i = 0; i < 50; i++){
         token = getToken();
-        printf("%d\n", token.type);
         if (token.type == TYPE_STRING || token.type == TYPE_ID || token.type == TYPE_FUNID){
-            printf("%s\n", token.attribute.dString->string);
+            printf("%d --- %s\n",token.type  ,token.attribute.dString->string);
             DS_dispose(token.attribute.dString);
+        }
+        else if (token.type == TYPE_INT){
+            printf("%d --- %d\n",token.type ,token.attribute.intV);
+        }
+        else if (token.type == TYPE_DOUBLE){
+            printf("%d --- %f\n",token.type ,token.attribute.doubleV);
+        }
+        else{
+            printf("%d type\n", token.type);
         }
     }
 
