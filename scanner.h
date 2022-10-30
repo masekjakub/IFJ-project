@@ -16,6 +16,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "error.h"
 #include "dynamicString.h"
 
@@ -72,6 +73,7 @@ typedef enum
     TYPE_AMPERSAND,     // &
     TYPE_NEG,           // !
     TYPE_SEMICOLON,     // ;
+    TYPE_COLON,         // ,
     TYPE_BEGIN,         // <?php
     TYPE_END            // ?>
 
@@ -90,17 +92,21 @@ typedef struct
 {
     TokenType type;
     TokenAttribute attribute;
+    int rowNumber;
 }Token;
 
 typedef enum
 {
     STATE_START,
     STATE_STRING,
-    STATE_VAR
+    STATE_VAR,
+    STATE_ID
     //STATE_EPILOG
 } State;
 
-void setSourceFile();
+void setSourceFile(FILE *);
+bool isKeyword(DynamicString *, Token*);
 Token getToken();
+
 
 #endif

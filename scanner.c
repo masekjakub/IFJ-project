@@ -13,6 +13,8 @@
 
 FILE *source;
 
+int rowNumber = 1;
+
 /**
  * @brief Set the Source File object
  * 
@@ -21,6 +23,55 @@ FILE *source;
 void setSourceFile(FILE *f)
 {
   source = f;
+}
+
+bool isKeyword(DynamicString *dynamicString, Token *token){
+    if (!strcmp(DS_string(dynamicString), "if")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_IF;
+        return true;
+    }
+    if (!strcmp(DS_string(dynamicString), "else")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_ELSE;
+        return true;
+    }
+    if (!strcmp(DS_string(dynamicString), "while")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_WHILE;
+        return true;
+    }
+    if (!strcmp(DS_string(dynamicString), "float")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_FLOAT;
+        return true;
+    }
+    if (!strcmp(DS_string(dynamicString), "string")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_STRING;
+        return true;
+    }
+    if (!strcmp(DS_string(dynamicString), "null")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_NULL;
+        return true;
+    }
+    if (!strcmp(DS_string(dynamicString), "function")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_FUNCTION;
+        return true;
+    }
+    if (!strcmp(DS_string(dynamicString), "void")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_VOID;
+        return true;
+    }
+    if (!strcmp(DS_string(dynamicString), "return")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_RETURN;
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -35,6 +86,10 @@ Token getToken(){
     while (1){
         Token token;
         c = getc(source);
+        if (c == '\n'){
+            rowNumber++;
+        }
+        token.rowNumber = rowNumber;
         switch (state){
             // Starting state of finite automat
             case STATE_START:
@@ -52,6 +107,10 @@ Token getToken(){
                     else if (c == '*'){ 
                         c = getc(source);
                         while (1){
+                            if (c == '\n'){
+                                rowNumber++;
+                                token.rowNumber = rowNumber;
+                            }
                             if (c == '*'){
                                 if ((c = getc(source)) == '/'){
                                     token.type = TYPE_COMM;
@@ -110,13 +169,17 @@ Token getToken(){
                     token.type = TYPE_RBRACES;
                     return token;
                 }
+                else if (c == ','){
+                    token.type = TYPE_COLON;
+                    return token;
+                }
                 //TODO typy stringu ?int ?string ?float
                 else if (c == '?'){
                     if ((c = getc(source)) == '>'){
                         token.type = TYPE_END;
                         return token;
                     }
-                    fprintf(stderr, "Wrong epilog!\nExpected epilog: \"?>\"\n");
+                    fprintf(stderr, "Wrong epilog!\nExpected epilog: \"?>\" on line %d!\n", token.rowNumber);
                     exit(ERR_LEX);
                 }
                 else if (c == '='){
@@ -127,7 +190,7 @@ Token getToken(){
                             token.type = TYPE_EQTYPES;
                             return token;
                         }
-                        fprintf(stderr, "Non-existing operator \"==\"!\nThere are only operands: \"=\" or \"===\".\n");
+                        fprintf(stderr, "Non-existing operator \"==\" on line %d!\nThere are only operands: \"=\" or \"===\".\n", token.rowNumber);
                         exit(ERR_LEX);
                     }
                     ungetc(c, source);
@@ -143,7 +206,7 @@ Token getToken(){
                             token.type = TYPE_NOTEQTYPES;
                             return token;
                         }
-                        fprintf(stderr, "Non-existing operator \"!=\"!\nThere are only operands: \"!\" or \"!==\".\n");
+                        fprintf(stderr, "Non-existing operator \"!=\" on line %d!\nThere are only operands: \"!\" or \"!==\".\n", token.rowNumber);
                         exit(ERR_LEX);
                     }
                     ungetc(c, source);
@@ -167,7 +230,7 @@ Token getToken(){
                             DS_dispose(dynamicString);
                             return token;
                         }
-                        fprintf(stderr, "Incorrect prolog!\nProlog should be: \"<?php\" with whitespace behind it!\n");
+                        fprintf(stderr, "Incorrect prolog on line %d!\nProlog should be: \"<?php\" with whitespace behind it!\n", token.rowNumber);
                         exit(ERR_LEX);
                     }
                     ungetc(c, source);
@@ -195,8 +258,13 @@ Token getToken(){
                     state = STATE_VAR;
                     break;
                 }
-                else{//TODO pobavit se o tom s martenem
-                    fprintf(stderr, "%c is unknown character!\n", c);
+                else if (isalpha(c) || c == '_'){
+                    state = STATE_ID;
+                    ungetc(c, source);
+                    break;
+                }
+                else{
+                    fprintf(stderr, "%c is unknown character on line %d!\n", c, token.rowNumber);
                     exit(ERR_LEX);
                 }
                 break;
@@ -225,7 +293,7 @@ Token getToken(){
                         return token;
                     }
                     else if (c == EOF){
-                        fprintf(stderr, "Unclosed string!\nExpected: \"\n");
+                        fprintf(stderr, "Unclosed string on line %d!\nExpected: \"\n", token.rowNumber);
                         exit(ERR_LEX);
                     }
                 }
@@ -233,7 +301,7 @@ Token getToken(){
             // State for returning names of variables
             case STATE_VAR:
                 if (!isalpha(c) && c != '_'){
-                    fprintf(stderr, "Variables in IFJ22 should begin with alphabetic character or underscore!\nFor examle: \"$a...\" or \"$A...\" or \"$_...\"\n");
+                    fprintf(stderr, "Variables in IFJ22 should begin with alphabetic character or underscore on line %d!\nFor examle: \"$a...\" or \"$A...\" or \"$_...\"\n", token.rowNumber);
                     exit(ERR_LEX);
                 }
                 while (1){
@@ -248,6 +316,44 @@ Token getToken(){
                     }
                 }
                 break;
+            // State for returning ID, KEYWORD or declare strict types
+            case STATE_ID://TODO dodelat vraceni 
+                while (1){
+                    if (isalnum(c) || c == '_' || c == '('){
+                        if (c == '('){
+                            if (!strcmp(DS_string(dynamicString), "declare")){
+                                DS_deleteAll(dynamicString);
+                                c = getc(source);
+                                while (1){
+                                    DS_append(dynamicString, c);
+                                    c = getc(source);
+                                    if (c == ')'){
+                                        if (!strcmp(DS_string(dynamicString), "strict_types=1")){
+                                            token.type = TYPE_DECLARE_ST;
+                                            DS_dispose(dynamicString);
+                                            return token;
+                                        }
+                                        fprintf(stderr, "Unknown define of strict types on line %d!\nExpected: \"declare(strict_types=1)\"\n", token.rowNumber);
+                                        exit(ERR_LEX);
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        DS_append(dynamicString, c);
+                        c = getc(source);
+                        continue;
+                    }
+                    if (isKeyword(dynamicString, &token)){
+                        ungetc(c, source);
+                        DS_dispose(dynamicString);
+                        return token;
+                    }
+                    ungetc(c, source);
+                    token.type = TYPE_FUNID;
+                    token.attribute.dString = dynamicString;
+                    return token;
+                }
         }
     }
 }
@@ -271,7 +377,7 @@ int main(int argc, char** argv){
     for (int i = 0; i < 20; i++){
         token = getToken();
         printf("%d\n", token.type);
-        if (token.type == TYPE_STRING || token.type == TYPE_ID){
+        if (token.type == TYPE_STRING || token.type == TYPE_ID || token.type == TYPE_FUNID){
             printf("%s\n", token.attribute.dString->string);
             DS_dispose(token.attribute.dString);
         }
