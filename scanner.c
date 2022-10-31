@@ -312,7 +312,7 @@ Token getToken(){
                     if (c == '"'){
                         token.type = TYPE_STRING;
                         token.attribute.dString = dynamicString;
-                        c = getc(source);
+                        //c = getc(source);
                         return token;
                     }
                     else if (c == EOF){
@@ -392,6 +392,8 @@ Token getToken(){
                     if (isdigit(c) || c == 'e' || c == '.'){
                         if (c == 'e' || c == '.'){
                             state = STATE_FLOAT;
+                            printf("%s aaaaa\n", DS_string(dynamicString));
+                            ungetc(c, source);
                             break;
                         }
                         DS_append(dynamicString, c);
@@ -401,37 +403,47 @@ Token getToken(){
                     token.type = TYPE_INT;
                     token.attribute.intV = atoi(DS_string(dynamicString));
                     DS_dispose(dynamicString);
+                    ungetc(c, source);
                     return token;
                 }
                 break;
+            // State for returning float
             case STATE_FLOAT:
                 while (1){
                     if (isdigit(c) || c == 'e' || c == '.' || c == '-'){
+                        // TODO doladit podminky zvlast pro e a tecku
+                        if ((c == 'e' && wasE) || (c == '.' && wasDot)){
+                            fprintf(stderr, "Wrong float number on line %d!\nSymbol . or character e can be used only once in float!\nExpected: 1.2 or 1.2e10 or 1.2e-10\n", token.rowNumber);
+                            exit(ERR_LEX);
+                        }
                         if (c == 'e'){
                             wasE = 1;
                         }
                         if (c == '.'){
                             wasDot = 1;
                         }
-                        // TODO doladit podminky zvlast pro e a tecku
-                        if ((c == 'e' || c == '.') && (wasE || wasDot || !isdigit(c = getc(source)) || c != '-')){
-                            fprintf(stderr, "Wrong float number on line %d!\nSymbol . or character e can be used only once in float!\nExpected: 1.2 or 1.2e10 or 1.2e-10\n", token.rowNumber);
-                            exit(ERR_LEX);
-                        }
-                        if (c == 'e' && (c = getc(source)) == '-'){
-                            DS_append(dynamicString, c);
-                        }
                         DS_append(dynamicString, c);
+                        if (c == 'e'){
+                            if ((c = getc(source)) == '-'){
+                                DS_append(dynamicString, c);
+                            }
+                            else{
+                                ungetc(c, source);
+                            }
+                        }
                         c = getc(source);
                         if (c == '-'){
                             ungetc(c, source);
                             break;
                         }
+                        continue;
                     }
                     break;
                 }
                 token.type = TYPE_DOUBLE;
                 token.attribute.doubleV = atof(DS_string(dynamicString));
+                DS_dispose(dynamicString);
+                ungetc(c, source);
                 return token;
         }
     }
@@ -452,7 +464,7 @@ int main(int argc, char** argv){
     }
 
     setSourceFile(f);
-    for (int i = 0; i < 50; i++){
+    for (int i = 0; i < 51; i++){
         token = getToken();
         if (token.type == TYPE_STRING || token.type == TYPE_ID || token.type == TYPE_FUNID){
             printf("%d --- %s\n",token.type  ,token.attribute.dString->string);
