@@ -76,6 +76,7 @@ void STACK_popAll(Stack *stack)
     {
         STACK_pop(stack);
     }
+    stack->size = 0;
 }
 
 /**
