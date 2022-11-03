@@ -8,23 +8,25 @@ void printStack(Stack *stack)
 {
     if (STACK_top(stack) != NULL)
     {
-        printf("Top: %d |", STACK_top(stack)->attribute.intV);
+        printf("Top: %d     Bot: %d    | ", STACK_top(stack)->attribute.intV, STACK_bottom(stack)->attribute.intV);
         for (int i = 0; i < stack->size; i++)
         {
             printf(" %d", stack->tokenArray[i].attribute.intV);
         }
         printf("\n");
     }
-    else
+    if (STACK_top(stack) == NULL)
     {
-        printf("Top: NULL\n");
+        printf("Top: NULL");
+    }
+    if (STACK_bottom(stack) == NULL)
+    {
+        printf("  Bot: NULL |\n");
     }
 }
 
 int main()
 {
-    Stack *stack = STACK_init();
-
     Token token1, token2, token3;
     (void)token1;
     (void)token2;
@@ -38,20 +40,15 @@ int main()
     token3.attribute.intV = 3;
     token3.type = TYPE_INT;
 
-    // printf("%d\n", STACK_isEmpty(stack));
+    Stack *stack = STACK_init();
     printStack(stack);
+
     STACK_push(stack, token1);
-    STACK_push(stack, token2);
-    STACK_push(stack, token2);
-    STACK_push(stack, token2);
-    STACK_push(stack, token2);
-    STACK_push(stack, token2);
-    STACK_push(stack, token2);
-    STACK_push(stack, token2);
     STACK_push(stack, token2);
     STACK_push(stack, token3);
     printStack(stack);
-    STACK_popAll(stack);
+
+    STACK_popBottom(stack);
     printStack(stack);
     return 0;
 }

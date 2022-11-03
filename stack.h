@@ -18,8 +18,10 @@ typedef struct
 
 Stack *STACK_init();
 void STACK_push(Stack *stack, Token token);
-void STACK_pop(Stack *stack);
+Token *STACK_pop(Stack *stack);
 void STACK_popAll(Stack *stack);
 void STACK_dispose(Stack *stack);
 Token *STACK_top(Stack *stack);
 int STACK_isEmpty(Stack *stack);
+Token *STACK_bottom(Stack *stack);
+Token *STACK_popBottom(Stack *stack);
