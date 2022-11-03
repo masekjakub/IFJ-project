@@ -25,7 +25,6 @@ Stack *STACK_init()
     Stack *stack = (Stack *)malloc(sizeof(Stack));
     stack->size = 0;
     stack->tokenArray = calloc(1, sizeof(Token));
-    // Stack stack = calloc(1, sizeof(Token));
     return stack;
 }
 
@@ -38,7 +37,14 @@ Stack *STACK_init()
  */
 void STACK_push(Stack *stack, Token token)
 {
-    stack->tokenArray = realloc(stack->tokenArray, (stack->size + 1) * sizeof(Token));
+    if (stack->size == 0)
+    {
+        stack->tokenArray = calloc(1, sizeof(Token));
+    }
+    else
+    {
+        stack->tokenArray = realloc(stack->tokenArray, (stack->size + 1) * sizeof(Token));
+    }
     if (stack->tokenArray == NULL)
     {
         exit(ERR_INTERN);
@@ -51,21 +57,17 @@ void STACK_push(Stack *stack, Token token)
 }
 
 /**
- * @brief Function returns pointer to the top of the stack and pops the stack.
- * In case of empty stack, function returns NULL.
+ * @brief Pops stack (from the top).
  *
  * @param stack
  */
-Token *STACK_pop(Stack *stack)
+void STACK_pop(Stack *stack)
 {
     if (stack->size > 0)
     {
-        Token *token = STACK_top(stack);
         stack->tokenArray = realloc(stack->tokenArray, (stack->size - 1) * sizeof(Token));
         stack->size--;
-        return token;
     }
-    return NULL;
 }
 
 /**
@@ -140,16 +142,14 @@ Token *STACK_bottom(Stack *stack)
 }
 
 /**
- * @brief Returns bottom of the stack and "pops" it.
+ * @brief Pops stack from bottom.
  *
  * @param stack
- * @return Token*
  */
-Token *STACK_popBottom(Stack *stack)
+void STACK_popBottom(Stack *stack)
 {
-    if (STACK_isEmpty(stack) == 0)
+    if (stack->size > 0)
     {
-        Token *token = STACK_bottom(stack);
         for (int i = 1; i < stack->size; i++)
         {
             stack[i] = stack[i + 1];
@@ -157,7 +157,5 @@ Token *STACK_popBottom(Stack *stack)
         stack->tokenArray = realloc(stack->tokenArray, (stack->size - 1) * sizeof(Token));
         stack->tokenArray = stack->tokenArray + 1;
         stack->size--;
-        return token;
     }
-    return NULL;
 }

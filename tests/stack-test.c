@@ -44,11 +44,9 @@ int main()
     printStack(stack);
 
     STACK_push(stack, token1);
-    STACK_push(stack, token2);
-    STACK_push(stack, token3);
-    printStack(stack);
-
     STACK_popBottom(stack);
+    
+    STACK_push(stack, token2);
     printStack(stack);
     return 0;
 }
