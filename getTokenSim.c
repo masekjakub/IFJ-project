@@ -78,11 +78,12 @@ void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, doub
             token.attribute.doubleV = doubleV;
             break;
         case TYPE_ID:
+        case TYPE_FUNID:
             token.attribute.dString = DS_init();
             token.attribute.dString = DS_appendString(token.attribute.dString, string);
             break;
         default:
-            
+
             break;
     }
 

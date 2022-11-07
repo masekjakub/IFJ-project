@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "symtable.h"
+#include "stack.h"
 
 int parser(Token *);
 void freeAll(Symtable *);

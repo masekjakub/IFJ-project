@@ -149,14 +149,10 @@ Token *STACK_bottom(Stack *stack)
  */
 void STACK_popBottom(Stack *stack)
 {
-    if (stack->size > 0)
+    for (int i = 0; i < stack->size; i++)
     {
-        for (int i = 1; i < stack->size; i++)
-        {
-            stack[i] = stack[i + 1];
-        }
-        stack->tokenArray = realloc(stack->tokenArray, (stack->size - 1) * sizeof(Token));
-        stack->tokenArray = stack->tokenArray + 1;
-        stack->size--;
+        stack->tokenArray[i] = stack->tokenArray[i + 1];
     }
+    stack->tokenArray = realloc(stack->tokenArray, (stack->size - 1) * sizeof(Token));
+    stack->size--;
 }
