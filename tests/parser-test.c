@@ -105,16 +105,79 @@
     ASSERT(returnedVal == ERR_SYN, "Return code is not SYN_ERR", returnedVal);
     ENDTEST
 
-    TEST(test_assign, "$var = 5;")
+    TEST(test_assign, "$var = 5+8; OK")
+    PROLOG
+    //$var = 5;
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 8, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_assign2, "$var = 5+8.8; WRONG")
+    PROLOG
+    //$var = 5;
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_DOUBLE, 0, 0, 8.8, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 7, "Return code not 7", returnedVal)
+    ENDTEST
+
+    TEST(test_assign3, "$var = 5 / \"ahoj\"; WRONG")
+    PROLOG
+    //$var = 5;
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_STRING, 0, 0, 0, "ahoj");
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 7, "Return code not 7", returnedVal)
+    ENDTEST
+
+    TEST(test_assign4, "$var = func * func; WRONG")
+    PROLOG
+    //$var = 5;
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "func");
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "func");
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 7, "Return code not 7", returnedVal)
+    ENDTEST
+
+    TEST(test_assign_diff_types, "$var = 5;$var = 5.5; WRONG")
     PROLOG
     //$var = 5;
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
     makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
-    parser(tokensArr);
+
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_DOUBLE, 0, 0, 5.5, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
     EPILOG
-    ENDTEST_NORETURN
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 7, "Return code not 7", returnedVal)
+    ENDTEST
 
     TEST(test_add, "$var + 5;")
     PROLOG
@@ -123,9 +186,10 @@
     makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
-    parser(tokensArr);
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     EPILOG
-    ENDTEST_NORETURN
+    ENDTEST
 
     TEST(test_id_wrong, "$var ! 5;")
     PROLOG
@@ -135,7 +199,6 @@
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
     EPILOG
-
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
@@ -200,6 +263,10 @@
         test_while();
         test_funccal();
         test_funcdef();
+        test_assign2();
+        test_assign3();
+        test_assign4();
+        test_assign_diff_types();
 
             printf("================================================\n");
         float score = (float)SUCCESSFUL_TESTS / (float)TEST_NUM;

@@ -8,7 +8,14 @@
  * @copyright Copyright (c) 2022
  *
  */
+#ifndef _IFJ_STACK
+#define _IFJ_STACK
+
 #include "scanner.h"
+#include "error.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef struct
 {
@@ -25,3 +32,5 @@ Token *STACK_top(Stack *stack);
 int STACK_isEmpty(Stack *stack);
 Token *STACK_bottom(Stack *stack);
 void STACK_popBottom(Stack *stack);
+
+#endif

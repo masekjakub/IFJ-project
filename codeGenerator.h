@@ -2,9 +2,7 @@
 #ifndef _IFJ_CG
 #define _IFJ_CG
 
-#include "error.h"
-#include "dynamicString.h"
-#include "scanner.h"
+#include "stack.h"
 
 int generateCode(Stack *);
 

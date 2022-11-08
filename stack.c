@@ -10,10 +10,6 @@
  */
 
 #include "stack.h"
-#include "error.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /**
  * @brief Initializes empty stack of tokens.
@@ -149,6 +145,9 @@ Token *STACK_bottom(Stack *stack)
  */
 void STACK_popBottom(Stack *stack)
 {
+    if (stack == NULL || stack->size < 0)
+        return;
+
     for (int i = 0; i < stack->size; i++)
     {
         stack->tokenArray[i] = stack->tokenArray[i + 1];

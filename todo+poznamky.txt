@@ -28,7 +28,7 @@ GRAMATIKA
     WHILE => while (E) {S}
     RETURN => return E;
     RETURN => return id;    
-    FUNCCALL => function funid(ARGS);
+    FUNCCALL => funid(ARGS);
     FUNCDEF => function funid(PARAMS) : TYPE {S}
     TYPE => ?TYPE
     TYPE => int
