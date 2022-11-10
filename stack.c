@@ -10,10 +10,6 @@
  */
 
 #include "stack.h"
-#include "error.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 /**
  * @brief Initializes empty stack of tokens.
@@ -25,7 +21,6 @@ Stack *STACK_init()
     Stack *stack = (Stack *)malloc(sizeof(Stack));
     stack->size = 0;
     stack->tokenArray = calloc(1, sizeof(Token));
-    // Stack stack = calloc(1, sizeof(Token));
     return stack;
 }
 
@@ -38,7 +33,14 @@ Stack *STACK_init()
  */
 void STACK_push(Stack *stack, Token token)
 {
-    stack->tokenArray = realloc(stack->tokenArray, (stack->size + 1) * sizeof(Token));
+    if (stack->size == 0)
+    {
+        stack->tokenArray = calloc(1, sizeof(Token));
+    }
+    else
+    {
+        stack->tokenArray = realloc(stack->tokenArray, (stack->size + 1) * sizeof(Token));
+    }
     if (stack->tokenArray == NULL)
     {
         exit(ERR_INTERN);
@@ -51,8 +53,7 @@ void STACK_push(Stack *stack, Token token)
 }
 
 /**
- * @brief Function pops the top of the stack.
- * In case of empty stack, function does nothing.
+ * @brief Pops stack (from the top).
  *
  * @param stack
  */
@@ -76,6 +77,7 @@ void STACK_popAll(Stack *stack)
     {
         STACK_pop(stack);
     }
+    stack->size = 0;
 }
 
 /**
@@ -118,4 +120,38 @@ Token *STACK_top(Stack *stack)
         return &stack->tokenArray[stack->size - 1];
     }
     return NULL;
+}
+
+/**
+ * @brief Returns pointer of token from the bottom od the stack.
+ * In case of empty stack function returns NULL.
+ *
+ * @param stack
+ * @return Token*
+ */
+Token *STACK_bottom(Stack *stack)
+{
+    if (STACK_isEmpty(stack) == 0)
+    {
+        return &stack->tokenArray[0];
+    }
+    return NULL;
+}
+
+/**
+ * @brief Pops stack from bottom.
+ *
+ * @param stack
+ */
+void STACK_popBottom(Stack *stack)
+{
+    if (stack == NULL || stack->size < 0)
+        return;
+
+    for (int i = 0; i < stack->size; i++)
+    {
+        stack->tokenArray[i] = stack->tokenArray[i + 1];
+    }
+    stack->tokenArray = realloc(stack->tokenArray, (stack->size - 1) * sizeof(Token));
+    stack->size--;
 }

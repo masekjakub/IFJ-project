@@ -17,10 +17,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "symtable.h"
+#include "stack.h"
+#include "codeGenerator.h"
 
 int parser(Token *);
 void freeAll(Symtable *);
 int checkProlog(Token *);
 STItem *serveSymTable(Symtable *, Token);
+int nextRule(Stack *, Stack *);
 
 #endif

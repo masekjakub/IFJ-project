@@ -45,38 +45,40 @@ typedef enum
     TYPE_LABEL,
     TYPE_KEYWORD,
     TYPE_EOF,
-    TYPE_DECLARE_ST,    // declare strict types
-    TYPE_QMARK,         // for ?int var
-    TYPE_COMM,          // // or /*
-    
-    //Operators
-    TYPE_ADD,           // +
-    TYPE_SUB,           // -
-    TYPE_MUL,           // *
-    TYPE_DIV,           // /
-    TYPE_MOD,           // %
-    TYPE_ASSIGN,        // =
-    TYPE_EQTYPES,       // ===    
-    TYPE_NOTEQTYPES,    // !==   
-    TYPE_LESS,          // <
-    TYPE_GREATER,       // >
-    TYPE_LESSEQ,        // <=
-    TYPE_GREATEREQ,     // >=
-    TYPE_CONCAT,        // .
+    TYPE_DECLARE_ST, // declare strict types
+    TYPE_QMARK,      // for ?int var
+    TYPE_COMM,       // // or /*
 
-    //Special symbols
-    TYPE_LBRACKET,      // (
-    TYPE_RBRACKET,      // )
-    TYPE_LBRACES,       // {
-    TYPE_RBRACES,       // }
-    TYPE_DOLLAR,        // $
-    TYPE_AMPERSAND,     // &
-    TYPE_NEG,           // !
-    TYPE_SEMICOLON,     // ;
-    TYPE_COMMA,         // ,
-    TYPE_COLON,         // :    
-    TYPE_BEGIN,         // <?php
-    TYPE_END            // ?>
+    // Operators
+    TYPE_ADD,        // +
+    TYPE_SUB,        // -
+    TYPE_MUL,        // *
+    TYPE_DIV,        // /
+    TYPE_MOD,        // %
+    TYPE_ASSIGN,     // =
+    TYPE_EQTYPES,    // ===
+    TYPE_NOTEQTYPES, // !==
+    TYPE_LESS,       // <
+    TYPE_GREATER,    // >
+    TYPE_LESSEQ,     // <=
+    TYPE_GREATEREQ,  // >=
+    TYPE_CONCAT,     // .
+
+    // Special symbols
+    TYPE_LBRACKET,  // (
+    TYPE_RBRACKET,  // )
+    TYPE_LBRACES,   // {
+    TYPE_RBRACES,   // }
+    TYPE_DOLLAR,    // $
+    TYPE_AMPERSAND, // &
+    TYPE_NEG,       // !
+    TYPE_SEMICOLON, // ;
+    TYPE_COMMA,     // ,
+    TYPE_COLON,     // :
+    TYPE_BEGIN,     // <?php
+    TYPE_END,       // ?>
+
+    TYPE_UNDEF
 
 } TokenType;
 
