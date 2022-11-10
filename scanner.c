@@ -440,7 +440,7 @@ Token getToken(){
                     }
                     break;
                 }
-                token.type = TYPE_DOUBLE;
+                token.type = TYPE_FLOAT;
                 token.attribute.doubleV = atof(DS_string(dynamicString));
                 DS_dispose(dynamicString);
                 ungetc(c, source);

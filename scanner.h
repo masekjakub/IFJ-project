@@ -37,7 +37,7 @@ typedef enum {
 typedef enum
 {
     TYPE_INT,
-    TYPE_DOUBLE,
+    TYPE_FLOAT,
     TYPE_STRING,
     TYPE_VOID,
     TYPE_ID,
