@@ -5,45 +5,57 @@ pravidla
 bottom-up analýza výrazů
 struktura stromu
 návrh gramatiky
+rozsireni globalni promenne?
 
 Kubík - return do nextRule
 
 GRAMATIKA
-    E => id
+
+<prog> => BEGIN DECLARE_ST <statement_list> <end>
+<end> => EPILOG EOF
+<end> => EOF
+<id> => ID
+<id> => FUNID
+
+<stat_list> => <stat> <stat_list>
+<stat> => <assign>
+<stat> => IF (<expr>) {<stat>} else {<stat>}
+<stat> => WHILE (<expr>) {<stat>}
+<stat> => FUNCTION FUNID(<params>) : TYPE {<stat>}
+<stat> => FUNCTION FUNID(<params>) {<stat>} ??????????????
+
+<assign> => ID = <expr> ;
+<assign> => ID <expr> ;
+<assign> => <expr> ;
+
+<params> => TYPE ID
+<params> => ? TYPE ID
+<params> => TYPE ID, <params>
+<params> => ? TYPE ID, <params>
+
+<args> => <id>
+<args> => <id>, <args>
+
+<return> => RETURN <expr> ;
+RETURN; ???
+
+------------------------------------
+    E => ID
     E => E + E
     E => E - E
     E => E * E
     E => E / E
     E => (E)
+        
 
+<value> => INT 
+<value> => FLOAT
+<value> => STRING
+<value> => <id>
 
-    S => id = E;
-    S => IF
-    S => WHILE
-    S => FUNCDEF
-    S => id = FUNCCALL
-    S => S S
-
-    IF => if (E) {S} else {S}
-    WHILE => while (E) {S}
-    RETURN => return E;
-    RETURN => return id;    
     FUNCCALL => funid(ARGS);
-    FUNCDEF => function funid(PARAMS) : TYPE {S}
+
     TYPE => ?TYPE
-    TYPE => int
-    TYPE => float
-    TYPE => string
-    ARGS => id
-    ARGS => id,ARGS
-    PARAMS => TYPE id
-    PARAMS => TYPE id, PARAMS
-    ID 
-    $ID 
-    EPILOG => ?> eof
-    EPILOG => eof
-
-
-
-    $afdfg = E;
-
+    TYPE => int_type
+    TYPE => float_type
+    TYPE => string_type
