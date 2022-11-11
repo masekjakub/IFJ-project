@@ -15,14 +15,14 @@ GRAMATIKA
 <end> => EPILOG EOF
 <end> => EOF
 <id> => ID
-<id> => FUNID
+<id> => FUNID(<args>)
 
 <stat_list> => <stat> <stat_list>
 <stat> => <assign>
 <stat> => IF (<expr>) {<stat>} else {<stat>}
 <stat> => WHILE (<expr>) {<stat>}
 <stat> => FUNCTION FUNID(<params>) : TYPE {<stat>}
-<stat> => FUNCTION FUNID(<params>) {<stat>} ??????????????
+<stat> => FUNCTION FUNID(<params>) {<stat>} pravidlo <funcdef>??????????????
 
 <assign> => ID = <expr> ;
 <assign> => ID <expr> ;
@@ -36,8 +36,7 @@ GRAMATIKA
 <args> => <id>
 <args> => <id>, <args>
 
-<return> => RETURN <expr> ;
-RETURN; ???
+<return> => RETURN <expr> ; funkcni i pro void fce????? asi jo right?
 
 ------------------------------------
     E => ID
