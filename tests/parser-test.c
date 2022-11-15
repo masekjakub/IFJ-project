@@ -186,9 +186,9 @@
     makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
-    EPILOG
     ENDTEST
 
     TEST(test_id_wrong, "$var ! 5;")

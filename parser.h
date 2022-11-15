@@ -24,8 +24,8 @@
 ErrorType exprAnal();
 ErrorType ruleProg();
 ErrorType ruleStatList();
-ErrorType ruleId();
 ErrorType ruleStat();
+ErrorType ruleId();
 ErrorType ruleFuncdef();
 ErrorType ruleAssign();
 ErrorType ruleParam();
