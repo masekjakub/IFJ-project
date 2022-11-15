@@ -27,7 +27,7 @@ unsigned int ST_hashFunction(char *key, unsigned int tableSize){
  * @brief Allocates and initializes a new ST item
  * 
  * @param key Key of created item (contents of string are coppied)
- * @param type Type of created item (variable/function/label)
+ * @param type Type of created item (variable/function)
  * @param data Data of the correct item type
  * @return Ptr to the created item
  */
