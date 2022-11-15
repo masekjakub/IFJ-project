@@ -78,6 +78,7 @@ typedef enum
     TYPE_BEGIN,     // <?php
     TYPE_END,       // ?>
 
+    TYPE_NULL,
     TYPE_UNDEF
 
 } TokenType;

@@ -126,7 +126,7 @@
     makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
-    makeToken(tokensArr, TYPE_DOUBLE, 0, 0, 8.8, NULL);
+    makeToken(tokensArr, TYPE_FLOAT, 0, 0, 8.8, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
     EPILOG
     returnedVal = parser(tokensArr);
@@ -161,7 +161,7 @@
     ASSERT(returnedVal == 7, "Return code not 7", returnedVal)
     ENDTEST
 
-    TEST(test_assign_diff_types, "$var = 5;$var = 5.5; WRONG")
+    TEST(test_assign_diff_types, "$var = 5; $var = 5.5; WRONG")
     PROLOG
     //$var = 5;
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
@@ -171,7 +171,7 @@
 
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
     makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
-    makeToken(tokensArr, TYPE_DOUBLE, 0, 0, 5.5, NULL);
+    makeToken(tokensArr, TYPE_FLOAT, 0, 0, 5.5, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
 
     EPILOG
@@ -268,7 +268,7 @@
         test_assign4();
         test_assign_diff_types();
 
-            printf("================================================\n");
+        printf("================================================\n");
         float score = (float)SUCCESSFUL_TESTS / (float)TEST_NUM;
         if (score == 1.0)
         {

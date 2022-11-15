@@ -44,7 +44,7 @@ int inIndex = 0;
     makeToken(tokensArr, TYPE_INT, 0, 7, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_ADD, 0, 7, 0, NULL);
-    makeToken(tokensArr, TYPE_DOUBLE, 0, 3.3, 0, NULL);
+    makeToken(tokensArr, TYPE_FLOAT, 0, 3.3, 0, NULL);
 
     //epilog
     makeToken(tokensArr, TYPE_END, 0, 0, 0, NULL);
@@ -74,7 +74,7 @@ void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, doub
         case TYPE_INT:
             token.attribute.intV = intV;
             break;
-        case TYPE_DOUBLE:
+        case TYPE_FLOAT:
             token.attribute.doubleV = doubleV;
             break;
         case TYPE_ID:

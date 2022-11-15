@@ -1,42 +1,47 @@
 TODO
-zásobník pop ze spodu - opravit
-funkce na rozeznání pravidel
-pravidla
 bottom-up analýza výrazů
-struktura stromu
-návrh gramatiky
+Mrtn - ST index id
+MLK - scanner kody
+vsichni - funkce
 rozsireni globalni promenne?
 
-Kubík - return do nextRule
 
 GRAMATIKA
 
-<prog> => BEGIN DECLARE_ST <statement_list> <end>
-<end> => EPILOG EOF
-<end> => EOF
+<prog> => BEGIN DECLARE_ST <stat_list>
+
 <id> => ID
 <id> => FUNID(<args>)
 
+<stat_list> => EPILOG EOF
+<stat_list> => EOF
 <stat_list> => <stat> <stat_list>
+<stat> => IF (<expr>) {<stat_list>} else {<stat_list>}
+<stat> => WHILE (<expr>) {<stat_list>}
 <stat> => <assign>
-<stat> => IF (<expr>) {<stat>} else {<stat>}
-<stat> => WHILE (<expr>) {<stat>}
-<stat> => FUNCTION FUNID(<params>) : TYPE {<stat>}
-<stat> => FUNCTION FUNID(<params>) {<stat>} pravidlo <funcdef>??????????????
+
+<stat> => FUNCTION FUNID (<params>) <funcdef>
+<funcdef> => {<stat_list>}
+<funcdef> => : TYPE {<stat_list>}
 
 <assign> => ID = <expr> ;
 <assign> => ID <expr> ;
 <assign> => <expr> ;
 
-<params> => TYPE ID
-<params> => ? TYPE ID
-<params> => TYPE ID, <params>
-<params> => ? TYPE ID, <params>
+<param> => TYPE ID
+<param> => ? TYPE ID
+<params> => <param> <params_2> 
+<params> => epsilon
+<params_2> => , <param> <params_2> 
+<params_2> => epsilon
 
-<args> => <id>
-<args> => <id>, <args>
+<args> => epsilon
+<args> => <id> <args_2>
+<args_2> => , <id> <args_2>
+<args_2> => epsilon
 
-<return> => RETURN <expr> ; funkcni i pro void fce????? asi jo right?
+
+<return> => RETURN <expr> ;
 
 ------------------------------------
     E => ID

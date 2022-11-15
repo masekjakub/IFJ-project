@@ -10,70 +10,115 @@
  */
 #include "parser.h"
 #define isKeyword(TOKEN, KEYWORD) TOKEN.attribute.keyword == KEYWORD
-#define canBeAssigned(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_DOUBLE || TYPE == TYPE_STRING || TYPE == TYPE_FUNID)
-#define isExpression(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD \
-|| TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ ||    \
- TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
+#define canBeAssigned(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID)
+#define isOperator(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD \
+    || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ ||    \
+    TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
 
-Symtable *globalST;
-Symtable *localST;
-int isGlobal = 1;
+Symtable *globalST; // global symtable
+Symtable *localST;  // local symtable
+int isGlobal = 1;   // program is not in function
 
 Token *tokenArr; // simulation
 
-void freeAll(Symtable *globalST)
+/**
+ * @brief Free symtables
+ *
+ */
+void freeST()
 {
     if (globalST != NULL)
         ST_freeTable(globalST);
+    if (localST != NULL)
+        ST_freeTable(localST);
 }
 
-STItem *serveSymTable(Symtable *table, Token token)
+/**
+ * @brief Returns new token from scanner
+ * 
+ * @param includingComms 
+ * @return Token 
+ */
+Token newToken(int includingComms)
 {
-    STItem *item = ST_searchTable(table, DS_string(token.attribute.dString));
-    if (item == NULL)
-    {
+    Token token = getTokenSim(tokenArr); // odstranit tokenarr
 
-    }
-    else
-    { // item found in ST
-        printf("Incoming item is already in globalST: %s\n", item->key);
-    }
-
-    return item;
+    if (!includingComms && token.type == TYPE_COMM)
+        token = newToken(includingComms);
+    return token;
 }
 
-int checkProlog(Token *tokenArr) // remove tokenArr SIMULATION
+
+void makeError(ErrorType err){
+    //exit(err);
+}
+
+/**
+ * @brief Rule for assign ($id =)
+ * 
+ * @param tokenStack 
+ * @param programStack 
+ * @return int error
+ */
+/*int ruleAssign(Stack *tokenStack, Stack *programStack) //predelat
 {
-    Token token = getTokenSim(tokenArr);
+    int err;
+    Token token = newToken(tokenStack, 0);
+    Token IDtoken = token;
+    STACK_push(programStack, token);
 
-    if (token.type != TYPE_BEGIN)
-    {
-        fprintf(stderr, "Expected <?php at beggining of the file!\n");
-        return (ERR_SYN);
-    }
+    //search var ID in ST
+    STItem *item = ST_searchTable(getTable(isGlobal), DS_string(IDtoken.attribute.dString));
 
-    token = getTokenSim(tokenArr); // simulation
-    while (token.type == TYPE_COMM)
-    {
-        token = getTokenSim(tokenArr);
-    }
-
-    if (token.type != TYPE_DECLARE_ST)
-    {
-        fprintf(stderr, "Expected \"declare(strict_types=1);\" at beggining of the file!\n");
-        return (ERR_SYN);
-    }
-
-    token = getTokenSim(tokenArr);
-    if (token.type != TYPE_SEMICOLON)
-    {
-        fprintf(stderr, "Expected \";\" after declare(strict_types=1) on line %d!\n", token.rowNumber);
-        return (ERR_SYN);
-    }
+    token = nextToken(tokenStack, 0);
+    STACK_push(programStack, token);
     
-    return 0;
-}
+    // after ID =
+    token = nextToken(tokenStack, 0);
+    STACK_push(tokenStack, token);
+    TokenType typeFound = TYPE_UNDEF;
+    while (token.type != TYPE_SEMICOLON){
+        if (canBeAssigned(token.type)){
+            // two different types in assigned expression
+            if(!isSameType(&typeFound, token.type)){
+                return ERR_TYPE;
+            }
+            
+            // two functions in assignment
+            if (token.type == typeFound && typeFound == TYPE_FUNID)
+            {
+                return ERR_TYPE;
+            }
+        }
+        token = newToken(0);
+        STACK_push(tokenStack, token);
+    }
 
+    if (item == NULL) // not found in ST
+    { 
+        STItemData STdata;
+        STdata.varData.VarType = getTypeChar(typeFound);
+        STdata.varData.initialized = 1;
+        //STdata.varData.VarPosition   --dodelat
+        ST_insertItem(getTable(isGlobal), DS_string(IDtoken.attribute.dString), ST_ITEM_TYPE_VARIABLE, STdata);
+    }
+    else // check type of ID and assigned expression in ST
+    {
+        if (getTypeChar(typeFound) != item->data.varData.VarType)
+            return ERR_TYPE;
+    }
+
+    // programStack: ID =
+    STACK_popAll(tokenStack); // az bude ruleExpression smazat!
+    return err;
+}*/
+
+/**
+ * @brief Get the Table object
+ *
+ * @param global
+ * @return Symtable*
+ */
 Symtable *getTable(int global)
 {
     if (global)
@@ -81,6 +126,13 @@ Symtable *getTable(int global)
     return localST;
 }
 
+/**
+ * @brief Check if types are same, if curType is undefined, saves newType to curType
+ *
+ * @param curType
+ * @param newType
+ * @return int
+ */
 int isSameType(TokenType *curType, TokenType newType)
 {
     if (*curType == TYPE_UNDEF)
@@ -96,236 +148,95 @@ int isSameType(TokenType *curType, TokenType newType)
     return 0;
 }
 
+/**
+ * @brief Get the char representation of TokenType ('i','f','s')
+ *
+ * @param type
+ * @return ascii value of char
+ */
 int getTypeChar(TokenType type)
 {
     if (type == TYPE_INT)
         return 'i';
-    else if(type == TYPE_DOUBLE)
-        return 'd';
+    else if (type == TYPE_FLOAT)
+        return 'f';
     else if (type == TYPE_STRING)
         return 's';
     return 0;
 }
 
-Token nextToken(Stack *tokenStack) // odstranit tokenarr
-{
-    if(STACK_bottom(tokenStack) != NULL) // je nejaky token na zasobniku
-    {
-        Token token = *STACK_bottom(tokenStack);
-        STACK_popBottom(tokenStack);
-        return token;
-    }
-    return getTokenSim(tokenArr);
-}
-
-int ruleAssign(Stack *tokenStack, Stack *programStack)
-{
-    int err;
-    Token token = nextToken(tokenStack);
-    Token IDtoken = token;
-
-    //search var ID in ST
-    STItem *item = ST_searchTable(globalST, DS_string(IDtoken.attribute.dString));
-
-    STACK_push(programStack, token);
-    token = nextToken(tokenStack);
-    STACK_push(programStack, token);
-    
-    // after ID =
-    token = nextToken(tokenStack);
-    STACK_push(tokenStack, token);
-    TokenType typeFound = TYPE_UNDEF;
-    while (token.type != TYPE_SEMICOLON){
-        if (canBeAssigned(token.type)){
-            if(!isSameType(&typeFound, token.type)){
-                return ERR_TYPE;
-            }
-
-            if (token.type == typeFound && typeFound == TYPE_FUNID)
-            {
-                return ERR_TYPE;
-            }
-        }
-        if ((!isExpression(token.type)) && (!canBeAssigned(token.type)))
-        {
-            return ERR_TYPE;
-        }
-        token = getTokenSim(tokenArr);
-        STACK_push(tokenStack, token);
-    }
-
-    if (item == NULL) // not found
-    { 
-        STItemData STdata;
-        STdata.varData.VarType = getTypeChar(typeFound);
-        STdata.varData.initialized = 1;
-        //STdata.varData.VarPosition   --dodelat
-        ST_insertItem(globalST, DS_string(IDtoken.attribute.dString), ST_ITEM_TYPE_VARIABLE, STdata);
-    }
-    else // check type of ID and assigned expression
-    {
-        if (getTypeChar(typeFound) != item->data.varData.VarType)
-            return ERR_TYPE;
-    }
-
-    // programStack: ID =
-    STACK_popAll(tokenStack); // az bude ruleExpression smazat!
-    err = nextRule(tokenStack, programStack);
-    return err;
-}
-
-int ruleExpression(Stack *tokenStack, Stack *programStack)
-{
-    int err;
-    Token token = nextToken(tokenStack);
-    //vas kod
-    fprintf(stderr, "EXPRESSION %d\n", token.type);
-    //az bude konec radku
-    //err = generateCode(tokenStack);
-
-    err = nextRule(tokenStack, programStack);
-    return err;
-
-    return 0;
-}
-
-int ruleIf(Stack *tokenStack, Stack *programStack)
-{
-    int err;
-    Token token = nextToken(tokenStack);
-    //vas kod
-    fprintf(stderr, "KEYWORD IF\n");
-
-    err = nextRule(tokenStack, programStack);
-    return err;
-
-    return 0;
-}
-
-int ruleWhile(Stack *tokenStack, Stack *programStack)
-{
-    int err;
-    Token token = nextToken(tokenStack);
-    // vas kod
-    fprintf(stderr, "KEYWORD WHILE\n");
-
-    err = nextRule(tokenStack, programStack);
-    return err;
-}
-
-int ruleFunccal(Stack *tokenStack, Stack *programStack)
-{
-    int err;
-    Token token = nextToken(tokenStack);
-    // vas kod
-    fprintf(stderr, "FUNCAL\n");
-
-    err = nextRule(tokenStack, programStack);
-    return err;
-}
-
-int ruleFuncdef(Stack *tokenStack, Stack *programStack)
-{
-    int err;
-    Token token = nextToken(tokenStack);
-    //vas kod
-    fprintf(stderr, "FUNCDEF\n");
-
-    err = nextRule(tokenStack, programStack);
-    return err;
-
-    return 0;
-}
+// ---------RULES----------
 
 /**
- * @brief calls next rule
- * 
- * @param tokenStack 
+ * @brief Checks if prolog is right
+ *
+ * @param tokenArr
  * @return int error code
  */
-int nextRule(Stack *tokenStack, Stack *programStack)
+ErrorType ruleProg() // remove tokenArr SIMULATION
 {
-    int err = 0;
-    Token token = nextToken(tokenStack);//simulation
-    //fprintf(stderr, "TOKEN: %d\n", token.type);
-    switch(token.type){
-        case TYPE_ID:
-            STACK_push(tokenStack, token);
-            token = getTokenSim(tokenArr); // getToken
-            STACK_push(tokenStack, token);
-            //fprintf(stderr,"TYPE: %d", token.type);
-
-            if(token.type == TYPE_ASSIGN)
-                err = ruleAssign(tokenStack, programStack);
-
-            else if (isExpression(token.type))
-                err = ruleExpression(tokenStack, programStack);
-
-                else
-                { // unexpected type after TYPE_ID
-                    token = *STACK_bottom(tokenStack);
-                    fprintf(stderr, "Unexpected character after $%s on line %d!\n", DS_string(token.attribute.dString), token.rowNumber);
-                    return (ERR_SYN);
-            }
-            break;
-
-        case TYPE_KEYWORD:
-            STACK_push(tokenStack, token);
-            if (isKeyword(token, KEYWORD_IF)){
-                err = ruleIf(tokenStack, programStack);
-            }
-
-            else if (isKeyword(token, KEYWORD_WHILE))
-            {
-                err = ruleWhile(tokenStack, programStack);
-            }
-
-            else if (isKeyword(token, KEYWORD_FUNCTION))
-            {
-                token = getTokenSim(tokenArr); // getToken
-                if (token.type != TYPE_FUNID){
-                    fprintf(stderr, "Unexpected character after \"function\" on line %d!\n", token.rowNumber);
-                    return (ERR_SYN);
-                }
-
-                while (token.type != TYPE_RBRACKET){ //find closing bracket after 
-                    STACK_push(tokenStack, token);
-                    token = getTokenSim(tokenArr);
-                }
-                STACK_push(tokenStack, token);
-                token = getTokenSim(tokenArr);
-
-                if (token.type == TYPE_SEMICOLON){
-                    err = ruleFunccal(tokenStack, programStack);
-                }
-                else if (token.type == TYPE_COLON){
-                    err = ruleFuncdef(tokenStack, programStack);
-                }
-                else
-                { // unexpected type after TYPE_ID
-                    token = *STACK_top(tokenStack);
-                    fprintf(stderr, "Unexpected character after \"function %s\" on line %d!\n", DS_string(token.attribute.dString), token.rowNumber);
-                    return (ERR_SYN);
-                }
-            }
-            break;
-
-        case TYPE_EOF: //epilog
-            return 0;
-            break;
-
-        case TYPE_END: // epilog
-            token = nextToken(tokenStack);
-            if (token.type == TYPE_EOF){
-                return 0;
-            }
-            fprintf(stderr, "Expected EOF after \"?>\" on line %d!\n", token.rowNumber);
-            return (ERR_SYN);
-            break;
-        
-        default:
-            break;
+    ErrorType err = 0;
+    Token token = newToken(1);
+    // prolog
+    if (token.type != TYPE_BEGIN)
+    {
+        fprintf(stderr, "Expected <?php at beggining of the file!\n");
+        makeError(ERR_SYN);
+        return (ERR_SYN);
     }
+
+    token = newToken(1); // simulation
+    while (token.type == TYPE_COMM)
+    {
+        token = newToken(1);
+    }
+
+    if (token.type != TYPE_DECLARE_ST)
+    {
+        fprintf(stderr, "Expected \"declare(strict_types=1);\" at beggining of the file!\n");
+        makeError(ERR_SYN);
+        return (ERR_SYN);
+    }
+
+    token = newToken(1);
+    if (token.type != TYPE_SEMICOLON)
+    {
+        fprintf(stderr, "Expected \";\" after declare(strict_types=1) on line %d!\n", token.rowNumber);
+        makeError(ERR_SYN);
+        return (ERR_SYN);
+    }
+
+    // st-list
+    err = ruleStatList();
+    return err;
+}
+
+
+ErrorType ruleStatList()
+{
+    ErrorType err = 0;
+    Token token = newToken(0);
+
+    // epilog
+    if (token.type == TYPE_EOF)
+        return err;
+
+    if (token.type == TYPE_END)
+    {
+        token = newToken(1);
+        if (token.type == TYPE_EOF)
+        {
+            return err;
+        }
+        fprintf(stderr, "Expected EOF after \"?>\" on line %d!\n", token.rowNumber);
+        makeError(ERR_SYN);
+        return (ERR_SYN);
+    }
+
+
+    //vas kod
+    fprintf(stderr, "EXPRESSION %d\n", token.type);
+
     return err;
 }
 
@@ -338,42 +249,14 @@ int parser(Token *tokenArrIN)
 {
     tokenArr = tokenArrIN;
     int err;
-    Stack *tokenStack = STACK_init();
-    Stack *programStack = STACK_init();
     globalST = ST_initTable(16);
     localST = ST_initTable(8);
-    // Token token = getTokenSim(tokenArr); // simulation
-    // check prolog
-    err = checkProlog(tokenArr); // remove tokenArr SIMULATION
-    if (err != 0)
-    {
-        return err;
-    }
 
-    err = nextRule(tokenStack, programStack);
-    if (err != 0)
-    {
-        return err;
-    }
-    /* while tokens available - smazat
-    while (token.type != TYPE_EOF)
-    {
-        if (token.type == TYPE_FUNID || token.type == TYPE_ID || token.type == TYPE_LABEL)
-        {
-            serveSymTable(globalST, token);
-        }
+    // prog
+    err = ruleProg(); // remove tokenArr SIMULATION
+    return err;
 
-        // free used token memory
-        if (token.type == TYPE_FUNID || token.type == TYPE_ID || token.type == TYPE_LABEL)
-        {
-            DS_dispose(token.attribute.dString);
-        }
-
-        token = getTokenSim(tokenArr);
-    } // while (token.type != TYPE_EOF)*/
-
-    STACK_dispose(tokenStack);
-    freeAll(globalST);
+    freeST();
     // printf("Parser OK!\n");
     return 0;
 }

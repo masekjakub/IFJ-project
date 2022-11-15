@@ -1,4 +1,4 @@
-ALL_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c interpret.c main.c
+ALL_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c codeGenerator.c main.c
 FLAGS := -std=c99 -Wall -Wextra
 
 all: $(ALL_FILES)
@@ -23,7 +23,7 @@ test-ds:
 	@./dynamicString-test
 
 test-parser:
-	@gcc $(FLAGS) tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c -o parser-test
+	@gcc $(FLAGS) tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test
 	@./parser-test
 	@rm parser-test
 	
