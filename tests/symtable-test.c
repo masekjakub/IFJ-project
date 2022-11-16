@@ -85,6 +85,7 @@ TEST(test_insertVarItem, "Inserting variable items")
 	ASSERT(!strcmp(VARITEMS[0].key,itemFound->key), "The key of first inserted item does not have the right key!")
 	ASSERT(VARITEMS[0].type == itemFound->type, "The type of first inserted item does not have the right type!")
 	ASSERT(VARITEMS[0].data.varData.VarType == itemFound->data.varData.VarType, "The data of first inserted item differ!")
+	ASSERT(itemFound->data.varData.VarIndex == 0, "The index of first inserted item should be 0!")
 	ASSERT(table->count == 1, "Table count is not right!")
 	//Inserting second item
 	ST_insertItem(table, VARITEMS[1].key, VARITEMS[1].type, VARITEMS[1].data);
@@ -93,6 +94,7 @@ TEST(test_insertVarItem, "Inserting variable items")
 	ASSERT(!strcmp(VARITEMS[1].key,itemFound->key), "The key of second inserted item does not have the right key!")
 	ASSERT(VARITEMS[1].type == itemFound->type, "The type of second inserted item does not have the right type!")
 	ASSERT(VARITEMS[1].data.varData.VarType == itemFound->data.varData.VarType, "The data of second inserted item differ!")
+	ASSERT(itemFound->data.varData.VarIndex == 1, "The index of second inserted item should be 0!")
 	ASSERT(table->count == 2, "Table count is not right!")
 
 	//Inserting 2 items mapping to the same index
@@ -148,13 +150,20 @@ TEST(test_insertUpdateValue, "Updating value of existing item by inserting it ag
 	for(int i = 0; i < 7; i++){
 		ST_insertItem(table, VARITEMS[i].key, VARITEMS[i].type, VARITEMS[i].data);
 	}
-	STItem *itemFound = ST_searchTable(table, VARITEMS[0].key);
-	ASSERT(itemFound != NULL, "First inserted item was not found!")
+	STItem *itemFound = ST_searchTable(table, VARITEMS[2].key);
+	ASSERT(itemFound != NULL, "Inserted item was not found!")
+	ASSERT(itemFound->data.varData.VarIndex == 2, "Inserted item has wrong index!")
+	
+	//Updating variable item
+	unsigned int oldVarIndex = itemFound->data.varData.VarIndex;
+	ST_insertItem(table, VARITEMS[2].key, VARITEMS[2].type, VARITEMS[2].data);
+	itemFound = ST_searchTable(table, VARITEMS[2].key);
+	ASSERT(itemFound->data.varData.VarIndex == oldVarIndex, "Variable index should not update by inserting item with the same key!")
 	
 	//Replacing variable with function
 	STItemType oldType = itemFound->type;
 	STItemData oldData = itemFound->data;
-	STItem sameKeyFunItem = {.key="aab", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes="ahoj"};
+	STItem sameKeyFunItem = {.key=VARITEMS[2].key, .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes="ahoj"};
 	ST_insertItem(table, sameKeyFunItem.key, sameKeyFunItem.type, sameKeyFunItem.data);
 	itemFound = ST_searchTable(table, sameKeyFunItem.key);
 	ASSERT(itemFound != NULL, "Updated inserted item was not found!")
@@ -164,14 +173,15 @@ TEST(test_insertUpdateValue, "Updating value of existing item by inserting it ag
 	ASSERT((!strcmp(itemFound->data.funData.funTypes, "ahoj")), "Old item data were not updated!")
 
 	//Replacing function with variable
-	ST_insertItem(table, FUNITEMS[2].key, FUNITEMS[2].type, FUNITEMS[2].data);
-	itemFound = ST_searchTable(table, VARITEMS[0].key);
-	ASSERT(itemFound != NULL, "First inserted item was not found!")
+	ST_insertItem(table, FUNITEMS[0].key, FUNITEMS[0].type, FUNITEMS[0].data);
+	itemFound = ST_searchTable(table, FUNITEMS[0].key);
+	ASSERT(itemFound != NULL, "Inserted item was not found!")
 	
 	oldType = itemFound->type;
 	oldData = itemFound->data;
-	STItem sameKeyVarItem = {.key="aabf", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'};
-	itemFound = ST_searchTable(table, sameKeyVarItem.key);
+	STItem sameKeyVarItem = {FUNITEMS[0].key, .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'};
+	ST_insertItem(table, FUNITEMS[0].key, ST_ITEM_TYPE_VARIABLE, sameKeyVarItem.data);
+	itemFound = ST_searchTable(table, FUNITEMS[0].key);
 	ASSERT(itemFound != NULL, "Updated inserted item was not found!")
 	
 	ASSERT(oldType != itemFound->type, "Old item type was not updated!")

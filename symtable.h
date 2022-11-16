@@ -18,8 +18,8 @@
 typedef struct{
     //Data type of variable ('i','f',...)
     char VarType;
-    //Index within a structure
-    int VarPosition;
+    //Index of variable
+    unsigned int VarIndex;
 }STVarData;
 
 //Data of function type symtable item
@@ -64,6 +64,8 @@ typedef struct symtable{
     unsigned int size;
     //Number of items
     unsigned int count;
+    //Current variable index
+    unsigned int curVarIndex;
 }Symtable;
 
 
