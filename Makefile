@@ -14,7 +14,7 @@ scanner: $(ALL_FILES)
 	gcc $(FLAGS) scanner.c dynamicString.c -o scanner
 
 test-symtable:
-	@gcc $(FLAGS) tests/symtable-test.c symtable.c -o symtable-test
+	@gcc $(FLAGS) -g tests/symtable-test.c symtable.c -o symtable-test
 	@./symtable-test
 	@rm symtable-test
 

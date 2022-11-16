@@ -27,11 +27,11 @@ if(!(EXPRESSION)){																\
 }
 
 #define TABLE_SIZE 16
-#define TEST_NUM 5
+#define TEST_NUM 7
 
 unsigned int SUCCESSFUL_TESTS = 0;
 
-const STItem ITEMS[] = {
+const STItem VARITEMS[] = {
 	{.key="var1", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
 	{.key="var2", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
 
@@ -40,7 +40,19 @@ const STItem ITEMS[] = {
 	{.key="baa", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
 
 	{.key="var3", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
-	{.key="var4", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'},
+	{.key="var4", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'}
+};
+
+const STItem FUNITEMS[] = {
+	{.key="fun1", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes= "vifs", .data.funData.defined=true},
+	{.key="fun2", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes= "vifs", .data.funData.defined=true},
+
+	{.key="aabf", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes= "vifs", .data.funData.defined=true},
+	{.key="abaf", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes= "vifs", .data.funData.defined=true},
+	{.key="baaf", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes= "vifs", .data.funData.defined=true},
+
+	{.key="fun3", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes= "vifs", .data.funData.defined=true},
+	{.key="fun4", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes= "vifs", .data.funData.defined=true}
 };
 
 void test_ST_printTable(Symtable *table){
@@ -65,72 +77,143 @@ TEST(test_initTable, "Initializing symtable")
 	}
 ENDTEST
 
-TEST(test_insertItem, "Inserting items")
+TEST(test_insertVarItem, "Inserting variable items")
 	//Inserting 1 item
-	ST_insertItem(table, ITEMS[0].key, ITEMS[0].type, ITEMS[0].data);
-	STItem *itemFound = ST_searchTable(table, ITEMS[0].key);
+	ST_insertItem(table, VARITEMS[0].key, VARITEMS[0].type, VARITEMS[0].data);
+	STItem *itemFound = ST_searchTable(table, VARITEMS[0].key);
 	ASSERT(itemFound != NULL, "First inserted item was not found!")
-	ASSERT(!strcmp(ITEMS[0].key,itemFound->key), "The key of first inserted item does not have the right key!")
-	ASSERT(ITEMS[0].type == itemFound->type, "The type of first inserted item does not have the right type!")
-	ASSERT(ITEMS[0].data.varData.VarType == itemFound->data.varData.VarType, "The data of first inserted item differ!")
+	ASSERT(!strcmp(VARITEMS[0].key,itemFound->key), "The key of first inserted item does not have the right key!")
+	ASSERT(VARITEMS[0].type == itemFound->type, "The type of first inserted item does not have the right type!")
+	ASSERT(VARITEMS[0].data.varData.VarType == itemFound->data.varData.VarType, "The data of first inserted item differ!")
 	ASSERT(table->count == 1, "Table count is not right!")
 	//Inserting second item
-	ST_insertItem(table, ITEMS[1].key, ITEMS[1].type, ITEMS[1].data);
-	itemFound = ST_searchTable(table, ITEMS[1].key);
+	ST_insertItem(table, VARITEMS[1].key, VARITEMS[1].type, VARITEMS[1].data);
+	itemFound = ST_searchTable(table, VARITEMS[1].key);
 	ASSERT(itemFound != NULL, "Second inserted item was not found! (Different index than first)")
-	ASSERT(!strcmp(ITEMS[1].key,itemFound->key), "The key of second inserted item does not have the right key!")
-	ASSERT(ITEMS[1].type == itemFound->type, "The type of second inserted item does not have the right type!")
-	ASSERT(ITEMS[1].data.varData.VarType == itemFound->data.varData.VarType, "The data of second inserted item differ!")
+	ASSERT(!strcmp(VARITEMS[1].key,itemFound->key), "The key of second inserted item does not have the right key!")
+	ASSERT(VARITEMS[1].type == itemFound->type, "The type of second inserted item does not have the right type!")
+	ASSERT(VARITEMS[1].data.varData.VarType == itemFound->data.varData.VarType, "The data of second inserted item differ!")
 	ASSERT(table->count == 2, "Table count is not right!")
 
 	//Inserting 2 items mapping to the same index
-	ST_insertItem(table, ITEMS[2].key, ITEMS[2].type, ITEMS[2].data);
-	ST_insertItem(table, ITEMS[3].key, ITEMS[3].type, ITEMS[3].data);
-	ASSERT(ST_searchTable(table, ITEMS[2].key),"Inserted 2 items mapping to same index. First was not found!")
-	ASSERT(ST_searchTable(table, ITEMS[3].key),"Inserted 2 items mapping to same index. Second was not found!")
-	ASSERT(ST_searchTable(table, ITEMS[2].key)->nextItem != NULL, "Inserted 2 items mapping to same index. They're not on the same index!")
+	ST_insertItem(table, VARITEMS[2].key, VARITEMS[2].type, VARITEMS[2].data);
+	ST_insertItem(table, VARITEMS[3].key, VARITEMS[3].type, VARITEMS[3].data);
+	ASSERT(ST_searchTable(table, VARITEMS[2].key),"Inserted 2 items mapping to same index. First was not found!")
+	ASSERT(ST_searchTable(table, VARITEMS[3].key),"Inserted 2 items mapping to same index. Second was not found!")
+	ASSERT(ST_searchTable(table, VARITEMS[2].key)->nextItem != NULL, "Inserted 2 items mapping to same index. They're not on the same index!")
 	ASSERT(table->count == 4, "Table count is not right!")
 
 	//Inserting item with its index occupied
-	ST_insertItem(table, ITEMS[4].key, ITEMS[4].type, ITEMS[4].data);
-	ASSERT(ST_searchTable(table, ITEMS[2].key),"Inserted third item mapping to occupied index. It was not found!")
+	ST_insertItem(table, VARITEMS[4].key, VARITEMS[4].type, VARITEMS[4].data);
+	ASSERT(ST_searchTable(table, VARITEMS[2].key),"Inserted third item mapping to occupied index. It was not found!")
 	ASSERT(table->count == 5, "Table count is not right!")
 ENDTEST
 
+TEST(test_insertFunItem, "Inserting function items")
+	//Inserting 1 item
+	ST_insertItem(table, FUNITEMS[0].key, FUNITEMS[0].type, FUNITEMS[0].data);
+	STItem *itemFound = ST_searchTable(table, FUNITEMS[0].key);
+	ASSERT(itemFound != NULL, "First inserted item was not found!")
+	ASSERT(!strcmp(FUNITEMS[0].key,itemFound->key), "The key of first inserted item does not have the right key!")
+	ASSERT(FUNITEMS[0].type == itemFound->type, "The type of first inserted item does not have the right type!")
+	ASSERT(FUNITEMS[0].data.funData.defined == itemFound->data.funData.defined, "The data of first inserted item differ!")
+	ASSERT((!strcmp(FUNITEMS[0].data.funData.funTypes, itemFound->data.funData.funTypes)), "The data of first inserted item differ!")
+	ASSERT(table->count == 1, "Table count is not right!")
+	//Inserting second item
+	ST_insertItem(table, FUNITEMS[1].key, FUNITEMS[1].type, FUNITEMS[1].data);
+	itemFound = ST_searchTable(table, FUNITEMS[1].key);
+	ASSERT(itemFound != NULL, "Second inserted item was not found! (Different index than first)")
+	ASSERT(!strcmp(FUNITEMS[1].key,itemFound->key), "The key of second inserted item does not have the right key!")
+	ASSERT(FUNITEMS[1].type == itemFound->type, "The type of second inserted item does not have the right type!")
+	ASSERT(FUNITEMS[1].data.funData.defined == itemFound->data.funData.defined, "The data of second inserted item differ!")
+	ASSERT((!strcmp(FUNITEMS[1].data.funData.funTypes, itemFound->data.funData.funTypes)), "The data of first inserted item differ!")
+	ASSERT(table->count == 2, "Table count is not right!")
+
+	//Inserting 2 items mapping to the same index
+	ST_insertItem(table, FUNITEMS[2].key, FUNITEMS[2].type, FUNITEMS[2].data);
+	ST_insertItem(table, FUNITEMS[3].key, FUNITEMS[3].type, FUNITEMS[3].data);
+	ASSERT(ST_searchTable(table, FUNITEMS[2].key),"Inserted 2 items mapping to same index. First was not found!")
+	ASSERT(ST_searchTable(table, FUNITEMS[3].key),"Inserted 2 items mapping to same index. Second was not found!")
+	ASSERT(ST_searchTable(table, FUNITEMS[2].key)->nextItem != NULL, "Inserted 2 items mapping to same index. They're not on the same index!")
+	ASSERT(table->count == 4, "Table count is not right!")
+
+	//Inserting item with its index occupied
+	ST_insertItem(table, FUNITEMS[4].key, FUNITEMS[4].type, FUNITEMS[4].data);
+	ASSERT(ST_searchTable(table, FUNITEMS[2].key),"Inserted third item mapping to occupied index. It was not found!")
+	ASSERT(table->count == 5, "Table count is not right!")
+ENDTEST
+
+TEST(test_updateValue, "Updating value of existing item")
+	//Inserting 7 items
+	for(int i = 0; i < 7; i++){
+		ST_insertItem(table, VARITEMS[i].key, VARITEMS[i].type, VARITEMS[i].data);
+	}
+	STItem *itemFound = ST_searchTable(table, VARITEMS[0].key);
+	ASSERT(itemFound != NULL, "First inserted item was not found!")
+	
+	//Replacing variable with function
+	STItemType oldType = itemFound->type;
+	STItemData oldData = itemFound->data;
+	STItem sameKeyFunItem = {.key="aab", .type=ST_ITEM_TYPE_FUNCTION, .data.funData.funTypes="ahoj"};
+	ST_insertItem(table, sameKeyFunItem.key, sameKeyFunItem.type, sameKeyFunItem.data);
+	itemFound = ST_searchTable(table, sameKeyFunItem.key);
+	ASSERT(itemFound != NULL, "Updated inserted item was not found!")
+	
+	ASSERT(oldType != itemFound->type, "Old item type was not updated!")
+	ASSERT(oldData.varData.VarType != itemFound->data.varData.VarType, "Old item data were not updated!")
+	ASSERT((!strcmp(itemFound->data.funData.funTypes, "ahoj")), "Old item data were not updated!")
+
+	//Replacing function with variable
+	ST_insertItem(table, FUNITEMS[2].key, FUNITEMS[2].type, FUNITEMS[2].data);
+	itemFound = ST_searchTable(table, VARITEMS[0].key);
+	ASSERT(itemFound != NULL, "First inserted item was not found!")
+	
+	oldType = itemFound->type;
+	oldData = itemFound->data;
+	STItem sameKeyVarItem = {.key="aabf", .type=ST_ITEM_TYPE_VARIABLE, .data.varData.VarType = 'i'};
+	itemFound = ST_searchTable(table, sameKeyVarItem.key);
+	ASSERT(itemFound != NULL, "Updated inserted item was not found!")
+	
+	ASSERT(oldType != itemFound->type, "Old item type was not updated!")
+	ASSERT(oldData.varData.VarType != itemFound->data.varData.VarType, "Old item data were not updated!")
+
+
+ENDTEST
+
 TEST(test_removeItem, "Adding and removing items")
-	ST_insertItem(table, ITEMS[0].key, ITEMS[0].type, ITEMS[0].data);
-	ST_insertItem(table, ITEMS[1].key, ITEMS[1].type, ITEMS[1].data);
-	ST_insertItem(table, ITEMS[2].key, ITEMS[2].type, ITEMS[2].data);
-	ST_insertItem(table, ITEMS[3].key, ITEMS[3].type, ITEMS[3].data);
-	ST_insertItem(table, ITEMS[4].key, ITEMS[4].type, ITEMS[4].data);
+	ST_insertItem(table, VARITEMS[0].key, VARITEMS[0].type, VARITEMS[0].data);
+	ST_insertItem(table, VARITEMS[1].key, VARITEMS[1].type, VARITEMS[1].data);
+	ST_insertItem(table, VARITEMS[2].key, VARITEMS[2].type, VARITEMS[2].data);
+	ST_insertItem(table, VARITEMS[3].key, VARITEMS[3].type, VARITEMS[3].data);
+	ST_insertItem(table, VARITEMS[4].key, VARITEMS[4].type, VARITEMS[4].data);
 	ASSERT(table->count == 5, "Table count is not right!")
 	
 	//Removing 1 item
-	ST_removeItem(table, ITEMS[1].key);
-	ASSERT(ST_searchTable(table, ITEMS[1].key) == NULL,"Removed item was found!")
-	ST_removeItem(table, ITEMS[0].key);
-	ASSERT(ST_searchTable(table, ITEMS[0].key) == NULL,"Removed item was found!")
+	ST_removeItem(table, VARITEMS[1].key);
+	ASSERT(ST_searchTable(table, VARITEMS[1].key) == NULL,"Removed item was found!")
+	ST_removeItem(table, VARITEMS[0].key);
+	ASSERT(ST_searchTable(table, VARITEMS[0].key) == NULL,"Removed item was found!")
 	ASSERT(table->count == 3, "Table count is not right!")
 
 	//Removing first item of two on the same index
-	ST_removeItem(table, ITEMS[2].key);
-	ASSERT(ST_searchTable(table, ITEMS[2].key) == NULL,"Removed item was found!")
-	ASSERT(ST_searchTable(table, ITEMS[3].key) != NULL,"Non-removed item was not found!")
-	ASSERT(ST_searchTable(table, ITEMS[4].key) != NULL,"Non-removed item was not found!")
+	ST_removeItem(table, VARITEMS[2].key);
+	ASSERT(ST_searchTable(table, VARITEMS[2].key) == NULL,"Removed item was found!")
+	ASSERT(ST_searchTable(table, VARITEMS[3].key) != NULL,"Non-removed item was not found!")
+	ASSERT(ST_searchTable(table, VARITEMS[4].key) != NULL,"Non-removed item was not found!")
 	ASSERT(table->count == 2, "Table count is not right!")
-	ST_insertItem(table, ITEMS[2].key, ITEMS[2].type, ITEMS[2].data);
+	ST_insertItem(table, VARITEMS[2].key, VARITEMS[2].type, VARITEMS[2].data);
 
 	//Removing middle item of 3 on the same index ([3]->[4]->[2])
-	ST_removeItem(table, ITEMS[4].key);
-	ASSERT(ST_searchTable(table, ITEMS[4].key) == NULL,"Removed item was found!")
-	ASSERT(ST_searchTable(table, ITEMS[2].key) != NULL,"Non-removed item was not found!")
-	ASSERT(ST_searchTable(table, ITEMS[3].key) != NULL,"Non-removed item was not found!")
+	ST_removeItem(table, VARITEMS[4].key);
+	ASSERT(ST_searchTable(table, VARITEMS[4].key) == NULL,"Removed item was found!")
+	ASSERT(ST_searchTable(table, VARITEMS[2].key) != NULL,"Non-removed item was not found!")
+	ASSERT(ST_searchTable(table, VARITEMS[3].key) != NULL,"Non-removed item was not found!")
 	ASSERT(table->count == 2, "Table count is not right!")
 	
 	//Removing the last of 2 items on the same index ([3]->[2])
-	ST_removeItem(table, ITEMS[2].key);
-	ASSERT(ST_searchTable(table, ITEMS[2].key) == NULL,"Removed item was found!")
-	ASSERT(ST_searchTable(table, ITEMS[3].key) != NULL,"Non-removed item was not found!")
+	ST_removeItem(table, VARITEMS[2].key);
+	ASSERT(ST_searchTable(table, VARITEMS[2].key) == NULL,"Removed item was found!")
+	ASSERT(ST_searchTable(table, VARITEMS[3].key) != NULL,"Non-removed item was not found!")
 	ASSERT(table->count == 1, "Table count is not right!")
 ENDTEST
 
@@ -153,8 +236,8 @@ TEST(test_expand, "Adding items to resize ST")
 	}
 
 	//Inserting after expansion
-	ST_insertItem(table, ITEMS[0].key, ITEMS[0].type, ITEMS[0].data);
-	ASSERT(ST_searchTable(table, ITEMS[0].key) != NULL, "Item inserted after expansion was not found!");
+	ST_insertItem(table, VARITEMS[0].key, VARITEMS[0].type, VARITEMS[0].data);
+	ASSERT(ST_searchTable(table, VARITEMS[0].key) != NULL, "Item inserted after expansion was not found!");
 	
 	//Freeing fillerItems' keys
 	for(int i = 0; i < fillerItemCount; i++){
@@ -165,28 +248,29 @@ ENDTEST
 TEST(test_shrink, "Removing items to resize ST")
 	//Inserting 7 items
 	for(int i = 0; i < 7; i++){
-		ST_insertItem(table, ITEMS[i].key, ITEMS[i].type, ITEMS[i].data);
+		ST_insertItem(table, VARITEMS[i].key, VARITEMS[i].type, VARITEMS[i].data);
 	}
 	ASSERT(table->count == 7, "ST doesn't have the right item count!")
 	ASSERT(table->size == TABLE_SIZE, "ST doesn't have the right size!")
 
 	//Removing 1 item
-	ST_removeItem(table, ITEMS[6].key);
+	ST_removeItem(table, VARITEMS[6].key);
 	ASSERT(table->size == TABLE_SIZE, "Removed 1 item. ST shouldn't have shrunk!")
 
 	//Removing 2 more items (ST should shrink)
-	ST_removeItem(table, ITEMS[5].key);
-	ST_removeItem(table, ITEMS[0].key);
+	ST_removeItem(table, VARITEMS[5].key);
+	ST_removeItem(table, VARITEMS[0].key);
 	ASSERT(table->size < TABLE_SIZE, "ST didn't shrink!")
 
-	ST_insertItem(table, ITEMS[0].key, ITEMS[0].type, ITEMS[0].data);
+	ST_insertItem(table, VARITEMS[0].key, VARITEMS[0].type, VARITEMS[0].data);
 	ASSERT(table->size < TABLE_SIZE, "ST should't have expanded")
 
 	//Searching for items after shrinking
 	for(int i = 0; i < 5; i++){
-		ASSERT(ST_searchTable(table, ITEMS[i].key) != NULL, "Item after shrinking was not found!");
+		ASSERT(ST_searchTable(table, VARITEMS[i].key) != NULL, "Item after shrinking was not found!")
 	}
 ENDTEST
+
 
 int main()
 {
@@ -194,7 +278,9 @@ int main()
 	printf("================================================\n");
 
 	test_initTable();
-	test_insertItem();
+	test_insertVarItem();
+	test_insertFunItem();
+	test_updateValue();
 	test_removeItem();
 	test_expand();
 	test_shrink();

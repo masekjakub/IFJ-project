@@ -40,6 +40,10 @@ STItem *ST_initItem(char *key, STItemType type, STItemData data){
     strcpy(item->key, key);
     item->type = type;
     item->data = data;
+    if(type == ST_ITEM_TYPE_FUNCTION){
+        item->data.funData.funTypes = malloc((strlen(data.funData.funTypes)+1) * sizeof(char));
+        strcpy(item->data.funData.funTypes, data.funData.funTypes);
+    }
     item->nextItem = NULL;
     return item;
 }
@@ -291,6 +295,7 @@ STItem *ST_searchTable(Symtable *table, char *key){
 
 /**
  * @brief Initializes and inserts new item into ST with given params
+ * or updates an existing one
  * 
  * @param table ST to insert into
  * @param key Key of the new item
@@ -305,10 +310,35 @@ STItem *ST_insertItem(Symtable* table, char* key, STItemType type, STItemData da
         table->items[index] = newItem;
     }else{
         STItem *curItem = table->items[index];
+        STItem *prevItem = NULL;
+        bool found = false;
         while(curItem->nextItem != NULL){
+            //If item already exists
+            if(!strcmp(curItem->key, key)){
+                /*if(curItem->type == ST_ITEM_TYPE_FUNCTION){
+                    free(curItem->data.funData.funTypes);
+                }
+                curItem->data = data;
+                curItem->type = type;
+                if(curItem->type == ST_ITEM_TYPE_FUNCTION){
+                    strcpy(curItem->data.funData.funTypes, data.funData.funTypes);
+                }*/
+                if(prevItem != NULL){
+                    prevItem->nextItem = newItem;
+                }else{
+                    table->items[index] = newItem;
+                }
+                newItem->nextItem = curItem->nextItem;
+                ST_freeItem(curItem);
+                found = true;
+                break;
+            }
+            prevItem = curItem;
             curItem = curItem->nextItem;
         }
-        curItem->nextItem = newItem;
+        if(!found){
+            curItem->nextItem = newItem;
+        }
     }
     table->count++;
     if(table->count / table->size >= 3){
