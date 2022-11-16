@@ -347,6 +347,18 @@ STItem *ST_insertItem(Symtable* table, char* key, STItemType type, STItemData da
     return newItem;
 }
 
+STItem *ST_updateVarType(Symtable *table, char *key, char newType){
+    STItem *updatedItem = ST_searchTable(table, key);
+    if(updatedItem == NULL){
+        return NULL;
+    }
+    if(updatedItem->type == ST_ITEM_TYPE_FUNCTION){
+        return NULL;
+    }
+    updatedItem->data.varData.VarType = newType;
+    return updatedItem;
+}
+
 /**
  * @brief Removes an item from ST and frees it
  * 

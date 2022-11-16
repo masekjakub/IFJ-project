@@ -87,6 +87,8 @@ STItem *ST_searchTable(Symtable *, char *);
 
 STItem *ST_insertItem(Symtable *, char *, STItemType, STItemData);
 
+STItem *ST_updateVarType(Symtable *, char *, char);
+
 void ST_removeItem(Symtable *, char *);
 
 #endif

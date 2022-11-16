@@ -27,7 +27,7 @@ if(!(EXPRESSION)){																\
 }
 
 #define TABLE_SIZE 16
-#define TEST_NUM 7
+#define TEST_NUM 8
 
 unsigned int SUCCESSFUL_TESTS = 0;
 
@@ -143,7 +143,7 @@ TEST(test_insertFunItem, "Inserting function items")
 	ASSERT(table->count == 5, "Table count is not right!")
 ENDTEST
 
-TEST(test_updateValue, "Updating value of existing item")
+TEST(test_insertUpdateValue, "Updating value of existing item by inserting it again")
 	//Inserting 7 items
 	for(int i = 0; i < 7; i++){
 		ST_insertItem(table, VARITEMS[i].key, VARITEMS[i].type, VARITEMS[i].data);
@@ -176,7 +176,24 @@ TEST(test_updateValue, "Updating value of existing item")
 	
 	ASSERT(oldType != itemFound->type, "Old item type was not updated!")
 	ASSERT(oldData.varData.VarType != itemFound->data.varData.VarType, "Old item data were not updated!")
+ENDTEST
 
+TEST(test_updateVarType, "Updating variable type of variable item")
+	//Inserting 7 items
+	for(int i = 0; i < 7; i++){
+		ST_insertItem(table, VARITEMS[i].key, VARITEMS[i].type, VARITEMS[i].data);
+	}
+	ST_insertItem(table, FUNITEMS[0].key, FUNITEMS[0].type, FUNITEMS[0].data);
+
+	char oldType = VARITEMS[0].data.varData.VarType;
+	ST_updateVarType(table, VARITEMS[0].key, 's');
+	STItem *updatedItem = ST_searchTable(table, VARITEMS[0].key);
+	ASSERT(oldType != updatedItem->data.varData.VarType, "Type of variable was not updated!")
+	
+	oldType = updatedItem->data.varData.VarType;
+	ST_updateVarType(table, FUNITEMS[0].key, 'f');
+	updatedItem = ST_searchTable(table, VARITEMS[0].key);
+	ASSERT(oldType == updatedItem->data.varData.VarType, "Type of variable should not have been updated!")
 
 ENDTEST
 
@@ -280,7 +297,8 @@ int main()
 	test_initTable();
 	test_insertVarItem();
 	test_insertFunItem();
-	test_updateValue();
+	test_insertUpdateValue();
+	test_updateVarType();
 	test_removeItem();
 	test_expand();
 	test_shrink();
