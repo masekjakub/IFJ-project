@@ -10,13 +10,21 @@
  */
 #include "parser.h"
 #define isKeyword(TOKEN, KEYWORD) TOKEN.attribute.keyword == KEYWORD
-#define canBeAssigned(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID)
-#define isOperator(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ || \
+#define isValueType(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID || TYPE == TYPE_ID)
+#define isOperatorType(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ || \
                           TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
 
 Symtable *globalST; // global symtable
 Symtable *localST;  // local symtable
 int isGlobal = 1;   // program is not in function
+
+int precTable[5][5] = {
+    {R, L, L, R, L}, // +
+    {R, R, L, R, L}, // *
+    {L, L, L, E, L}, // (
+    {R, R, N, R, N}, // )
+    {R, R, N, R, N}  // id
+};// +  *  (  )  id
 
 Token token;
 
@@ -217,12 +225,18 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
     return err;
 }
 
+/**
+ * @brief statement list rule
+ * 
+ * @return ErrorType 
+ */
 ErrorType ruleStatList()
 {
     ErrorType err = 0;
 
     while (1)
     {
+        if (err) return err;
         token = newToken(0);
 
         // epilog
@@ -248,6 +262,12 @@ ErrorType ruleStatList()
     return err;
 }
 
+/**
+ * @brief statement rule
+ * 
+ * @return ErrorType 
+ */
+// udelat: kontroly syntaxe if, while, function
 ErrorType ruleStat()
 {
     ErrorType err = 0;
@@ -279,10 +299,16 @@ ErrorType ruleStat()
     return err;
 }
 
+/**
+ * @brief identificator rule
+ * 
+ * @return ErrorType 
+ */
+/* udelat: kontrola inicializace
+*/
 ErrorType ruleId()
 {
     ErrorType err = 0;
-
 
     return err;
 }
@@ -298,9 +324,59 @@ ErrorType ruleFuncdef()
 ErrorType ruleAssign()
 {
     ErrorType err = 0;
- 
-    while (token.type != TYPE_SEMICOLON) // tmp simulation
+    char varType;
+
+    // <assign> => <expr> ;
+    if (token.type != TYPE_ID)
+    {
+        err = exprAnal(&varType);
+        return err;
+    }
+    else // <assign> => ID <expr> ;
+    {
+        Token IDtoken = token;
+        STItem *item = ST_searchTable(getTable(isGlobal), DS_string(token.attribute.dString));
         token = newToken(0);
+
+        if (token.type == TYPE_ASSIGN) // <assign> => ID = <expr> ;
+        {
+            token = newToken(0);
+            err = exprAnal(&varType);
+            if (item == NULL) // not found in ST
+            {
+                STItemData STdata;
+                STdata.varData.VarType = varType;
+                ST_insertItem(getTable(isGlobal), DS_string(IDtoken.attribute.dString), ST_ITEM_TYPE_VARIABLE, STdata);
+            }
+            else // update type
+            {
+                ST_updateVarType(getTable(isGlobal), DS_string(IDtoken.attribute.dString), varType);
+            }
+
+        }
+        else
+        {
+            err = exprAnal(&varType);
+
+        }
+    }
+
+    return err;
+}
+
+ErrorType exprAnal(char *varType)
+{
+    ErrorType err = 0;
+
+    if(!isOperatorType(token.type) && !isValueType(token.type)){
+        return ERR_SYN;
+    }
+    while (isOperatorType(token.type) || isValueType(token.type)){ // tmp simulation
+        token = newToken(0);
+    }
+    
+    //todo zapis typu vyrazu
+    *varType = 'i';
     return err;
 }
 

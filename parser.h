@@ -20,6 +20,14 @@
 #include "stack.h"
 #include "codeGenerator.h"
 
+typedef enum
+{
+    R, // >
+    L, // <
+    E, // =
+    N  // none
+} precTableSymbols;
+
 // rules funcs
 ErrorType exprAnal();
 ErrorType ruleProg();

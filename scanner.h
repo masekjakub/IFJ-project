@@ -79,7 +79,9 @@ typedef enum
     TYPE_END,       // ?>
 
     TYPE_NULL,
-    TYPE_UNDEF
+    TYPE_UNDEF,
+    TYPE_KEEP,
+    TYPE_POP
 
 } TokenType;
 
