@@ -525,11 +525,6 @@ ErrorType exprAnal(char *varType, int usePrevToken)
     STACK_dispose(stack);
     return err;
 }
-// read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
-int generateBuiltInFunc(){
-
-    return 0;
-}
 
 /**
  * @brief main parser function

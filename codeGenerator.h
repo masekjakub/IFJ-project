@@ -4,6 +4,6 @@
 
 #include "stack.h"
 
-int generateCode(Stack *);
+int generateBuiltInFunc();
 
 #endif

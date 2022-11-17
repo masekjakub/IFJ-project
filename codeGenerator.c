@@ -1,3 +1,8 @@
 #include "codeGenerator.h"
 
-int generateCode(Stack *tokenStack){return 0;}
+// read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
+int generateBuiltInFunc()
+{
+
+    return 0;
+}
