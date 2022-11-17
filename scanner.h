@@ -82,6 +82,7 @@ typedef enum
     TYPE_UNDEF,
     TYPE_LESSPREC,
     TYPE_STACKEMPTY,
+    TYPE_LEXERR,
     TYPE_EXPR
 
 } TokenType;
