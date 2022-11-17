@@ -372,19 +372,9 @@ ErrorType ruleStat()
                 return ERR_SYN;
                 break;
             }
-            token = newToken(0);
 
             // <expr>
             err = exprAnal(&varType,0);
-
-            // )
-            if(token.type != TYPE_RBRACKET){
-                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
-                makeError(ERR_SYN);
-                return ERR_SYN;
-                break;
-            }
-            token = newToken(0);
 
             // {
             if(token.type != TYPE_LBRACES){
@@ -430,19 +420,9 @@ ErrorType ruleStat()
                 return ERR_SYN;
                 break;
             }
-            token = newToken(0);
 
             // <params>
             err = ruleParams();
-
-            // )
-            if(token.type != TYPE_RBRACKET){
-                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
-                makeError(ERR_SYN);
-                return ERR_SYN;
-                break;
-            }
-            token = newToken(0);
 
             // <funcdef>
             errTmp = ruleFuncdef();
@@ -482,8 +462,9 @@ ErrorType ruleId()
 ErrorType ruleFuncdef()
 {
     ErrorType err = 0;
+    while(token.type != TYPE_RBRACES)
+        token = newToken(0);
     token = newToken(0);
-
     return err;
 }
 /**

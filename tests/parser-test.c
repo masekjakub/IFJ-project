@@ -314,6 +314,7 @@
 
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
@@ -324,22 +325,22 @@
         printf("IFJ/IAL Project: Parser Tests\n");
         printf("================================================\n");
 
-        //test_prolog1();
-        //test_prolog2();
-        //test_epilog1();
-        //test_epilog2();
-        //test_epilog3();
-        ////test_assign();
-        ////test_add();
-        ////test_add_nums();
-        //test_id_wrong();
-        //test_id_wrong2();
-        //test_num_alone();
+        test_prolog1();
+        test_prolog2();
+        test_epilog1();
+        test_epilog2();
+        test_epilog3();
+        test_assign();
+        test_add();
+        test_add_nums();
+        test_id_wrong();
+        test_id_wrong2();
+        test_num_alone();
         test_if_ok();
-        //test_while();
-        test_funccal();
+        test_while();
+        //test_funccal();
         test_funcdef();
-        //test_assign2();
+        test_assign2();
         //test_assign3();
         //test_assign4();
 
