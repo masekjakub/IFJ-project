@@ -220,6 +220,7 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
         makeError(ERR_SYN);
         return (ERR_SYN);
     }
+    token = newToken(0);
 
     // st-list
     err = ruleStatList();
@@ -239,7 +240,6 @@ ErrorType ruleStatList()
     {
         if (err)
             return err;
-        token = newToken(0);
 
         // epilog
         if (token.type == TYPE_EOF)
@@ -525,6 +525,11 @@ ErrorType exprAnal(char *varType, int usePrevToken)
     STACK_dispose(stack);
     return err;
 }
+// read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
+int generateBuiltInFunc(){
+
+    return 0;
+}
 
 /**
  * @brief main parser function
@@ -539,6 +544,7 @@ int parser(Token *tokenArrIN)
     globalST = ST_initTable(16);
     localST = ST_initTable(8);
 
+    generateBuiltInFunc();
     // <prog> => BEGIN DECLARE_ST <stat_list>
     err = ruleProg();
 

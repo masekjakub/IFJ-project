@@ -26,6 +26,7 @@ GRAMATIKA
 <assign> => ID = <expr> ;
 <assign> => ID <expr> ;
 <assign> => <expr> ;
+<assign> => FUNID(<args>) ;
 
 <param> => TYPE ID
 <param> => ? TYPE ID
