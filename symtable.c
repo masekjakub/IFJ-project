@@ -27,7 +27,7 @@ unsigned int ST_hashFunction(char *key, unsigned int tableSize){
  * @brief Allocates and initializes a new ST item
  * 
  * @param key Key of created item (contents of string are coppied)
- * @param type Type of created item (variable/function/label)
+ * @param type Type of created item (variable/function)
  * @param data Data of the correct item type
  * @return Ptr to the created item
  */
@@ -40,6 +40,10 @@ STItem *ST_initItem(char *key, STItemType type, STItemData data){
     strcpy(item->key, key);
     item->type = type;
     item->data = data;
+    if(type == ST_ITEM_TYPE_FUNCTION){
+        item->data.funData.funTypes = malloc((strlen(data.funData.funTypes)+1) * sizeof(char));
+        strcpy(item->data.funData.funTypes, data.funData.funTypes);
+    }
     item->nextItem = NULL;
     return item;
 }
@@ -56,6 +60,7 @@ Symtable *ST_initTable(unsigned int size){
         exit(ERR_INTERN);
     }
     table->size = size;
+    table->curVarIndex = 0;
     table->items = (STItem **)calloc(size, sizeof(STItem *));
     if(table->items == NULL){
         exit(ERR_INTERN);
@@ -291,6 +296,7 @@ STItem *ST_searchTable(Symtable *table, char *key){
 
 /**
  * @brief Initializes and inserts new item into ST with given params
+ * or updates an existing one
  * 
  * @param table ST to insert into
  * @param key Key of the new item
@@ -303,18 +309,70 @@ STItem *ST_insertItem(Symtable* table, char* key, STItemType type, STItemData da
     STItem *newItem = ST_initItem(key, type, data);
     if(table->items[index] == NULL){
         table->items[index] = newItem;
+        //Setting VarIndex if new item is a variable
+        if(type == ST_ITEM_TYPE_VARIABLE){
+            newItem->data.varData.VarIndex = table->curVarIndex;
+            table->curVarIndex++;
+        }
     }else{
+        //Going through item list
+        //searching for end of list / checking if item already exists
         STItem *curItem = table->items[index];
-        while(curItem->nextItem != NULL){
+        STItem *prevItem = NULL;
+        bool found = false;
+        while(curItem != NULL){
+            //If item already exists
+            if(!strcmp(curItem->key, key)){
+                //Linking to previous item
+                if(prevItem != NULL){
+                    prevItem->nextItem = newItem;
+                }else{
+                    table->items[index] = newItem;
+                }
+                newItem->nextItem = curItem->nextItem;
+                //Setting VarIndex if new item is a variable
+                if(type == ST_ITEM_TYPE_VARIABLE){
+                    if(curItem->type == ST_ITEM_TYPE_VARIABLE){
+                        newItem->data.varData.VarIndex = curItem->data.varData.VarIndex;
+                    }else{
+                        newItem->data.varData.VarIndex = table->curVarIndex;
+                        table->curVarIndex++;
+                    }
+                }
+                ST_freeItem(curItem);
+                found = true;
+                break;
+            }
+            prevItem = curItem;
             curItem = curItem->nextItem;
         }
-        curItem->nextItem = newItem;
+        //If item didn't exist before
+        if(!found){
+            prevItem->nextItem = newItem;
+            if(type == ST_ITEM_TYPE_VARIABLE){
+                newItem->data.varData.VarIndex = table->curVarIndex;
+                table->curVarIndex++;
+            }
+        }
     }
+    
     table->count++;
     if(table->count / table->size >= 3){
         ST_expand(table);
     }
     return newItem;
+}
+
+STItem *ST_updateVarType(Symtable *table, char *key, char newType){
+    STItem *updatedItem = ST_searchTable(table, key);
+    if(updatedItem == NULL){
+        return NULL;
+    }
+    if(updatedItem->type == ST_ITEM_TYPE_FUNCTION){
+        return NULL;
+    }
+    updatedItem->data.varData.VarType = newType;
+    return updatedItem;
 }
 
 /**
@@ -355,6 +413,7 @@ void ST_removeItem(Symtable *table, char *key){
     prevItem->nextItem = curItem->nextItem;
     //Free deleted item
     ST_freeItem(curItem);
+
     table->count--;
     if((double)(table->count) / (double)(table->size) <= 0.25){
         ST_shrink(table);

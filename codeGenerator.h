@@ -3,7 +3,8 @@
 #define _IFJ_CG
 
 #include "stack.h"
+#include <string.h>
 
-int generateCode(Stack *);
+int generateBuiltInFunc();
 
 #endif

@@ -18,9 +18,8 @@
 typedef struct{
     //Data type of variable ('i','f',...)
     char VarType;
-    //Index within a structure
-    int VarPosition;
-    bool initialized;
+    //Index of variable
+    unsigned int VarIndex;
 }STVarData;
 
 //Data of function type symtable item
@@ -32,28 +31,18 @@ typedef struct{
     bool defined;
 }STFunData;
 
-//Data of label type symtable item
-typedef struct{
-    //Found jump to it = FALSE
-    //Found the label = TRUE
-    bool found;
-}STLabData;
-
 //Data of symtable items of different types
 typedef union{
     //Variable
     STVarData varData;
     //Function
     STFunData funData;
-    //Label (jump position)
-    STLabData labData;
 }STItemData;
 
 //Types of symtable items
 typedef enum{
     ST_ITEM_TYPE_VARIABLE,
-    ST_ITEM_TYPE_FUNCTION,
-    ST_ITEM_TYPE_LABEL
+    ST_ITEM_TYPE_FUNCTION
 }STItemType;
 
 //Item of symtable
@@ -75,11 +64,10 @@ typedef struct symtable{
     unsigned int size;
     //Number of items
     unsigned int count;
+    //Current variable index
+    unsigned int curVarIndex;
 }Symtable;
 
-
-//TODO Differentiate "Private"/"Public" functions
-//TODO Expand size to the next prime number
 
 unsigned int ST_hashFunction(char *, unsigned int);
 
@@ -100,6 +88,8 @@ void ST_shrink(Symtable *);
 STItem *ST_searchTable(Symtable *, char *);
 
 STItem *ST_insertItem(Symtable *, char *, STItemType, STItemData);
+
+STItem *ST_updateVarType(Symtable *, char *, char);
 
 void ST_removeItem(Symtable *, char *);
 

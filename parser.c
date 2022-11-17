@@ -10,14 +10,24 @@
  */
 #include "parser.h"
 #define isKeyword(TOKEN, KEYWORD) TOKEN.attribute.keyword == KEYWORD
-#define canBeAssigned(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID)
-#define isOperator(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD \
-    || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ ||    \
-    TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
+#define isValueType(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID || TYPE == TYPE_ID)
+#define isOperatorType(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ || \
+                              TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
 
 Symtable *globalST; // global symtable
 Symtable *localST;  // local symtable
 int isGlobal = 1;   // program is not in function
+
+int precTable[6][6] = {
+    {R, L, L, R, L, R},  // +
+    {R, R, L, R, L, R},  // *
+    {L, L, L, E, L, N},  // (
+    {R, R, N, R, N, R},  // )
+    {R, R, N, R, N, R},  // id
+    {L, L, L, N, L, N}}; // $
+  // +  *  (  )  id $
+
+Token token, prevToken;
 
 Token *tokenArr; // simulation
 
@@ -35,29 +45,34 @@ void freeST()
 
 /**
  * @brief Returns new token from scanner
- * 
- * @param includingComms 
- * @return Token 
+ *
+ * @param includingComms
+ * @return Token
  */
 Token newToken(int includingComms)
 {
-    Token token = getTokenSim(tokenArr); // odstranit tokenarr
+    token = getTokenSim(tokenArr); // odstranit tokenarr
 
     if (!includingComms && token.type == TYPE_COMM)
         token = newToken(includingComms);
     return token;
 }
 
-
-void makeError(ErrorType err){
-    //exit(err);
+/**
+ * @brief error function
+ *
+ * @param err
+ */
+void makeError(ErrorType err)
+{
+    // exit(err);
 }
 
 /**
  * @brief Rule for assign ($id =)
- * 
- * @param tokenStack 
- * @param programStack 
+ *
+ * @param tokenStack
+ * @param programStack
  * @return int error
  */
 /*int ruleAssign(Stack *tokenStack, Stack *programStack) //predelat
@@ -72,7 +87,7 @@ void makeError(ErrorType err){
 
     token = nextToken(tokenStack, 0);
     STACK_push(programStack, token);
-    
+
     // after ID =
     token = nextToken(tokenStack, 0);
     STACK_push(tokenStack, token);
@@ -83,7 +98,7 @@ void makeError(ErrorType err){
             if(!isSameType(&typeFound, token.type)){
                 return ERR_TYPE;
             }
-            
+
             // two functions in assignment
             if (token.type == typeFound && typeFound == TYPE_FUNID)
             {
@@ -95,7 +110,7 @@ void makeError(ErrorType err){
     }
 
     if (item == NULL) // not found in ST
-    { 
+    {
         STItemData STdata;
         STdata.varData.VarType = getTypeChar(typeFound);
         STdata.varData.initialized = 1;
@@ -176,7 +191,7 @@ int getTypeChar(TokenType type)
 ErrorType ruleProg() // remove tokenArr SIMULATION
 {
     ErrorType err = 0;
-    Token token = newToken(1);
+    token = newToken(1);
     // prolog
     if (token.type != TYPE_BEGIN)
     {
@@ -205,58 +220,330 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
         makeError(ERR_SYN);
         return (ERR_SYN);
     }
+    token = newToken(0);
 
     // st-list
     err = ruleStatList();
     return err;
 }
 
-
+/**
+ * @brief statement list rule
+ *
+ * @return ErrorType
+ */
 ErrorType ruleStatList()
 {
     ErrorType err = 0;
-    Token token = newToken(0);
 
-    // epilog
-    if (token.type == TYPE_EOF)
-        return err;
-
-    if (token.type == TYPE_END)
+    while (1)
     {
-        token = newToken(1);
-        if (token.type == TYPE_EOF)
-        {
+        if (err)
             return err;
+
+        // epilog
+        if (token.type == TYPE_EOF)
+            return err;
+
+        if (token.type == TYPE_END)
+        {
+            token = newToken(1);
+            if (token.type == TYPE_EOF)
+            {
+                return err;
+            }
+            fprintf(stderr, "Expected EOF after \"?>\" on line %d!\n", token.rowNumber);
+            makeError(ERR_SYN);
+            return (ERR_SYN);
         }
-        fprintf(stderr, "Expected EOF after \"?>\" on line %d!\n", token.rowNumber);
-        makeError(ERR_SYN);
-        return (ERR_SYN);
+
+        // statement rule
+        err = ruleStat();
     }
-
-
-    //vas kod
-    fprintf(stderr, "EXPRESSION %d\n", token.type);
 
     return err;
 }
 
 /**
+ * @brief statement rule
+ *
+ * @return ErrorType
+ */
+// udelat: kontroly syntaxe if, while, function
+ErrorType ruleStat()
+{
+    ErrorType err = 0;
+
+    if (token.type == TYPE_KEYWORD)
+    {
+        switch (token.attribute.keyword)
+        {
+        case KEYWORD_IF:
+            // todo
+            break;
+        case KEYWORD_WHILE:
+            // todo
+            break;
+        case KEYWORD_FUNCTION:
+            // todo
+            break;
+        default:
+            fprintf(stderr, "Unexpected keyword on line %d!\n", token.rowNumber);
+            makeError(ERR_SYN);
+            return ERR_SYN;
+            break;
+        }
+    }
+    else // not keyword
+    {
+        err = ruleAssign();
+    }
+    return err;
+}
+
+/**
+ * @brief identificator rule
+ *
+ * @return ErrorType
+ */
+/* udelat: kontrola inicializace
+ */
+ErrorType ruleId()
+{
+    ErrorType err = 0;
+
+    return err;
+}
+
+ErrorType ruleFuncdef()
+{
+    ErrorType err = 0;
+    token = newToken(0);
+
+    return err;
+}
+/**
+ * @brief assign rule
+ *
+ * @return ErrorType
+ */
+ErrorType ruleAssign()
+{
+    ErrorType err = 0;
+    char varType;
+
+    // <assign> => <expr> ;
+    if (token.type != TYPE_ID)
+    {
+        err = exprAnal(&varType,0);
+        if (token.type != TYPE_SEMICOLON)
+        {
+            makeError(ERR_SYN);
+            return ERR_SYN;
+        }
+        return err;
+    }
+    else // <assign> => ID <expr> ;
+    {
+        STItem *item = ST_searchTable(getTable(isGlobal), DS_string(token.attribute.dString));
+        prevToken = token;
+        token = newToken(0);
+
+        if (token.type == TYPE_ASSIGN) // <assign> => ID = <expr> ;
+        {
+            token = newToken(0);
+            err = exprAnal(&varType,0);
+            if (token.type != TYPE_SEMICOLON)
+            {
+                makeError(ERR_SYN);
+                return ERR_SYN;
+            }
+
+            if (varType == 0)
+            {
+                printf("EMPTY");
+                return err;
+            }
+
+            if (item == 0) // not found in ST
+            {
+                STItemData STdata;
+                STdata.varData.VarType = varType;
+                ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, STdata);
+            }
+            else // update type
+            {
+                ST_updateVarType(getTable(isGlobal), DS_string(prevToken.attribute.dString), varType);
+            }
+        }
+        else
+        {
+            err = exprAnal(&varType,1);
+            if (token.type != TYPE_SEMICOLON)
+            {
+                makeError(ERR_SYN);
+                return ERR_SYN;
+            }
+        }
+    }
+
+    return err;
+}
+
+/**
+ * @brief returns precedens of operand
+ *
+ * @param type
+ * @return int
+ */
+int getPrecTableIndex(Token token)
+{   
+    if (isValueType(token.type)) return 4;
+
+    switch (token.type)
+    {
+    case TYPE_ADD:
+    case TYPE_SUB:
+        return 0;
+
+    case TYPE_MUL:
+    case TYPE_DIV:
+        return 1;
+
+    case TYPE_LBRACKET:
+        return 2;
+
+    case TYPE_RBRACKET:
+        return 3;
+
+    case TYPE_STACKEMPTY:
+        return 5;
+
+    default:
+        break;
+    }
+
+    return -1;
+}
+
+/**
+ * @brief process expression
+ *
+ * @param varType address
+ * @return ErrorType
+ */
+ErrorType exprAnal(char *varType, int usePrevToken)
+{
+    ErrorType err = 0;
+    int done = 0;
+    Stack *stack = STACK_init();
+    Token tmpToken, endToken;
+
+    tmpToken.type = TYPE_STACKEMPTY;
+    STACK_push(stack, tmpToken);
+
+    if (usePrevToken)
+    {
+        tmpToken.type = TYPE_LESSPREC;
+        STACK_push(stack, tmpToken);
+        STACK_push(stack, prevToken);
+    }
+
+    while (1)
+    {
+        int stackPrecIndex = getPrecTableIndex(*STACK_top(stack));
+        int tokenPrecIndex = getPrecTableIndex(token);
+
+        if (STACK_top(stack)->type == TYPE_EXPR){
+            STACK_pop(stack);
+            stackPrecIndex = getPrecTableIndex(*STACK_top(stack));
+            tmpToken.type = TYPE_EXPR;
+            STACK_push(stack, tmpToken);
+        }
+
+        switch (precTable[stackPrecIndex][tokenPrecIndex])
+        {
+            case E: // =
+                printf("EQ");
+                token = newToken(0);
+                break;
+
+            case L: // <
+                printf("LEFT");
+                if (isOperatorType(token.type)){
+                    STACK_pop(stack);
+                    tmpToken.type = TYPE_LESSPREC;
+                    STACK_push(stack, tmpToken);
+                    tmpToken.type = TYPE_EXPR;
+                    STACK_push(stack, tmpToken);
+                }else{
+                    tmpToken.type = TYPE_LESSPREC;
+                    STACK_push(stack, tmpToken);
+                }
+
+                STACK_push(stack, token);
+                token = newToken(0);
+                break;
+
+            case R: // >
+                while (STACK_top(stack)->type != TYPE_LESSPREC) // pop beteween < and >
+                { 
+                    STACK_pop(stack);
+                    printf("pop");
+                }
+                STACK_pop(stack); // pop <
+
+                tmpToken.type = TYPE_EXPR;
+                STACK_push(stack, tmpToken);
+                break;
+
+            case N:
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+        }
+
+        if(done && STACK_top(stack)->type == TYPE_EXPR){
+            STACK_pop(stack);
+            if(STACK_top(stack)->type == TYPE_STACKEMPTY){
+                token = endToken;
+                break;
+            }
+            tmpToken.type = TYPE_EXPR;
+            STACK_push(stack, tmpToken);
+        }
+
+        if(!isOperatorType(token.type) && !isValueType(token.type) && !done){
+            endToken = token;
+            token.type = TYPE_STACKEMPTY;
+            done = 1;
+        }
+    }
+
+    // todo zapis typu vyrazu
+    *varType = 'i';
+    STACK_dispose(stack);
+    return err;
+}
+
+/**
  * @brief main parser function
- * 
+ *
  * @return int error code
  */
 int parser(Token *tokenArrIN)
 {
-    tokenArr = tokenArrIN;
-    int err;
+    tokenArr = tokenArrIN; // sim
+
+    ErrorType err;
     globalST = ST_initTable(16);
     localST = ST_initTable(8);
 
-    // prog
-    err = ruleProg(); // remove tokenArr SIMULATION
-    return err;
+    generateBuiltInFunc();
+    // <prog> => BEGIN DECLARE_ST <stat_list>
+    err = ruleProg();
 
     freeST();
     // printf("Parser OK!\n");
-    return 0;
+    return err; // predelat na exit
 }

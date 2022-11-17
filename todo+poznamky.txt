@@ -1,6 +1,5 @@
 TODO
 bottom-up analýza výrazů
-Mrtn - ST index id
 MLK - scanner kody
 vsichni - funkce
 rozsireni globalni promenne?
@@ -18,15 +17,16 @@ GRAMATIKA
 <stat_list> => <stat> <stat_list>
 <stat> => IF (<expr>) {<stat_list>} else {<stat_list>}
 <stat> => WHILE (<expr>) {<stat_list>}
+<stat> => FUNCTION FUNID (<params>) <funcdef>
 <stat> => <assign>
 
-<stat> => FUNCTION FUNID (<params>) <funcdef>
 <funcdef> => {<stat_list>}
 <funcdef> => : TYPE {<stat_list>}
 
 <assign> => ID = <expr> ;
 <assign> => ID <expr> ;
 <assign> => <expr> ;
+<assign> => FUNID(<args>) ;
 
 <param> => TYPE ID
 <param> => ? TYPE ID

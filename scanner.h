@@ -79,7 +79,10 @@ typedef enum
     TYPE_END,       // ?>
 
     TYPE_NULL,
-    TYPE_UNDEF
+    TYPE_UNDEF,
+    TYPE_LESSPREC,
+    TYPE_STACKEMPTY,
+    TYPE_EXPR
 
 } TokenType;
 
