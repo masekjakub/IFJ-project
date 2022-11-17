@@ -561,7 +561,7 @@ int parser(Token *tokenArrIN)
     globalST = ST_initTable(16);
     localST = ST_initTable(8);
 
-    generateBuiltInFunc();
+    //generateBuiltInFunc();
     // <prog> => BEGIN DECLARE_ST <stat_list>
     err = ruleProg();
 
