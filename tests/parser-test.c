@@ -152,9 +152,9 @@
     //$var = 5;
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
     makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
-    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "func");
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "func");
     makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
-    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "func");
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "func");
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
     EPILOG
     returnedVal = parser(tokensArr);
@@ -219,9 +219,22 @@
     makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
     makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
     EPILOG
     returnedVal = parser(tokensArr);
-    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_num_alone, "9;")
+    PROLOG
+    //$var + 5;
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
     TEST(test_if_ok, "if_ok")
@@ -311,17 +324,18 @@
         printf("IFJ/IAL Project: Parser Tests\n");
         printf("================================================\n");
 
-        test_prolog1();
-        test_prolog2();
-        test_epilog1();
-        test_epilog2();
-        test_epilog3();
-        //test_assign();
-        //test_add();
-        //test_add_nums();
-        test_id_wrong();
-        test_id_wrong2();
-        //test_if_ok();
+        //test_prolog1();
+        //test_prolog2();
+        //test_epilog1();
+        //test_epilog2();
+        //test_epilog3();
+        ////test_assign();
+        ////test_add();
+        ////test_add_nums();
+        //test_id_wrong();
+        //test_id_wrong2();
+        //test_num_alone();
+        test_if_ok();
         //test_while();
         test_funccal();
         test_funcdef();

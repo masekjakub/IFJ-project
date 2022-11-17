@@ -19,7 +19,7 @@ Symtable *globalST; // global symtable
 Symtable *localST;  // local symtable
 int isGlobal = 1;   // program is not in function
 
-int precTable[6][6] = {
+const int precTable[6][6] = {
     {R, L, L, R, L, R},  // +
     {R, R, L, R, L, R},  // *
     {L, L, L, E, L, N},  // (
@@ -261,6 +261,8 @@ ErrorType ruleStatList()
 
         // statement rule
         err = ruleStat();
+        if (token.type == TYPE_RBRACES)
+            break;
     }
 
     return err;
@@ -291,19 +293,10 @@ ErrorType ruleStat()
                 return ERR_SYN;
                 break;
             }
-            token = newToken(0);
+
 
             // <expr>
             err = exprAnal(&varType,0);
-
-            // )
-            if(token.type != TYPE_RBRACKET){
-                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
-                makeError(ERR_SYN);
-                return ERR_SYN;
-                break;
-            }
-            token = newToken(0);
 
             // {
             if(token.type != TYPE_LBRACES){
