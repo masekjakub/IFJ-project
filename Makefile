@@ -11,7 +11,12 @@ parser: $(ALL_FILES)
 	@gcc $(FLAGS) -g  tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c -o parser-test
 
 scanner: $(ALL_FILES)
-	gcc $(FLAGS) main.c scanner.c dynamicString.c -o main
+	@gcc $(FLAGS) main.c scanner.c dynamicString.c -o main
+
+test-scanner: 
+	@gcc $(FLAGS) tests/scanner-test.c scanner.c dynamicString.c -o scanner-test
+	@./scanner-test text.php
+	@rm scanner-test
 
 test-symtable:
 	@gcc $(FLAGS) -g tests/symtable-test.c symtable.c -o symtable-test
