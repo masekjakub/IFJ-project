@@ -197,6 +197,17 @@
     ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
+    TEST(test_id_wrong2, "9 * 5")
+    PROLOG
+    //$var + 5;
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
+    ENDTEST
+
     TEST(test_if_ok, "if_ok") //dodelat pro cely if
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_IF, 0, 0, 0);
@@ -254,6 +265,7 @@
         test_add();
         test_add_nums();
         test_id_wrong();
+        test_id_wrong2();
         test_if_ok();
         test_while();
         //test_funccal();

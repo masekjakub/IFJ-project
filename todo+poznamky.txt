@@ -1,6 +1,5 @@
 TODO
 bottom-up analýza výrazů
-Mrtn - ST index id
 MLK - scanner kody
 vsichni - funkce
 rozsireni globalni promenne?

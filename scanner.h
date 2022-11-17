@@ -80,8 +80,9 @@ typedef enum
 
     TYPE_NULL,
     TYPE_UNDEF,
-    TYPE_KEEP,
-    TYPE_POP
+    TYPE_LESSPREC,
+    TYPE_STACKEMPTY,
+    TYPE_EXPR
 
 } TokenType;
 
