@@ -13,6 +13,7 @@
 #define isValueType(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID || TYPE == TYPE_ID)
 #define isOperatorType(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ || \
                               TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
+#define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
 
 Symtable *globalST; // global symtable
 Symtable *localST;  // local symtable
@@ -238,6 +239,7 @@ ErrorType ruleStatList()
 
     while (1)
     {
+        
         if (err)
             return err;
 
@@ -297,6 +299,7 @@ ErrorType ruleStat()
     else // not keyword
     {
         err = ruleAssign();
+        token = newToken(0);
     }
     return err;
 }
@@ -361,7 +364,7 @@ ErrorType ruleAssign()
 
             if (varType == 0)
             {
-                printf("EMPTY");
+                //printf("EMPTY");
                 return err;
             }
 
@@ -385,6 +388,7 @@ ErrorType ruleAssign()
                 return ERR_SYN;
             }
         }
+
     }
 
     return err;
@@ -426,6 +430,13 @@ int getPrecTableIndex(Token token)
     return -1;
 }
 
+int useRule(TokenType *tokenArr){
+    for (int i=0; i<3;i++){
+
+    }
+    return 0;
+}
+
 /**
  * @brief process expression
  *
@@ -451,6 +462,7 @@ ErrorType exprAnal(char *varType, int usePrevToken)
 
     while (1)
     {
+        TokenType tokenTypeArr[3] = {TYPE_UNDEF,TYPE_UNDEF,TYPE_UNDEF};
         int stackPrecIndex = getPrecTableIndex(*STACK_top(stack));
         int tokenPrecIndex = getPrecTableIndex(token);
 
@@ -464,12 +476,12 @@ ErrorType exprAnal(char *varType, int usePrevToken)
         switch (precTable[stackPrecIndex][tokenPrecIndex])
         {
             case E: // =
-                printf("EQ");
+                STACK_push(stack, token);
                 token = newToken(0);
                 break;
 
             case L: // <
-                printf("LEFT");
+                //printf("LEFT");
                 if (isOperatorType(token.type)){
                     STACK_pop(stack);
                     tmpToken.type = TYPE_LESSPREC;
@@ -486,18 +498,28 @@ ErrorType exprAnal(char *varType, int usePrevToken)
                 break;
 
             case R: // >
-                while (STACK_top(stack)->type != TYPE_LESSPREC) // pop beteween < and >
+                for (int index = 0; STACK_top(stack)->type != TYPE_LESSPREC; index++) // pop beteween < and >
                 { 
+                    if(index > 2){
+                        makeError(ERR_SYN);
+                        return ERR_SYN;
+                    }
+                    tokenTypeArr[index] = STACK_top(stack)->type;
                     STACK_pop(stack);
-                    printf("pop");
                 }
+
+                if(useRule(tokenTypeArr)){
+                    makeError(ERR_SYN);
+                    return ERR_SYN;
+                }
+
                 STACK_pop(stack); // pop <
 
                 tmpToken.type = TYPE_EXPR;
                 STACK_push(stack, tmpToken);
                 break;
 
-            case N:
+            case N: // error
                 makeError(ERR_SYN);
                 return ERR_SYN;
                 break;
@@ -513,7 +535,7 @@ ErrorType exprAnal(char *varType, int usePrevToken)
             STACK_push(stack, tmpToken);
         }
 
-        if(!isOperatorType(token.type) && !isValueType(token.type) && !done){
+        if(!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type) && !done){
             endToken = token;
             token.type = TYPE_STACKEMPTY;
             done = 1;

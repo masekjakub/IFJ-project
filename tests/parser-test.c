@@ -185,6 +185,22 @@
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
+    TEST(test_add_brackets, "(5 + 5)+6;")
+    PROLOG
+    //$var + 5;TYPE_LBRACKET
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 6, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
     TEST(test_id_wrong, "$var ! 5;")
     PROLOG
     //$var + 5;
@@ -256,18 +272,19 @@
         printf("IFJ/IAL Project: Parser Tests\n");
         printf("================================================\n");
 
-        test_prolog1();
-        test_prolog2();
-        test_epilog1();
-        test_epilog2();
-        test_epilog3();
-        test_assign();
-        test_add();
+        //test_prolog1();
+        //test_prolog2();
+        //test_epilog1();
+        //test_epilog2();
+        //test_epilog3();
+        //test_assign();
+        //test_add();
+        test_add_brackets();
         test_add_nums();
         test_id_wrong();
         test_id_wrong2();
-        test_if_ok();
-        test_while();
+        //test_if_ok();
+        //test_while();
         //test_funccal();
         //test_funcdef();
         test_assign2();
