@@ -67,6 +67,7 @@ void makeToken(Token *tokensArr, TokenType type, KeyWord keyWord, int intV, doub
 {
     Token token;
     token.type = type;
+    token.rowNumber = 0;
     switch (type){
         case TYPE_KEYWORD:
             token.attribute.keyword = keyWord;

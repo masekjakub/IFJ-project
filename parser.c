@@ -271,24 +271,193 @@ ErrorType ruleStatList()
  *
  * @return ErrorType
  */
-// udelat: kontroly syntaxe if, while, function
 ErrorType ruleStat()
 {
     ErrorType err = 0;
+    ErrorType errTmp = 0;
+    char varType;
 
     if (token.type == TYPE_KEYWORD)
     {
         switch (token.attribute.keyword)
         {
         case KEYWORD_IF:
-            // todo
+            token = newToken(0);
+
+            // (
+            if(token.type != TYPE_LBRACKET){
+                fprintf(stderr, "Expected \"(\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // <expr>
+            err = exprAnal(&varType,0);
+
+            // )
+            if(token.type != TYPE_RBRACKET){
+                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // {
+            if(token.type != TYPE_LBRACES){
+                fprintf(stderr, "Expected \"{\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // <stat_list>
+            errTmp = ruleStatList();
+            if(err == 0){
+                err = errTmp;
+            }
+
+            // }
+            if(token.type != TYPE_RBRACES){
+                fprintf(stderr, "Expected \"}\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // ELSE
+            errTmp = 0;
+            if(token.type != TYPE_KEYWORD){
+                errTmp = 2;
+            }else if(token.attribute.keyword != KEYWORD_ELSE){
+                errTmp = 2;
+            }
+            if(errTmp){
+                fprintf(stderr, "Expected ELSE after \"}\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // {
+            if(token.type != TYPE_LBRACES){
+                fprintf(stderr, "Expected \"{\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // <stat_list>
+            errTmp = ruleStatList();
+            if(err == 0){
+                err = errTmp;
+            }
+
+            // }
+            if(token.type != TYPE_RBRACES){
+                fprintf(stderr, "Expected \"}\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
             break;
+
         case KEYWORD_WHILE:
-            // todo
+            token = newToken(0);
+
+            // (
+            if(token.type != TYPE_LBRACKET){
+                fprintf(stderr, "Expected \"(\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // <expr>
+            err = exprAnal(&varType,0);
+
+            // )
+            if(token.type != TYPE_RBRACKET){
+                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // {
+            if(token.type != TYPE_LBRACES){
+                fprintf(stderr, "Expected \"{\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // <stat_list>
+            errTmp = ruleStatList();
+            if(err == 0){
+                err = errTmp;
+            }
+
+            // }
+            if(token.type != TYPE_RBRACES){
+                fprintf(stderr, "Expected \"}\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
             break;
+
         case KEYWORD_FUNCTION:
-            // todo
+            token = newToken(0);
+
+            //FUNID
+            if(token.type != TYPE_FUNID){
+                fprintf(stderr, "Expected function name after \"function\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // (
+            if(token.type != TYPE_LBRACKET){
+                fprintf(stderr, "Expected \"(\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // <params>
+            err = ruleParams();
+
+            // )
+            if(token.type != TYPE_RBRACKET){
+                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
+
+            // <funcdef>
+            errTmp = ruleFuncdef();
+            if(err == 0){
+                err = errTmp;
+            }
             break;
+            
         default:
             fprintf(stderr, "Unexpected keyword on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
@@ -299,7 +468,6 @@ ErrorType ruleStat()
     else // not keyword
     {
         err = ruleAssign();
-        token = newToken(0);
     }
     return err;
 }
@@ -344,6 +512,7 @@ ErrorType ruleAssign()
             makeError(ERR_SYN);
             return ERR_SYN;
         }
+        token = newToken(0);
         return err;
     }
     else // <assign> => ID <expr> ;
@@ -361,12 +530,14 @@ ErrorType ruleAssign()
                 makeError(ERR_SYN);
                 return ERR_SYN;
             }
+            token = newToken(0);
 
-            if (varType == 0)
+
+            /*if (varType == 0)
             {
                 //printf("EMPTY");
                 return err;
-            }
+            }*/
 
             if (item == 0) // not found in ST
             {
@@ -387,9 +558,22 @@ ErrorType ruleAssign()
                 makeError(ERR_SYN);
                 return ERR_SYN;
             }
+            token = newToken(0);
         }
 
     }
+
+    return err;
+}
+
+/**
+ * @brief params rule
+ * 
+ * @return ErrorType 
+ */
+ErrorType ruleParams(){
+    ErrorType err = 0;
+    token = newToken(0);
 
     return err;
 }

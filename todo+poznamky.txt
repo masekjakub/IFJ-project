@@ -15,7 +15,7 @@ GRAMATIKA
 <stat_list> => EPILOG EOF
 <stat_list> => EOF
 <stat_list> => <stat> <stat_list>
-<stat> => IF (<expr>) {<stat_list>} else {<stat_list>}
+<stat> => IF (<expr>) {<stat_list>} ELSE {<stat_list>}
 <stat> => WHILE (<expr>) {<stat_list>}
 <stat> => FUNCTION FUNID (<params>) <funcdef>
 <stat> => <assign>

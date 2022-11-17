@@ -224,23 +224,54 @@
     ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
-    TEST(test_if_ok, "if_ok") //dodelat pro cely if
+    TEST(test_if_ok, "if_ok")
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_IF, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+    //if true part
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_ELSE, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+    //else part
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_while, "while_ok") // dodelat pro cely while
+    TEST(test_while, "while_ok")
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_WHILE, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+    
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_funccal, "funccal_ok") // dodelat pro cele
+    TEST(test_funccal, "funccal_ok")
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
     makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction name");
@@ -260,8 +291,16 @@
     makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
-    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
-    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_NULL, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+    
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
@@ -272,22 +311,21 @@
         printf("IFJ/IAL Project: Parser Tests\n");
         printf("================================================\n");
 
-        //test_prolog1();
-        //test_prolog2();
-        //test_epilog1();
-        //test_epilog2();
-        //test_epilog3();
+        test_prolog1();
+        test_prolog2();
+        test_epilog1();
+        test_epilog2();
+        test_epilog3();
         //test_assign();
         //test_add();
-        test_add_brackets();
-        test_add_nums();
+        //test_add_nums();
         test_id_wrong();
         test_id_wrong2();
         //test_if_ok();
         //test_while();
-        //test_funccal();
-        //test_funcdef();
-        test_assign2();
+        test_funccal();
+        test_funcdef();
+        //test_assign2();
         //test_assign3();
         //test_assign4();
 

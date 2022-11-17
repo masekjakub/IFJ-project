@@ -363,6 +363,15 @@ STItem *ST_insertItem(Symtable* table, char* key, STItemType type, STItemData da
     return newItem;
 }
 
+/**
+ * @brief Updates the variable type of variable item
+ * 
+ * @param table ST to search in
+ * @param key Key of item to be updated
+ * @param newType New type of variable item
+ * @return Ptr to the updated item
+ * | NULL if the item doesn't exist/isn't a variable 
+ */
 STItem *ST_updateVarType(Symtable *table, char *key, char newType){
     STItem *updatedItem = ST_searchTable(table, key);
     if(updatedItem == NULL){
