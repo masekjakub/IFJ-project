@@ -133,7 +133,7 @@
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_assign3, "$var = 5 / \"ahoj\"; WRONG")
+    TEST(test_assign3, "$var = 5 / \"ahoj\"; OK")
     PROLOG
     //$var = 5;
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
@@ -144,10 +144,10 @@
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
     EPILOG
     returnedVal = parser(tokensArr);
-    ASSERT(returnedVal == 7, "Return code not 7", returnedVal)
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_assign4, "$var = func * func; WRONG")
+    TEST(test_assign4, "$var = func * func; WRONG") // FIX
     PROLOG
     //$var = 5;
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
@@ -318,6 +318,91 @@
     ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
+    TEST(test_expr_comp, "1<2; OK")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_LESS, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_expr_comp2, "1<2 !== 5+5 >= 1/2; OK")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_LESS, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+
+    makeToken(tokensArr, TYPE_NOTEQTYPES, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+
+    makeToken(tokensArr, TYPE_GREATEREQ, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_expr_comp3, "1/($var !== 5)+5; OK")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_NOTEQTYPES, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_expr_comp4, "1<=$var !== 5; OK")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_LESSEQ, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_NOTEQTYPES, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_expr_comp5, "1===$var !== 5; WRONG")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_EQTYPES, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_NOTEQTYPES, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
+    ENDTEST
+
     TEST(test_expr5, "1/3); WRONG")
     PROLOG
     makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
@@ -334,6 +419,8 @@
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_IF, 0, 0, 0);
     makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_LESS, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
@@ -379,7 +466,6 @@
 
     TEST(test_funccal, "funccal_ok")
     PROLOG
-    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
     makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction name");
     makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, 0);
@@ -418,29 +504,34 @@
         printf("IFJ/IAL Project: Parser Tests\n");
         printf("================================================\n");
 
-        //test_prolog1();
-        //test_prolog2();
-        //test_epilog1();
-        //test_epilog2();
-        //test_epilog3();
-        //test_assign();
-        //test_add();
-        //test_add_nums();
-        //test_id_wrong();
-        //test_id_wrong2();
-        //test_num_alone();
-        //test_var_alone();
-        //test_prec();
+        test_prolog1();
+        test_prolog2();
+        test_epilog1();
+        test_epilog2();
+        test_epilog3();
+        test_assign();
+        test_add();
+        test_add_nums();
+        test_id_wrong();
+        test_id_wrong2();
+        test_num_alone();
+        test_var_alone();
+        test_prec();
         test_expr();
         test_expr2();
         test_expr3();
         test_expr4();
+        test_expr_comp();
+        test_expr_comp2();
+        test_expr_comp3();
+        test_expr_comp4();
+        test_expr_comp5();
         test_if_ok();
         test_while();
-        ////test_funccal();
-        //test_funcdef();
+        //test_funccal();
+        test_funcdef();
         test_assign2();
-        //test_assign3();
+        test_assign3();
         //test_assign4();
 
             printf("================================================\n");

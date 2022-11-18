@@ -19,34 +19,42 @@ Symtable *globalST; // global symtable
 Symtable *localST;  // local symtable
 int isGlobal = 1;   // program is not in function
 
-const int precTable[6][6] = {
-    {R, L, L, R, L, R},  // +
-    {R, R, L, R, L, R},  // *
-    {L, L, L, E, L, N},  // (
-    {R, R, N, R, N, R},  // )
-    {R, R, N, R, N, R},  // id
-    {L, L, L, N, L, N}}; // $
-                         // +  *  (  )  id $
+const int precTable[8][8] = {
+    {R, L, L, R, L, L, L, R},  // +
+    {R, R, L, R, L, L, L, R},  // *
+    {L, L, L, E, L, L, L, N},  // (
+    {R, R, N, R, N, R, R, R},  // )
+    {R, R, N, R, N, R, R, R},  // id
+    {L, L, L, R, L, N, R, R},  // comparison1 (< > <= >=)
+    {L, L, L, R, L, L, N, R},  // comparison2 (=== !==)
+    {L, L, L, N, L, L, L, N}}; // $
+  // +  *  (  )  id c1 c2 $
 
 Token token, prevToken;
 
 Token *tokenArr; // simulation
 
-#define numOfExprRules 12
+#define numOfExprRules 17
 // rules are flipped because of stack
 TokenType exprRules[numOfExprRules][3] = {
-    {TYPE_ID, TYPE_UNDEF, TYPE_UNDEF},
-    {TYPE_INT, TYPE_UNDEF, TYPE_UNDEF},
-    {TYPE_FLOAT, TYPE_UNDEF, TYPE_UNDEF},
-    {TYPE_STRING, TYPE_UNDEF, TYPE_UNDEF},
-    {TYPE_FUNID, TYPE_UNDEF, TYPE_UNDEF},
+    {TYPE_ID, TYPE_UNDEF, TYPE_UNDEF},          // E => ID
+    {TYPE_INT, TYPE_UNDEF, TYPE_UNDEF},         // E => INT
+    {TYPE_FLOAT, TYPE_UNDEF, TYPE_UNDEF},       // E => FLOAT
+    {TYPE_STRING, TYPE_UNDEF, TYPE_UNDEF},      // E => STRING
+    {TYPE_FUNID, TYPE_UNDEF, TYPE_UNDEF},       // E => FUNID
     {TYPE_EXPR, TYPE_ADD, TYPE_EXPR},
     {TYPE_EXPR, TYPE_SUB, TYPE_EXPR},
     {TYPE_EXPR, TYPE_MUL, TYPE_EXPR},
     {TYPE_EXPR, TYPE_COMMA, TYPE_EXPR},
     {TYPE_RBRACKET, TYPE_EXPR, TYPE_LBRACKET},
     {TYPE_EXPR, TYPE_DIV, TYPE_EXPR},
-    {TYPE_SUB, TYPE_INT, TYPE_UNDEF}};
+    // comparison
+    {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},
+    {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR},
+    {TYPE_EXPR, TYPE_LESS, TYPE_EXPR},
+    {TYPE_EXPR, TYPE_GREATER, TYPE_EXPR},
+    {TYPE_EXPR, TYPE_LESSEQ, TYPE_EXPR},
+    {TYPE_EXPR, TYPE_GREATEREQ, TYPE_EXPR},};
 
 /**
  * @brief Free symtables
@@ -84,66 +92,6 @@ void makeError(ErrorType err)
 {
     // exit(err);
 }
-
-/**
- * @brief Rule for assign ($id =)
- *
- * @param tokenStack
- * @param programStack
- * @return int error
- */
-/*int ruleAssign(Stack *tokenStack, Stack *programStack) //predelat
-{
-    int err;
-    Token token = newToken(tokenStack, 0);
-    Token IDtoken = token;
-    STACK_push(programStack, token);
-
-    //search var ID in ST
-    STItem *item = ST_searchTable(getTable(isGlobal), DS_string(IDtoken.attribute.dString));
-
-    token = nextToken(tokenStack, 0);
-    STACK_push(programStack, token);
-
-    // after ID =
-    token = nextToken(tokenStack, 0);
-    STACK_push(tokenStack, token);
-    TokenType typeFound = TYPE_UNDEF;
-    while (token.type != TYPE_SEMICOLON){
-        if (canBeAssigned(token.type)){
-            // two different types in assigned expression
-            if(!isSameType(&typeFound, token.type)){
-                return ERR_TYPE;
-            }
-
-            // two functions in assignment
-            if (token.type == typeFound && typeFound == TYPE_FUNID)
-            {
-                return ERR_TYPE;
-            }
-        }
-        token = newToken(0);
-        STACK_push(tokenStack, token);
-    }
-
-    if (item == NULL) // not found in ST
-    {
-        STItemData STdata;
-        STdata.varData.VarType = getTypeChar(typeFound);
-        STdata.varData.initialized = 1;
-        //STdata.varData.VarPosition   --dodelat
-        ST_insertItem(getTable(isGlobal), DS_string(IDtoken.attribute.dString), ST_ITEM_TYPE_VARIABLE, STdata);
-    }
-    else // check type of ID and assigned expression in ST
-    {
-        if (getTypeChar(typeFound) != item->data.varData.VarType)
-            return ERR_TYPE;
-    }
-
-    // programStack: ID =
-    STACK_popAll(tokenStack); // az bude ruleExpression smazat!
-    return err;
-}*/
 
 /**
  * @brief Get the Table object
@@ -255,7 +203,7 @@ ErrorType ruleStatList()
 
     while (1)
     {
-
+        // first error = exit
         if (err)
             return err;
 
@@ -592,9 +540,6 @@ ErrorType ruleParams()
  */
 int getPrecTableIndex(Token token)
 {
-    if (isValueType(token.type))
-        return 4;
-
     switch (token.type)
     {
     case TYPE_ADD:
@@ -611,8 +556,25 @@ int getPrecTableIndex(Token token)
     case TYPE_RBRACKET:
         return 3;
 
-    case TYPE_STACKEMPTY:
+    case TYPE_ID:
+    case TYPE_FUNID:
+    case TYPE_INT:
+    case TYPE_FLOAT:
+    case TYPE_STRING:
+        return 4;
+
+    case TYPE_LESS:
+    case TYPE_GREATER:
+    case TYPE_LESSEQ:
+    case TYPE_GREATEREQ:
         return 5;
+
+    case TYPE_EQTYPES:
+    case TYPE_NOTEQTYPES:
+        return 6;
+
+    case TYPE_STACKEMPTY:
+        return 7;
 
     default:
         break;
@@ -635,7 +597,7 @@ int exprUseRule(TokenType *typeArr)
         int match = 1;
         for (int i = 0; i < 3; i++)
         {
-            if (typeArr[i] != exprRules[rule][i])
+            if (typeArr[i] != exprRules[rule][i]) // rule is not matching
             {
                 match *= 0;
                 break;
@@ -706,6 +668,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             STACK_push(stack, tmpToken);
         }
 
+        // precedence of token not found
         if (stackPrecIndex == -1 || tokenPrecIndex == -1)
         {
             printf("INDEX ERR\n");
@@ -746,6 +709,8 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             {
                 tokenTypeArr[i] = STACK_top(stack)->type;
                 STACK_pop(stack);
+
+                // array overflow
                 if (i > 2)
                 {
                     printf("ARRAY ERR\n");
