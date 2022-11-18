@@ -12,6 +12,8 @@ parser: $(ALL_FILES)
 
 scanner: $(ALL_FILES)
 	@gcc $(FLAGS) main.c scanner.c dynamicString.c -o main
+	@./main text.php
+	@rm main
 
 test-scanner: 
 	@gcc $(FLAGS) tests/scanner-test.c scanner.c dynamicString.c -o scanner-test
