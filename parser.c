@@ -655,13 +655,15 @@ int exprUseRule(TokenType *typeArr)
  * @param varType address
  * @return ErrorType
  */
-ErrorType exprAnal(char *isEmpty, int usePrevToken)
+ErrorType exprAnal(int *isEmpty, int usePrevToken)
 {
+    Token tmpToken, endToken;
     ErrorType err = 0;
     int done = 0;
+    *isEmpty = 0;
     Stack *stack = STACK_init();
-    Token tmpToken, endToken;
 
+    // init expression stack
     tmpToken.type = TYPE_STACKEMPTY;
     STACK_push(stack, tmpToken);
 
@@ -671,6 +673,7 @@ ErrorType exprAnal(char *isEmpty, int usePrevToken)
         STACK_push(stack, tmpToken);
         STACK_push(stack, prevToken);
 
+        // nothing to proccess after prevToken
         if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type))
         {
             endToken = token;
@@ -678,12 +681,13 @@ ErrorType exprAnal(char *isEmpty, int usePrevToken)
             done = 1;
         }
     }
-    else // empty expression
+    else
     {
+        // empty expression
         if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type))
         {
             STACK_dispose(stack);
-            isEmpty = 1;
+            *isEmpty = 1;
             return err;
         }
     }
@@ -718,7 +722,6 @@ ErrorType exprAnal(char *isEmpty, int usePrevToken)
             break;
 
         case L: // <
-            // printf("LEFT");
             if (isOperatorType(token.type) && STACK_top(stack)->type == TYPE_EXPR)
             {
                 STACK_pop(stack);
@@ -737,8 +740,9 @@ ErrorType exprAnal(char *isEmpty, int usePrevToken)
             token = newToken(0);
             break;
 
-        case R:                                                           // >
-            for (int i = 0; STACK_top(stack)->type != TYPE_LESSPREC; i++) // pop beteween < and >
+        case R: // >
+            // pop beteween < and >
+            for (int i = 0; STACK_top(stack)->type != TYPE_LESSPREC; i++)
             {
                 tokenTypeArr[i] = STACK_top(stack)->type;
                 STACK_pop(stack);
@@ -751,6 +755,7 @@ ErrorType exprAnal(char *isEmpty, int usePrevToken)
                 }
             }
 
+            // check expression rules
             if (exprUseRule(tokenTypeArr))
             {
                 printf("RULE ERR\n");
@@ -772,6 +777,7 @@ ErrorType exprAnal(char *isEmpty, int usePrevToken)
             break;
         }
 
+        // non-expression token loaded
         if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type) && !done)
         {
             endToken = token;
@@ -779,6 +785,7 @@ ErrorType exprAnal(char *isEmpty, int usePrevToken)
             done = 1;
         }
 
+        // expression is correct
         if (done && STACK_top(stack)->type == TYPE_EXPR)
         {
             STACK_pop(stack);
@@ -792,7 +799,6 @@ ErrorType exprAnal(char *isEmpty, int usePrevToken)
         }
     }
 
-    isEmpty = 0;
     STACK_dispose(stack);
     return err;
 }
