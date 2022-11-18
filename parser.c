@@ -758,6 +758,9 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             // check expression rules
             if (exprUseRule(tokenTypeArr))
             {
+                if(token.type == TYPE_STACKEMPTY){
+                    token = endToken;
+                }
                 printf("RULE ERR\n");
                 STACK_dispose(stack);
                 makeError(ERR_SYN);
