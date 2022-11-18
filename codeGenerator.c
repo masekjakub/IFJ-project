@@ -4,7 +4,7 @@
 int generateBuiltInFunc(DynamicString *dString)
 {
 
-    // readi
+    // READ
     char *code = "                                  \
     LABEL readi\n                                   \
     CREATEFRAME\n                                   \
