@@ -49,7 +49,9 @@ GRAMATIKA
     E => E - E
     E => E * E
     E => E / E
+    E => E . E
     E => (E)
+    E = E < E
         
 
 <value> => INT 

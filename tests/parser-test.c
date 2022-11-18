@@ -228,13 +228,106 @@
 
     TEST(test_num_alone, "9;")
     PROLOG
-    //$var + 5;
     makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
-
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+    
+    TEST(test_var_alone, "$promenna1238984;")
+    PROLOG
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "promenna1238984");
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_prec, "1+2*3; output: 0 14 0 12 0")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_expr, "1+(-2*3; WRONG")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_SUB, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
+    ENDTEST
+
+    TEST(test_expr2, "(1-5)*(3+2); OK")
+    PROLOG
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_SUB, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_expr3, "-1/3; WRONG")
+    PROLOG
+    makeToken(tokensArr, TYPE_SUB, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
+    ENDTEST
+
+    TEST(test_expr4, "-*1/3; WRONG")
+    PROLOG
+    makeToken(tokensArr, TYPE_SUB, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
+    ENDTEST
+
+    TEST(test_expr5, "1/3); WRONG")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
     TEST(test_if_ok, "if_ok")
@@ -336,10 +429,16 @@
         test_id_wrong();
         test_id_wrong2();
         test_num_alone();
+        test_var_alone();
+        test_prec();
+        test_expr();
+        test_expr2();
+        test_expr3();
+        test_expr4();
         test_if_ok();
         test_while();
-        //test_funccal();
-        test_funcdef();
+        ////test_funccal();
+        //test_funcdef();
         test_assign2();
         //test_assign3();
         //test_assign4();
