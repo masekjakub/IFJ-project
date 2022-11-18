@@ -390,10 +390,109 @@
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_funcdef, "funcdef_ok") // dodelat pro cele
+    TEST(test_funcdef_ok, "funcdef_ok")
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
-    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction name");
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_NULL, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+    
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_return_ok, "return_ok")
+    PROLOG
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+    
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
+
+    //Non function return
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_funcdef_wrong, "funcdef wrong")
+    PROLOG
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
+    //!CHYBÍ! makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_NULL, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+    
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
+    ENDTEST
+
+    TEST(test_funcdef_wrong2, "void funcdef with return value")
+    PROLOG
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+    
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 6, "Return code not 6", returnedVal)
+    ENDTEST
+
+    TEST(test_funcdef_wrong3, "funcdef no return value")
+    PROLOG
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
     makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
@@ -410,7 +509,7 @@
     makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
     EPILOG
     returnedVal = parser(tokensArr);
-    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ASSERT(returnedVal == 6, "Return code not 6", returnedVal)
     ENDTEST
 
     int main()
@@ -437,8 +536,12 @@
         test_expr4();
         test_if_ok();
         test_while();
-        ////test_funccal();
-        //test_funcdef();
+        //test_funccal();
+        test_funcdef_ok();
+        test_return_ok();
+        test_funcdef_wrong();
+        test_funcdef_wrong2();
+        test_funcdef_wrong3();
         test_assign2();
         //test_assign3();
         //test_assign4();
