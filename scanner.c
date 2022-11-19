@@ -26,7 +26,7 @@ void setSourceFile(FILE *f)
 }
 
 /**
- * @brief Checking if its keyword or name of function
+ * @brief Function for checking if its keyword or name of function
  * 
  * @param dynamicString 
  * @param token 
@@ -59,8 +59,7 @@ bool isKeyword(DynamicString *dynamicString, Token *token){
         return true;
     }
     if (!strcmp(DS_string(dynamicString), "null")){
-        token->type = TYPE_KEYWORD;
-        token->attribute.keyword = KEYWORD_NULL;
+        token->type = TYPE_NULL;
         return true;
     }
     if (!strcmp(DS_string(dynamicString), "function")){
@@ -82,7 +81,7 @@ bool isKeyword(DynamicString *dynamicString, Token *token){
 }
 
 /**
- * @brief Get the Token object
+ * @brief Function for getting next token
  * 
  * @return Token 
  */

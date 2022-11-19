@@ -16,7 +16,7 @@
 #define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
 
 //udelat: Nechat null? (null je spec hodnota, ne typ)
-#define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING || KEYWORD == KEYWORD_NULL)
+#define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING)
 
 int firstError;     // first encountered error
 Symtable *globalST; // global symtable
@@ -151,7 +151,7 @@ void builtInFuncFillST(Symtable *stable)
  * @brief Converts keyword type to variable type (tokne type)
  *
  * @param keyword Keyword of the type to convert
- * (KEYWORD_INT, KEYWORD_FLOAT, KEYWORD_STRING, KEYWORD_NULL, KEYWORD_VOID)
+ * (KEYWORD_INT, KEYWORD_FLOAT, KEYWORD_STRING, KEYWORD_VOID)
  * @return Token type for constant of given keyword type
  * (for other keywords returns TYPE_UNDEF)
  */
@@ -949,17 +949,14 @@ int exprUseRule(Token *tokenArr)
     return -1;
 }
 
-void nullCheckAndConvert(Token *token)
-{
-    if (token->type == TYPE_KEYWORD && token->attribute.keyword == KEYWORD_NULL)
-    {
-        token->type = TYPE_NULL;
-    }
-}
-
 ErrorType functionCallCheckAndProcess()
 {
     Token funID = token;
+    STItem *item = ST_searchTable(getTable(isGlobal),DS_string(token.attribute.dString));
+    if(item == NULL){
+        makeError(ERR_UNDEF);
+        return ERR_UNDEF;
+    }
     token = newToken(0);
 
     while (token.type != TYPE_RBRACKET)
@@ -1000,10 +997,8 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
     tmpToken.type = TYPE_STACKEMPTY;
     STACK_push(stack, tmpToken);
 
-    nullCheckAndConvert(&token);
     if (usePrevToken)
     {
-        nullCheckAndConvert(&prevToken);
         tmpToken.type = TYPE_LESSPREC;
         STACK_push(stack, tmpToken);
         STACK_push(stack, prevToken);
@@ -1128,7 +1123,6 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             break;
         }
 
-        nullCheckAndConvert(&token);
         if(token.type == TYPE_FUNID)
             err = functionCallCheckAndProcess();
 
@@ -1172,6 +1166,8 @@ int parser(Token *tokenArrIN) // sim
     ErrorType err;
     firstError = 0;
     globalST = ST_initTable(16);
+    localST = ST_initTable(8);
+
     builtInFuncFillST(globalST);
     isGlobal = 1;
     functionTypes = DS_init();
