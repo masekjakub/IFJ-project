@@ -483,7 +483,7 @@
     makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
-    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_NULL, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
     makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
     
     makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
@@ -491,6 +491,38 @@
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
 
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_funcdef_ok2, "funcdef_ok with parametrs")
+    PROLOG
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
+    //(<params>)
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_QMARK, 0, 0, 0, 0);               //?int $param1, string $param2
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "$param1");
+    makeToken(tokensArr, TYPE_COMMA, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_STRING, 0, 0, 0);
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "$param2");
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    // : int {
+    makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+    //<stat_list>
+    makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    //return 5 ; }
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
@@ -536,7 +568,7 @@
     makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
-    //!CHYBÍ! makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_NULL, 0, 0, 0);
+    //!CHYBÍ! makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
     makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
     
     makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
@@ -582,7 +614,7 @@
     makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
-    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_NULL, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
     makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
     
     makeToken(tokensArr, TYPE_INT, 0, 9, 0, NULL);
@@ -596,6 +628,58 @@
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 6, "Return code not 6", returnedVal)
+    ENDTEST
+
+    TEST(test_funcdef_wrong4, "funcdef inside function")
+    PROLOG
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+    //inside function
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
+
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 3, "Return code not 3", returnedVal)
+    ENDTEST
+
+    TEST(test_funcdef_wrong5, "funcdef wrong params")
+    PROLOG
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction_name");
+    //(<params>)
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_QMARK, 0, 0, 0, 0);               //?int $param1, string $param2
+    //!CHYBÍ! makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_INT, 0, 0, 0);
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "$param1");
+    makeToken(tokensArr, TYPE_COMMA, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_STRING, 0, 0, 0);
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "$param2");
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+
+
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);
+
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
     int main()
@@ -629,10 +713,13 @@
         test_while();
         //test_funccal();
         test_funcdef_ok();
+        test_funcdef_ok2();
         test_return_ok();
         test_funcdef_wrong();
         test_funcdef_wrong2();
         test_funcdef_wrong3();
+        test_funcdef_wrong4();
+        test_funcdef_wrong5();
         test_assign2();
         test_assign3();
         //test_assign4();

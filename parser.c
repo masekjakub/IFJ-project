@@ -14,12 +14,16 @@
 #define isOperatorType(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ || \
                               TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
 #define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
+
+//udelat: Nechat null? (null je spec hodnota, ne typ)
 #define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING || KEYWORD == KEYWORD_NULL)
 
+int firstError;     // first encountered error
 Symtable *globalST; // global symtable
 Symtable *localST;  // local symtable
-int isGlobal = 1;   // program is not in function
+int isGlobal;       // program is not in function
 TokenType returnType = TYPE_VOID;   //Return type of currently parsed function
+DynamicString *functionTypes;       //Return type and param types of currently parsed function
 
 const int precTable[8][8] = {
     {R, L, L, R, L, L, L, R},  // +
@@ -94,6 +98,16 @@ Token newToken(int includingComms)
  */
 void makeError(ErrorType err)
 {
+    if(firstError == 0){
+        firstError = err;
+    }
+
+    //Skipping section of code with error in it
+    while(token.type != TYPE_RBRACKET && token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
+        if(token.type == TYPE_EOF) return;
+        token = newToken(0);
+    }
+    //token = newToken(0);
     // exit(err);
 }
 
@@ -152,9 +166,10 @@ TokenType keywordType2VarType(KeyWord keyword){
     case KEYWORD_STRING:
         return TYPE_STRING;
         break;
-    case KEYWORD_NULL:
-        return TYPE_NULL;
-        break;
+    //udelat: nechat null? (null je spec. hodnota, ne typ)
+    //case KEYWORD_NULL:
+    //    return TYPE_NULL;
+    //    break;
     case KEYWORD_VOID:
         return TYPE_VOID;
         break;
@@ -226,6 +241,7 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
 
     // st-list
     err = ruleStatList();
+
     return err;
 }
 
@@ -234,21 +250,26 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
  *
  * @return ErrorType
  */
+//udelat: vyřešit sekvence v bloku ( {<statlist>} - GOOD / {<statlist>}} - CHYBA )
 ErrorType ruleStatList()
 {
     ErrorType err = 0;
     ErrorType tmpErr = 0;
+    int openBracesBlocks = 0;
 
     while (1)
     {        
-        if (err)
-            return err;
+        //if (err)
+        //    return err;
 
+        //if(token.type = TYPE_LBRACES){
+        //    openBracesBlocks++;
+        //    token = newToken(0);
+        //}
+        
         //<return>
         tmpErr = ruleReturn();
-        if(!err){
-            err = tmpErr;
-        }
+        if(!err) err = tmpErr;
 
         // EPILOG
         if (token.type == TYPE_EOF)
@@ -267,14 +288,20 @@ ErrorType ruleStatList()
         }
 
         // Check end of {<stat-list>}
-        if (token.type == TYPE_RBRACES)
-            break;
+        if (token.type == TYPE_RBRACES) break;
+        //if (token.type == TYPE_RBRACES){
+        //    openBracesBlocks--;
+        //    if(openBracesBlocks < 0){
+        //        fprintf(stderr, "Unexpected \"}\" on line %d!\n", token.rowNumber);
+        //        makeError(ERR_SYN);
+        //        return (ERR_SYN);
+        //    }
+        //    if(openBracesBlocks == 0) break;
+        //}
 
         // statement rule
         tmpErr = ruleStat();
-        if(!err){
-            err = tmpErr;
-        }
+        if(!err) err = tmpErr;
     }
 
     return err;
@@ -428,6 +455,17 @@ ErrorType ruleStat()
             break;
 
         case KEYWORD_FUNCTION:
+            //Defining inside function
+            if(!isGlobal){
+                fprintf(stderr, "Definition of function inside function on line %d!\n", token.rowNumber);
+                makeError(ERR_FUNDEF);
+                while(token.type != TYPE_RBRACES){
+                    token = newToken(0);
+                }
+                //token = newToken(0);
+                return ERR_FUNDEF;
+                break;
+            }
             token = newToken(0);
 
             // FUNID
@@ -438,6 +476,18 @@ ErrorType ruleStat()
                 return ERR_SYN;
                 break;
             }
+            //Check redefinition
+            STItem *foundFunction = ST_searchTable(getTable(1),token.attribute.dString->string);
+            if( foundFunction != NULL)
+                if(foundFunction->type == ST_ITEM_TYPE_FUNCTION && foundFunction->data.funData.defined == true){
+                    fprintf(stderr, "Redefinition of function \"%s\" on line %d!\n", token.attribute.dString->string, token.rowNumber);
+                    makeError(ERR_FUNDEF);
+                    return ERR_FUNDEF;
+                    break;
+                }
+            DynamicString *funId;
+            funId = DS_init();
+            DS_appendString(funId, token.attribute.dString->string);
             token = newToken(0);
 
             // (
@@ -448,9 +498,27 @@ ErrorType ruleStat()
                 return ERR_SYN;
                 break;
             }
+            token = newToken(0);
 
             // <params>
             err = ruleParams();
+            //Inserting function into symtable
+            STItemData newFunData;
+            newFunData.funData.defined = 1;
+            newFunData.funData.funTypes = functionTypes->string;
+            ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
+            DS_dispose(functionTypes);
+            functionTypes = DS_init();
+
+            // )
+            if (token.type != TYPE_RBRACKET)
+            {
+                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+                break;
+            }
+            token = newToken(0);
 
             // <funcdef>
             errTmp = ruleFuncdef();
@@ -529,6 +597,7 @@ ErrorType ruleFuncdef()
     }
     token = newToken(0);
 
+    // <stat_list>
     err = ruleStatList();
 
     // }
@@ -538,8 +607,6 @@ ErrorType ruleFuncdef()
         return ERR_SYN;
     }
     token = newToken(0);
-
-    //add to symtable
 
     returnType = TYPE_VOID; //Set unspecified return type
     isGlobal = 1; //Set parsing in global scale
@@ -626,14 +693,111 @@ ErrorType ruleAssign()
  *
  * @return ErrorType
  */
+//udelat: syntaxe + vkládání param do functionTypes
 ErrorType ruleParams()
 {
+    // epsilon
+    //Check empty parametr list
+    if(token.type == TYPE_RBRACKET) return 0;
+
     ErrorType err = 0;
+    ErrorType tmpErr = 0;
     
-    //(<params>)
-    while(token.type != TYPE_RBRACKET){
+    // <param>
+    err = ruleParam();
+
+    // <params_2>
+    tmpErr = ruleParams2();
+    if(!err) err = tmpErr;
+
+    return err;
+}
+
+/**
+ * @brief params2 rule
+ * 
+ * @return ErrorType 
+ */
+ErrorType ruleParams2(){
+    // epsilon
+    //Check end of parametr list
+    if(token.type == TYPE_RBRACKET) return 0;
+
+    ErrorType err = 0;
+    ErrorType tmpErr = 0;
+    
+    // ,
+    if(token.type != TYPE_COMMA){
+        fprintf(stderr, "Expected \",\" between parametrs of function on line %d!\n", token.rowNumber);
+        makeError(ERR_SYN);
+        return (ERR_SYN);
+    }
+    token = newToken(0);
+
+    // <param>
+    err = ruleParam();
+
+    // <params_2>
+    tmpErr = ruleParams2();
+    if(!err) err = tmpErr;
+
+    return err;
+}
+
+/**
+ * @brief param rule
+ * 
+ * @return ErrorType 
+ */
+ErrorType ruleParam(){
+    ErrorType err = 0;
+    bool canBeNull = 0;
+    char paramType = '!';
+
+    if(token.type != TYPE_QMARK && token.type != TYPE_KEYWORD){
+        fprintf(stderr, "Expected type of function parametr on line %d!\n", token.rowNumber);
+        makeError(ERR_SYN);
+        return (ERR_SYN);
+    }
+
+    // ?
+    if(token.type == TYPE_QMARK){
+        canBeNull = true;
         token = newToken(0);
     }
+
+    // TYPE
+    if(token.type != TYPE_KEYWORD){
+        err = 1;
+    }
+    else if(!isKeywordType(token.attribute.keyword)){
+        err = 1;
+    }
+    if(err){
+        fprintf(stderr, "Expected type of function parametr on line %d!\n", token.rowNumber);
+        makeError(ERR_SYN);
+        return (ERR_SYN);
+    }
+    paramType = getTypeChar(keywordType2VarType(token.attribute.keyword));
+    if(canBeNull) paramType -= 32; //Capitalize if param can be null
+    token = newToken(0);
+
+    // ID
+    if(token.type != TYPE_ID){
+        fprintf(stderr, "Expected a name of function parametr on line %d!\n", token.rowNumber);
+        makeError(ERR_SYN);
+        return (ERR_SYN);
+    }
+    //Check same name params
+    if(ST_searchTable(getTable(0), token.attribute.dString->string) != NULL){
+        fprintf(stderr, "Redefinition of function parametr \"%s\" on line %d!\n", token.attribute.dString->string, token.rowNumber);
+        makeError(ERR_OTHER);
+        return (ERR_OTHER);
+    }
+    //Insert param as local variable into symtable
+    STItemData newVarData;
+    newVarData.varData.VarType = paramType;
+    ST_insertItem(getTable(0), token.attribute.dString->string, ST_ITEM_TYPE_VARIABLE, newVarData);
     token = newToken(0);
 
     return err;
@@ -946,14 +1110,18 @@ int parser(Token *tokenArrIN) //sim
     tokenArr = tokenArrIN; // sim
 
     ErrorType err;
+    firstError = 0;
     globalST = ST_initTable(16);
     localST = ST_initTable(8);
+    isGlobal = 1;
+    functionTypes = DS_init();
 
     // generateBuiltInFunc();
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     err = ruleProg();
 
+    DS_dispose(functionTypes);
     freeST();
     // printf("Parser OK!\n");
-    return err; // predelat na exit
+    return firstError; // predelat na exit
 }
