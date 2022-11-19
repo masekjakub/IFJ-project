@@ -961,10 +961,11 @@ ErrorType functionCallCheckAndProcess()
     return 0;
 }
 
-ErrorType rulesSematics(int ruleUsed, Token *tokenArr){
+ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token lastToken){
     if(ruleUsed == 0){
         STItem *item = ST_searchTable(getTable(isGlobal),DS_string(tokenArr[0].attribute.dString));
         if(item == NULL){
+            token = lastToken;
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
@@ -1041,6 +1042,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
         {
             printf("INDEX ERR\n");
             STACK_dispose(stack);
+            token = endToken;
             makeError(ERR_SYN);
             return ERR_SYN;
         }
@@ -1082,6 +1084,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
                 if (i > 2)
                 {
                     printf("ARRAY ERR\n");
+                    token = endToken;
                     STACK_dispose(stack);
                     makeError(ERR_SYN);
                     return ERR_SYN;
@@ -1097,11 +1100,12 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
                     token = endToken;
                 }
                 printf("RULE ERR\n");
+                token = endToken;
                 STACK_dispose(stack);
                 makeError(ERR_SYN);
                 return ERR_SYN;
             }
-            err = rulesSematics(usedRule, tokenArrExpr);
+            err = rulesSematics(usedRule, tokenArrExpr, endToken);
 
             STACK_pop(stack); // pop <
 
@@ -1111,6 +1115,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
 
         case N: // error
             STACK_dispose(stack);
+            token = endToken;
             printf("EXPR ERR\n");
             makeError(ERR_SYN);
             return ERR_SYN;
