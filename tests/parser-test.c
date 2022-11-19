@@ -41,7 +41,20 @@
 #define EPILOG                                              \
     makeToken(tokensArr, TYPE_END, 0, 0, 0, NULL);          \
     makeToken(tokensArr, TYPE_EOF, 0, 0, 0, NULL);          \
-    
+
+#define FUNCDEF(NAME)                                                     \
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);\
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, NAME);\
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);\
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);\
+    makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);\
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_NULL, 0, 0, 0);\
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, 0);\
+    makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_RETURN, 9, 0, NULL);\
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);\
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 9, 0, NULL);\
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, 0);\
+
     unsigned int SUCCESSFUL_TESTS = 0;
     unsigned int TEST_NUM = 0;
 
@@ -147,23 +160,35 @@
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_assign4, "$var = func * func; WRONG") // FIX
+    TEST(test_assign4, "$var = func(5) * func2(5); OK")
     PROLOG
-    //$var = 5;
+    FUNCDEF("func")
+    FUNCDEF("func2")
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
     makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
-    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "func");
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "func");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
+
     makeToken(tokensArr, TYPE_MUL, 0, 0, 0, NULL);
-    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "func");
+
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "func2");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
     EPILOG
     returnedVal = parser(tokensArr);
-    ASSERT(returnedVal == 7, "Return code not 7", returnedVal)
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
     TEST(test_add, "$var + 5;")
     PROLOG
     //$var + 5;
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
     makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
@@ -235,13 +260,30 @@
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
     
-    TEST(test_var_alone, "$promenna1238984;")
+    TEST(test_var_alone, "$promenna1238984 = 5; $promenna1238984;")
     PROLOG
+    // init var
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "promenna1238984");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    //call var
     makeToken(tokensArr, TYPE_ID, 0, 0, 0, "promenna1238984");
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_var_alone_notdef, "$promenna1238984; WRONG")
+    PROLOG
+    //call var
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "promenna1238984");
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == ERR_UNDEF, "Return code not 5", returnedVal)
     ENDTEST
 
     TEST(test_prec, "1+2*3; output: 0 14 0 12 0")
@@ -297,7 +339,7 @@
     PROLOG
     makeToken(tokensArr, TYPE_SUB, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
-    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
     EPILOG
@@ -403,7 +445,7 @@
     ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
-    TEST(test_expr5, "1/3); WRONG")
+    TEST(test_expr5, "1/+3); WRONG")
     PROLOG
     makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
     makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
@@ -466,9 +508,9 @@
 
     TEST(test_funccal, "funccal_ok")
     PROLOG
+    FUNCDEF("fuction name")
     makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction name");
     makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
-    makeToken(tokensArr, TYPE_INT, 0, 5, 0, 0);
     makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, 0);
     EPILOG
@@ -603,23 +645,25 @@
         printf("IFJ/IAL Project: Parser Tests\n");
         printf("================================================\n");
 
-        test_prolog1();
-        test_prolog2();
-        test_epilog1();
-        test_epilog2();
-        test_epilog3();
-        test_assign();
-        test_add();
-        test_add_nums();
-        test_id_wrong();
-        test_id_wrong2();
-        test_num_alone();
-        test_var_alone();
-        test_prec();
-        test_expr();
+        //test_prolog1();
+        //test_prolog2();
+        //test_epilog1();
+        //test_epilog2();
+        //test_epilog3();
+        //test_assign();
+        //test_add();
+        //test_add_nums();
+        //test_id_wrong();
+        //test_id_wrong2();
+        //test_num_alone();
+        //test_var_alone();
+        //test_var_alone_notdef();
+        //test_prec();
+        //test_expr();
         test_expr2();
         test_expr3();
         test_expr4();
+        test_expr5();
         test_expr_comp();
         test_expr_comp2();
         test_expr_comp3();
@@ -627,7 +671,7 @@
         test_expr_comp5();
         test_if_ok();
         test_while();
-        //test_funccal();
+        test_funccal();
         test_funcdef_ok();
         test_return_ok();
         test_funcdef_wrong();
@@ -635,7 +679,7 @@
         test_funcdef_wrong3();
         test_assign2();
         test_assign3();
-        //test_assign4();
+        test_assign4();
 
             printf("================================================\n");
         float score = (float)SUCCESSFUL_TESTS / (float)TEST_NUM;
