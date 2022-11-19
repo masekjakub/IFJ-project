@@ -62,18 +62,6 @@ TokenType exprRules[numOfExprRules][3] = {
     {TYPE_EXPR, TYPE_GREATEREQ, TYPE_EXPR}}; // E => E >= E
 
 /**
- * @brief Free symtables
- *
- */
-void freeST()
-{
-    if (globalST != NULL)
-        ST_freeTable(globalST);
-    if (localST != NULL)
-        ST_freeTable(localST);
-}
-
-/**
  * @brief Returns new token from scanner
  *
  * @param includingComms
@@ -501,6 +489,8 @@ ErrorType ruleStat()
             token = newToken(0);
 
             // <params>
+            ST_freeTable(localST);
+            localST = ST_initTable(8);
             err = ruleParams();
             //Inserting function into symtable
             STItemData newFunData;
@@ -526,6 +516,7 @@ ErrorType ruleStat()
             {
                 err = errTmp;
             }
+            
             break;
 
         default:
@@ -566,8 +557,8 @@ ErrorType ruleFuncdef()
 {
     ErrorType err = 0;
     ErrorType tmpErr = 0;
-    isGlobal = 0;           // Set parsing in function
-    returnType = TYPE_VOID; // Set unspecified return type
+    isGlobal = 0;   //Set parsing in function
+    returnType = TYPE_VOID; //Set unspecified return type
 
     // : TYPE
     if (token.type == TYPE_COLON)
@@ -1165,18 +1156,19 @@ int parser(Token *tokenArrIN) // sim
     ErrorType err;
     firstError = 0;
     globalST = ST_initTable(16);
-    localST = ST_initTable(8);
+    localST = NULL;
+    isGlobal = 1;
+    returnType = TYPE_VOID;
+    functionTypes = DS_init();
 
     builtInFuncFillST(globalST);
-    isGlobal = 1;
-    functionTypes = DS_init();
 
     // generateBuiltInFunc();
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     err = ruleProg();
 
     DS_dispose(functionTypes);
-    freeST();
+    ST_freeTable(globalST);
     // printf("Parser OK!\n");
     return firstError; // predelat na exit
 }
