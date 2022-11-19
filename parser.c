@@ -1,6 +1,6 @@
 /**
  * @file parser.c
- * @author Jakub Mašek
+ * @authors Jakub Mašek, Martin Zelenák
  * @brief parser for IFJ22 translator
  * @version 0.1
  * @date 16-10-2022
@@ -53,7 +53,6 @@ TokenType exprRules[numOfExprRules][3] = {
     {TYPE_EXPR, TYPE_DIV, TYPE_EXPR},          // E => E / E
     {TYPE_EXPR, TYPE_COMMA, TYPE_EXPR},        // E => E . E
     {TYPE_RBRACKET, TYPE_EXPR, TYPE_LBRACKET}, // E => (E)
-    // comparison
     {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},    // E => E === E
     {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR}, // E => E !== E
     {TYPE_EXPR, TYPE_LESS, TYPE_EXPR},       // E => E < E
@@ -864,10 +863,10 @@ ErrorType ruleReturn()
 }
 
 /**
- * @brief returns precedens of operand
- *
- * @param type
- * @return int
+ * @brief Get the Prec Table Index object
+ * 
+ * @param token inspected token
+ * @return int, index of token type in precedence table
  */
 int getPrecTableIndex(Token token)
 {
@@ -915,6 +914,12 @@ int getPrecTableIndex(Token token)
     return -1;
 }
 
+/**
+ * @brief finds reduction of expression
+ * 
+ * @param tokenArr array[3] of operands and operator
+ * @return int used rule
+ */
 int exprUseRule(Token *tokenArr)
 {
 
@@ -943,6 +948,11 @@ int exprUseRule(Token *tokenArr)
     return -1;
 }
 
+/**
+ * @brief proccess function call
+ * 
+ * @return ErrorType 
+ */
 ErrorType functionCallCheckAndProcess()
 {
     Token funID = token;
@@ -961,11 +971,19 @@ ErrorType functionCallCheckAndProcess()
     return 0;
 }
 
-ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token lastToken){
+/**
+ * @brief semantics rules for expression
+ * 
+ * @param ruleUsed index of used rule
+ * @param tokenArr array of used tokens while reducing
+ * @param endToken last legit token
+ * @return ErrorType 
+ */
+ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
     if(ruleUsed == 0){
         STItem *item = ST_searchTable(getTable(isGlobal),DS_string(tokenArr[0].attribute.dString));
         if(item == NULL){
-            token = lastToken;
+            token = endToken;
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
@@ -976,13 +994,13 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token lastToken){
 /**
  * @brief process expression
  *
- * @param isEmpty
- * @param usePrevToken
+ * @param isEmpty pointer, stores if expression is empty
+ * @param usePrevToken use - 1, dont use - 0
  * @return ErrorType
  */
 ErrorType exprAnal(int *isEmpty, int usePrevToken)
 {
-    Token tmpToken, endToken;
+    Token tmpToken, endToken = token;
     ErrorType err = 0;
     int done = 0;
     *isEmpty = 0;
@@ -1017,6 +1035,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
         }
 
     }
+
     if(token.type == TYPE_FUNID)
         functionCallCheckAndProcess();
 
@@ -1055,6 +1074,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             break;
 
         case L: // <
+            // if expression is on top, push < behind it
             if (isOperatorType(token.type) && STACK_top(stack)->type == TYPE_EXPR)
             {
                 STACK_pop(stack);
@@ -1063,12 +1083,13 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
                 tmpToken.type = TYPE_EXPR;
                 STACK_push(stack, tmpToken);
             }
-            else
+            else // expression is not on top, push <
             {
                 tmpToken.type = TYPE_LESSPREC;
                 STACK_push(stack, tmpToken);
             }
 
+            //push new token
             STACK_push(stack, token);
             token = newToken(0);
             break;
@@ -1083,8 +1104,8 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
                 // array overflow
                 if (i > 2)
                 {
-                    printf("ARRAY ERR\n");
                     token = endToken;
+                    fprintf(stderr, "Invalid expression on line %d!\n", token.rowNumber);
                     STACK_dispose(stack);
                     makeError(ERR_SYN);
                     return ERR_SYN;
@@ -1099,8 +1120,8 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
                 {
                     token = endToken;
                 }
-                printf("RULE ERR\n");
                 token = endToken;
+                fprintf(stderr, "Invalid expression on line %d!\n", token.rowNumber);
                 STACK_dispose(stack);
                 makeError(ERR_SYN);
                 return ERR_SYN;
@@ -1116,7 +1137,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
         case N: // error
             STACK_dispose(stack);
             token = endToken;
-            printf("EXPR ERR\n");
+            fprintf(stderr, "Invalid expression on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
             return ERR_SYN;
             break;

@@ -1,3 +1,13 @@
+/**
+ * @file parser-test.c
+ * @authors Jakub Mašek, Martin Zelenák
+ * @brief test for parser.c
+ * @version 0.1
+ * @date 20-11-2022
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "../parser.h"
 
 #define TEST(NAME, DESCRIPTION)                  \
