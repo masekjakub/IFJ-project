@@ -14,8 +14,6 @@
 #define isOperatorType(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ || \
                               TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
 #define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
-
-//udelat: Nechat null? (null je spec hodnota, ne typ)
 #define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING)
 
 int firstError;     // first encountered error
@@ -168,10 +166,6 @@ TokenType keywordType2VarType(KeyWord keyword)
     case KEYWORD_STRING:
         return TYPE_STRING;
         break;
-    //udelat: nechat null? (null je spec. hodnota, ne typ)
-    //case KEYWORD_NULL:
-    //    return TYPE_NULL;
-    //    break;
     case KEYWORD_VOID:
         return TYPE_VOID;
         break;
