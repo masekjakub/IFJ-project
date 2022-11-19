@@ -14,9 +14,7 @@
 #define isOperatorType(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ || \
                               TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
 #define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
-
-//udelat: Nechat null? (null je spec hodnota, ne typ)
-#define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING || KEYWORD == KEYWORD_NULL)
+#define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING)
 
 int firstError;     // first encountered error
 Symtable *globalST; // global symtable
@@ -150,7 +148,7 @@ int isSameType(TokenType *curType, TokenType newType)
  * @brief Converts keyword type to variable type (tokne type)
  * 
  * @param keyword Keyword of the type to convert
- * (KEYWORD_INT, KEYWORD_FLOAT, KEYWORD_STRING, KEYWORD_NULL, KEYWORD_VOID)
+ * (KEYWORD_INT, KEYWORD_FLOAT, KEYWORD_STRING, KEYWORD_VOID)
  * @return Token type for constant of given keyword type
  * (for other keywords returns TYPE_UNDEF)
  */
@@ -166,10 +164,6 @@ TokenType keywordType2VarType(KeyWord keyword){
     case KEYWORD_STRING:
         return TYPE_STRING;
         break;
-    //udelat: nechat null? (null je spec. hodnota, ne typ)
-    //case KEYWORD_NULL:
-    //    return TYPE_NULL;
-    //    break;
     case KEYWORD_VOID:
         return TYPE_VOID;
         break;
@@ -926,12 +920,6 @@ int exprUseRule(TokenType *typeArr)
         }
     }
     return 1;
-}
-
-void nullCheckAndConvert(Token *token){
-    if(token->type == TYPE_KEYWORD && token->attribute.keyword == KEYWORD_NULL){
-        token->type = TYPE_NULL;
-    }
 }
 
 /**
