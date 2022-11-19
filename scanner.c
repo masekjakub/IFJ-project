@@ -26,7 +26,7 @@ void setSourceFile(FILE *f)
 }
 
 /**
- * @brief 
+ * @brief Checking if its keyword or name of function
  * 
  * @param dynamicString 
  * @param token 
@@ -86,7 +86,7 @@ bool isKeyword(DynamicString *dynamicString, Token *token){
  * 
  * @return Token 
  */
-Token getToken(){  //TODO zadavani hexadecimalne
+Token getToken(){ 
     int c;
     int wasDot = 0;
     int wasE = 0;
@@ -214,7 +214,7 @@ Token getToken(){  //TODO zadavani hexadecimalne
                     ungetc(c, source);
                     break;
                 }
-                //TODO typy stringu ?int ?string ?float
+                // ?, ?>
                 else if (c == '?'){
                     if ((c = getc(source)) == '>'){
                         token.type = TYPE_END;
@@ -344,7 +344,6 @@ Token getToken(){  //TODO zadavani hexadecimalne
                     if (c == '"'){
                         token.type = TYPE_STRING;
                         token.attribute.dString = dynamicString;
-                        //c = getc(source);
                         return token;
                     }
                     else if (c == EOF){
