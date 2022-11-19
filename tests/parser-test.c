@@ -226,10 +226,10 @@
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_id_wrong, "$var ! 5;")
+    TEST(test_id_wrong, "5.5 ! 5;")
     PROLOG
     //$var + 5;
-    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_FLOAT, 0, 0, 5.5, NULL);
     makeToken(tokensArr, TYPE_NEG, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
     makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
@@ -397,6 +397,12 @@
 
     TEST(test_expr_comp3, "1/($var !== 5)+5; OK")
     PROLOG
+
+    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_ASSIGN, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
     makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
     makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
 
@@ -415,11 +421,11 @@
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_expr_comp4, "1<=$var !== 5; OK")
+    TEST(test_expr_comp4, "1<=0.1 !== 5; OK")
     PROLOG
     makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
     makeToken(tokensArr, TYPE_LESSEQ, 0, 0, 0, NULL);
-    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_FLOAT, 0, 0, 0.1, "var");
     makeToken(tokensArr, TYPE_NOTEQTYPES, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
 
@@ -429,13 +435,13 @@
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
     ENDTEST
 
-    TEST(test_expr_comp5, "1===$var !== 5; WRONG")
+    TEST(test_expr_comp5, "1===999.1 !== 5; WRONG")
     PROLOG
     makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
     makeToken(tokensArr, TYPE_DIV, 0, 0, 0, NULL);
 
     makeToken(tokensArr, TYPE_EQTYPES, 0, 0, 0, NULL);
-    makeToken(tokensArr, TYPE_ID, 0, 0, 0, "var");
+    makeToken(tokensArr, TYPE_FLOAT, 0, 0, 999.1, "var");
     makeToken(tokensArr, TYPE_NOTEQTYPES, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
 
@@ -516,6 +522,17 @@
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
+    TEST(test_funccal2, "funccal_udef")
+    PROLOG
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, 0);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 5, "Return code not 5", returnedVal)
     ENDTEST
 
     TEST(test_funcdef_ok, "funcdef_ok")
@@ -756,6 +773,7 @@
         test_if_ok();
         test_while();
         test_funccal();
+        test_funccal2();
         test_funcdef_ok();
         test_funcdef_ok2();
         test_return_ok();
