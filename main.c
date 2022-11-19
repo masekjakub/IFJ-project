@@ -25,7 +25,7 @@ int main(int argc, char** argv){
         else if (token.type == TYPE_INT){
             printf("%d --- %d\n",token.type ,token.attribute.intV);
         }
-        else if (token.type == TYPE_DOUBLE){
+        else if (token.type == TYPE_FLOAT){
             printf("%d --- %f\n",token.type ,token.attribute.doubleV);
         }
         else{
