@@ -10,7 +10,7 @@
  */
 #include "parser.h"
 #define isKeyword(TOKEN, KEYWORD) TOKEN.attribute.keyword == KEYWORD
-#define isValueType(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID || TYPE == TYPE_ID)
+#define isValueType(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID || TYPE == TYPE_ID || TYPE == TYPE_NULL)
 #define isOperatorType(TYPE) (TYPE == TYPE_ADD || TYPE == TYPE_SUB || TYPE == TYPE_MUL || TYPE == TYPE_DIV || TYPE == TYPE_MOD || TYPE == TYPE_EQTYPES || TYPE == TYPE_NOTEQTYPES || TYPE == TYPE_LESS || TYPE == TYPE_GREATER || TYPE == TYPE_LESSEQ || \
                               TYPE == TYPE_GREATEREQ || TYPE == TYPE_CONCAT)
 #define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
@@ -36,7 +36,7 @@ Token token, prevToken;
 
 Token *tokenArr; // simulation
 
-#define numOfExprRules 17
+#define numOfExprRules 18
 // rules are flipped because of stack
 TokenType exprRules[numOfExprRules][3] = {
     {TYPE_ID, TYPE_UNDEF, TYPE_UNDEF},          // E => ID
@@ -44,19 +44,20 @@ TokenType exprRules[numOfExprRules][3] = {
     {TYPE_FLOAT, TYPE_UNDEF, TYPE_UNDEF},       // E => FLOAT
     {TYPE_STRING, TYPE_UNDEF, TYPE_UNDEF},      // E => STRING
     {TYPE_FUNID, TYPE_UNDEF, TYPE_UNDEF},       // E => FUNID
-    {TYPE_EXPR, TYPE_ADD, TYPE_EXPR},           
-    {TYPE_EXPR, TYPE_SUB, TYPE_EXPR},
-    {TYPE_EXPR, TYPE_MUL, TYPE_EXPR},
-    {TYPE_EXPR, TYPE_COMMA, TYPE_EXPR},
-    {TYPE_RBRACKET, TYPE_EXPR, TYPE_LBRACKET},
-    {TYPE_EXPR, TYPE_DIV, TYPE_EXPR},
+    {TYPE_NULL, TYPE_UNDEF, TYPE_UNDEF},       // E => NULL
+    {TYPE_EXPR, TYPE_ADD, TYPE_EXPR},           // E => E + E
+    {TYPE_EXPR, TYPE_SUB, TYPE_EXPR},           // E => E - E
+    {TYPE_EXPR, TYPE_MUL, TYPE_EXPR},           // E => E * E
+    {TYPE_EXPR, TYPE_DIV, TYPE_EXPR},           // E => E / E
+    {TYPE_EXPR, TYPE_COMMA, TYPE_EXPR},         // E => E . E
+    {TYPE_RBRACKET, TYPE_EXPR, TYPE_LBRACKET},  // E => (E)
     // comparison
-    {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},
-    {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR},
-    {TYPE_EXPR, TYPE_LESS, TYPE_EXPR},
-    {TYPE_EXPR, TYPE_GREATER, TYPE_EXPR},
-    {TYPE_EXPR, TYPE_LESSEQ, TYPE_EXPR},
-    {TYPE_EXPR, TYPE_GREATEREQ, TYPE_EXPR},};
+    {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},       // E => E === E
+    {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR},    // E => E !== E
+    {TYPE_EXPR, TYPE_LESS, TYPE_EXPR},          // E => E < E
+    {TYPE_EXPR, TYPE_GREATER, TYPE_EXPR},       // E => E > E
+    {TYPE_EXPR, TYPE_LESSEQ, TYPE_EXPR},        // E => E <= E
+    {TYPE_EXPR, TYPE_GREATEREQ, TYPE_EXPR}};    // E => E >= E
 
 /**
  * @brief Free symtables
@@ -79,6 +80,7 @@ void freeST()
 Token newToken(int includingComms)
 {
     token = getTokenSim(tokenArr); // odstranit tokenarr
+    //token = getToken();
 
     if (!includingComms && token.type == TYPE_COMM)
         token = newToken(includingComms);
@@ -711,6 +713,7 @@ int getPrecTableIndex(Token token)
     case TYPE_INT:
     case TYPE_FLOAT:
     case TYPE_STRING:
+    case TYPE_NULL:
         return 4;
 
     case TYPE_LESS:
@@ -761,6 +764,12 @@ int exprUseRule(TokenType *typeArr)
     return 1;
 }
 
+void nullCheckAndConvert(Token *token){
+    if(token->type == TYPE_KEYWORD && token->attribute.keyword == KEYWORD_NULL){
+        token->type = TYPE_NULL;
+    }
+}
+
 /**
  * @brief process expression
  *
@@ -779,8 +788,10 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
     tmpToken.type = TYPE_STACKEMPTY;
     STACK_push(stack, tmpToken);
 
+    nullCheckAndConvert(&token);
     if (usePrevToken)
     {
+        nullCheckAndConvert(&prevToken);
         tmpToken.type = TYPE_LESSPREC;
         STACK_push(stack, tmpToken);
         STACK_push(stack, prevToken);
@@ -896,6 +907,8 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             break;
         }
 
+        nullCheckAndConvert(&token);
+
         // non-expression token loaded
         if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type) && !done)
         {
@@ -927,7 +940,8 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
  *
  * @return int error code
  */
-int parser(Token *tokenArrIN)
+int parser(Token *tokenArrIN) //sim
+//int parser()
 {
     tokenArr = tokenArrIN; // sim
 

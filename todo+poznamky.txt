@@ -1,8 +1,14 @@
 TODO
-bottom-up analýza výrazů
 MLK - scanner kody
-vsichni - funkce
+Kubik - volani fce, vestavene funkce do ST
 rozsireni globalni promenne?
+
+NAVOD NA SPOUSTENI MAIN:
+parser.c:
+    odkomentovat radky 83, 944
+    zakomentovat 82, 943, 946
+parser.h:
+    int parser(Token *); -> int parser();
 
 
 GRAMATIKA
@@ -45,14 +51,6 @@ GRAMATIKA
 <return> => epsilon
 
 ------------------------------------
-    E => ID
-    E => E + E
-    E => E - E
-    E => E * E
-    E => E / E
-    E => E . E
-    E => (E)
-    E = E < E
         
 
 <value> => INT 

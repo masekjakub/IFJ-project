@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "scanner.h"
+#include "parser.h"
 
 //  Pro ucely testovani
 int main(int argc, char** argv){
@@ -15,7 +16,10 @@ int main(int argc, char** argv){
         return ERR_OTHER;
     }
 
+
     setSourceFile(f);
+    //parser();
+    
     for (int i = 0; i < 51; i++){
         token = getToken();
         if (token.type == TYPE_STRING || token.type == TYPE_ID || token.type == TYPE_FUNID){
@@ -25,13 +29,12 @@ int main(int argc, char** argv){
         else if (token.type == TYPE_INT){
             printf("%d --- %d\n",token.type ,token.attribute.intV);
         }
-        else if (token.type == TYPE_DOUBLE){
+        else if (token.type == TYPE_FLOAT){
             printf("%d --- %f\n",token.type ,token.attribute.doubleV);
         }
         else{
             printf("%d type\n", token.type);
         }
     }
-
     fclose(f);
 }
