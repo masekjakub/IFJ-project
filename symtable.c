@@ -105,6 +105,7 @@ void ST_freeItemList(STItem *firstItem){
  * @param table ST to be freed
  */
 void ST_freeTable(Symtable *table){
+    if(table == NULL) return;
     for(unsigned int i = 0; i < table->size; i++){
         if(table->items[i] != NULL){
             ST_freeItemList(table->items[i]);
@@ -203,6 +204,7 @@ void ST_expand(Symtable *table){
 void ST_shrink(Symtable *table){
     //REHASHING
     unsigned int newSize = table->size / 2;
+    if(newSize < 4) newSize = 4;
     STItem *rehashItem = NULL;  //Item being rehashed
     STItem *prevItem = NULL;    //Previous item to rehashItem in item list on cur. index
     STItem *curItem = NULL;     //Cursor for going through item lists

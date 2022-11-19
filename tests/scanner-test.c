@@ -305,6 +305,232 @@ ENDTEST
 
 // TODO float testy pro nespravne floaty
 
+// Test with whole programs
+TEST(test_program1, "Test program 1")
+    fprintf(file, "                                             \
+        <?php \n                                                \
+        declare(strict_types=1);\n                              \
+        function concat(string $x, string $y) : string{\n       \
+            $x = $x . $y;\n                                     \
+            return $x . \" \" . $y;\n                           \
+        }\n                                                     \
+        $a = \"ahoj \";\n                                       \
+        $ret = concat($a, \"svete\");\n                         \
+        write($ret, $a);\n                                      \
+        ?>\n                                                    \
+    ");
+    fclose(file);
+    file = fopen("text.php", "r");
+    setSourceFile(file);
+    token = getToken();
+    ASSERT(token.type == TYPE_BEGIN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_DECLARE_ST, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_FUNCTION, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_FUNID && !strcmp(DS_string(token.attribute.dString), "concat"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_LBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_COMMA, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_RBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_COLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_LBRACES, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ASSIGN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_CONCAT, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_RETURN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_CONCAT, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), " "), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_CONCAT, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_RBRACES, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ASSIGN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "ahoj "), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "ret"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ASSIGN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_FUNID && !strcmp(DS_string(token.attribute.dString), "concat"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_LBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_COMMA, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "svete"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_RBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_FUNID && !strcmp(DS_string(token.attribute.dString), "write"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_LBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "ret"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_COMMA, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_RBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_END, token.type);
+ENDTEST
+
+TEST(test_program1_one_line, "Test program 1")
+    fprintf(file, "<?php declare(strict_types=1);function concat(string$x,string$y):string{$x=$x.$y;return $x.\" \".$y;}$a=\"ahoj \";$ret=concat($a,\"svete\");write($ret,$a);?>");
+    fclose(file);
+    file = fopen("text.php", "r");
+    setSourceFile(file);
+    token = getToken();
+    ASSERT(token.type == TYPE_BEGIN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_DECLARE_ST, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_FUNCTION, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_FUNID && !strcmp(DS_string(token.attribute.dString), "concat"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_LBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_COMMA, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_RBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_COLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_LBRACES, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ASSIGN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_CONCAT, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_RETURN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_CONCAT, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), " "), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_CONCAT, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_RBRACES, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ASSIGN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "ahoj "), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "ret"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ASSIGN, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_FUNID && !strcmp(DS_string(token.attribute.dString), "concat"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_LBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_COMMA, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "svete"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_RBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_FUNID && !strcmp(DS_string(token.attribute.dString), "write"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_LBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "ret"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_COMMA, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_RBRACKET, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_SEMICOLON, token.type);
+    token = getToken();
+    ASSERT(token.type == TYPE_END, token.type);
+ENDTEST
+
 int main(){
     // Tests for prolog
     test_prolog();
@@ -349,6 +575,10 @@ int main(){
     test_right_float4();
     test_right_float5();
 
+    // Test programs
+    test_program1();
+    test_program1_one_line();
+
     printf("================================================\n");
 	float score = (float)SUCCESSFUL_TESTS/(float)TEST_NUM;
 	if(score == 1.0){
@@ -362,4 +592,3 @@ int main(){
 	printf("\033[93m[SCORE] %.1f%%\033[0m\n",score*100);
 	return 0;
 }
-
