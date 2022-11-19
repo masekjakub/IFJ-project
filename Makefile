@@ -2,7 +2,7 @@ ALL_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c codeGenerator
 FLAGS := -std=c99 -Wall -Wextra
 
 all: $(ALL_FILES)
-	@gcc  $(FLAGS) $(ALL_FILES) -o translator
+	@gcc  $(FLAGS) -g $(ALL_FILES) -o translator
 
 debug: $(ALL_FILES)
 	@gcc $(FLAGS) -g $(ALL_FILES) -o translator
