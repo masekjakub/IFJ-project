@@ -234,7 +234,6 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
  *
  * @return ErrorType
  */
-//udelat: vyřešit sekvence v bloku ( {<statlist>} - GOOD / {<statlist>}} - CHYBA )
 ErrorType ruleStatList(bool isInBlock)
 {
     ErrorType err = 0;
@@ -553,7 +552,6 @@ ErrorType ruleId()
  *
  * @return ErrorType
  */
-// udelat: pridat fci do symtablu
 ErrorType ruleFuncdef()
 {
     ErrorType err = 0;
@@ -693,7 +691,6 @@ ErrorType ruleAssign()
  *
  * @return ErrorType
  */
-//udelat: syntaxe + vkládání param do functionTypes
 ErrorType ruleParams()
 {
     // epsilon
@@ -798,6 +795,8 @@ ErrorType ruleParam(){
     STItemData newVarData;
     newVarData.varData.VarType = paramType;
     ST_insertItem(getTable(0), token.attribute.dString->string, ST_ITEM_TYPE_VARIABLE, newVarData);
+    //Adding param to functionTypes
+    DS_append(functionTypes, paramType);
     token = newToken(0);
 
     return err;
