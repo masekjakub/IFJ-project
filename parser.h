@@ -42,6 +42,7 @@ ErrorType ruleParams2();
 ErrorType ruleArgs();
 ErrorType ruleArgs2();
 ErrorType ruleReturn();
+ErrorType functionCallCheckAndProcess();
 
 // to use in rule functions
 Token newToken(int);

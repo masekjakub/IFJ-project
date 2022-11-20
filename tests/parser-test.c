@@ -545,6 +545,21 @@
     ASSERT(returnedVal == 5, "Return code not 5", returnedVal)
     ENDTEST
 
+    TEST(test_funccal3, "funccal_notdef_param")
+    PROLOG
+    FUNCDEF("fuction name")
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FLOAT, 0, 0, 0.1, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, 0);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == ERR_RUNPAR, "Return code not 4", returnedVal)
+    ENDTEST
+
     TEST(test_funcdef_ok, "funcdef_ok")
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_FUNCTION, 0, 0, 0);
@@ -784,6 +799,7 @@
         test_while();
         test_funccal();
         test_funccal2();
+        test_funccal3();
         test_funcdef_ok();
         test_funcdef_ok2();
         test_return_ok();

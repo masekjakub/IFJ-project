@@ -88,7 +88,8 @@ void makeError(ErrorType err)
     }
 
     //Skipping section of code with error in it
-    while(token.type != TYPE_RBRACKET && token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
+    //while(token.type != TYPE_RBRACKET && token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
+    while(token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
         if(token.type == TYPE_EOF) return;
         token = newToken(0);
     }
@@ -946,18 +947,48 @@ int exprUseRule(Token *tokenArr)
  */
 ErrorType functionCallCheckAndProcess()
 {
+    int argCount = 0;
     Token funID = token;
     STItem *item = ST_searchTable(getTable(isGlobal),DS_string(token.attribute.dString));
-    if(item == NULL){
+    if(item == NULL) // function not defined
+    {
+        fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(token.attribute.dString), token.rowNumber);
         makeError(ERR_UNDEF);
         return ERR_UNDEF;
     }
+    
+    int paramCount = strlen(item->data.funData.funTypes);
     token = newToken(0);
 
+    // (
+    if(token.type != TYPE_LBRACKET){
+        fprintf(stderr, "Expected \"(\" on line %d!\n", token.rowNumber);
+        makeError(ERR_SYN);
+        return (ERR_SYN);
+    }
+
+    token = newToken(0);
     while (token.type != TYPE_RBRACKET)
     {
+        
+        if(isValueType(token.type)){
+            argCount++;
+            if(argCount > paramCount){
+                fprintf(stderr, "Too many arguments in function call on line %d!\n", token.rowNumber);
+                makeError(ERR_RUNPAR);
+                return ERR_RUNPAR;
+            }
+        }
+
+
+        if (!isValueType(token.type) && token.type != TYPE_COLON){
+            fprintf(stderr, "Expected value type in function argument on line %d!\n", token.rowNumber);
+            makeError(ERR_SYN);
+            break;
+        }
         token = newToken(0);
     }
+
     token = funID;
     return 0;
 }
@@ -1021,14 +1052,20 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
         if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type))
         {
             STACK_dispose(stack);
-            *isEmpty = 1;
             return err;
         }
 
     }
 
-    if(token.type == TYPE_FUNID)
-        functionCallCheckAndProcess();
+    if(token.type == TYPE_FUNID){
+        err = functionCallCheckAndProcess();  
+        if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type))
+        {
+            STACK_dispose(stack);
+            *isEmpty = 0;
+            return err;
+        }
+    }
 
     while (1)
     {
@@ -1134,8 +1171,9 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             break;
         }
 
-        if(token.type == TYPE_FUNID)
-            err = functionCallCheckAndProcess();
+        if(token.type == TYPE_FUNID){
+            err = functionCallCheckAndProcess();  
+        }
 
         // non-expression token loaded
         if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type) && !done)
@@ -1174,7 +1212,6 @@ int parser(Token *tokenArrIN) // sim
 {
     tokenArr = tokenArrIN; // sim
 
-    ErrorType err;
     firstError = 0;
     globalST = ST_initTable(16);
     localST = NULL;
@@ -1186,7 +1223,7 @@ int parser(Token *tokenArrIN) // sim
 
     // generateBuiltInFunc();
     //  <prog> => BEGIN DECLARE_ST <stat_list>
-    err = ruleProg();
+    ruleProg();
 
     DS_dispose(functionTypes);
     ST_freeTable(globalST);
