@@ -60,6 +60,7 @@ Symtable *ST_initTable(unsigned int size){
         exit(ERR_INTERN);
     }
     table->size = size;
+    table->count = 0;
     table->curVarIndex = 0;
     table->items = (STItem **)calloc(size, sizeof(STItem *));
     if(table->items == NULL){

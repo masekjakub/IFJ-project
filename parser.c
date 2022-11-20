@@ -89,7 +89,7 @@ void makeError(ErrorType err)
 
     //Skipping section of code with error in it
     //while(token.type != TYPE_RBRACKET && token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
-    while(token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
+    while(token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON){
         if(token.type == TYPE_EOF) return;
         token = newToken(0);
     }
@@ -643,9 +643,15 @@ ErrorType ruleAssign()
         if (token.type == TYPE_ASSIGN) // <assign> => ID = <expr> ;
         {
             STItemData data;
-            ST_insertItem(getTable(isGlobal),DS_string(token.attribute.dString),ST_ITEM_TYPE_VARIABLE, data);
             token = newToken(0);
             err = exprAnal(&varType, 0);
+
+            if (item == NULL){
+                STItemData STdata;
+                STdata.varData.VarType = varType;
+                ST_insertItem(getTable(isGlobal),DS_string(prevToken.attribute.dString),ST_ITEM_TYPE_VARIABLE, data);
+            }
+
             if (token.type != TYPE_SEMICOLON)
             {
                 fprintf(stderr, "Expected \";\" on line %d!\n", token.rowNumber);
@@ -659,24 +665,13 @@ ErrorType ruleAssign()
                 //printf("EMPTY");
                 return err;
             }*/
-
-            if (item == 0) // not found in ST
-            {
-                STItemData STdata;
-                STdata.varData.VarType = varType;
-                ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, STdata);
-            }
-            else // update type
-            {
-                ST_updateVarType(getTable(isGlobal), DS_string(prevToken.attribute.dString), varType);
-            }
         }
         else
         {
             err = exprAnal(&varType, 1);
             if (token.type != TYPE_SEMICOLON)
             {
-                fprintf(stderr, "Expected \";\" on line %d!\n", token.rowNumber);
+                fprintf(stderr, "Expected \";\" on line %d!\n", prevToken.rowNumber);
                 makeError(ERR_SYN);
                 return ERR_SYN;
             }
@@ -956,8 +951,9 @@ ErrorType functionCallCheckAndProcess()
         makeError(ERR_UNDEF);
         return ERR_UNDEF;
     }
-    
-    int paramCount = strlen(item->data.funData.funTypes);
+    int paramCount = -1;
+    if(item->data.funData.funTypes[0] != 'U') //unlimited
+        paramCount = strlen(item->data.funData.funTypes);
     token = newToken(0);
 
     // (
@@ -973,7 +969,8 @@ ErrorType functionCallCheckAndProcess()
         
         if(isValueType(token.type)){
             argCount++;
-            if(argCount > paramCount){
+            if(argCount > paramCount && paramCount != -1)
+            {
                 fprintf(stderr, "Too many arguments in function call on line %d!\n", token.rowNumber);
                 makeError(ERR_RUNPAR);
                 return ERR_RUNPAR;
@@ -981,7 +978,7 @@ ErrorType functionCallCheckAndProcess()
         }
 
 
-        if (!isValueType(token.type) && token.type != TYPE_COLON){
+        if (!isValueType(token.type) && token.type != TYPE_COMMA){
             fprintf(stderr, "Expected value type in function argument on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
             break;
@@ -1006,6 +1003,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
         STItem *item = ST_searchTable(getTable(isGlobal),DS_string(tokenArr[0].attribute.dString));
         if(item == NULL){
             token = endToken;
+            fprintf(stderr, "Usage of not initialized variable \"$%s\" on line %d!\n",DS_string(token.attribute.dString), token.rowNumber);
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
@@ -1087,7 +1085,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
         // precedence of token not found
         if (stackPrecIndex == -1 || tokenPrecIndex == -1)
         {
-            printf("INDEX ERR\n");
+            fprintf(stderr, "Invalid expression on line %d!\n", token.rowNumber);
             STACK_dispose(stack);
             token = endToken;
             makeError(ERR_SYN);
@@ -1208,7 +1206,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
  * @return int error code
  */
 int parser(Token *tokenArrIN) // sim
-// int parser()
+//int parser()
 {
     tokenArr = tokenArrIN; // sim
 

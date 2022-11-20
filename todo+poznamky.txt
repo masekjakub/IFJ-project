@@ -3,6 +3,9 @@ MLK - scanner kody
 Kubik - volani fce, vestavene funkce do ST
 rozsireni globalni promenne?
 
+bile znaky pred a za programem????
+
+
 NAVOD NA SPOUSTENI MAIN:
 parser.c:
     odkomentovat radky 83, 944
