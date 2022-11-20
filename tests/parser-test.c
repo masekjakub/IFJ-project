@@ -473,6 +473,34 @@
     ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
+    TEST(test_blocks_ok, "Blocks of code ok")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+        makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+        makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+            makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+            makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+            makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+            makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 4, 0, NULL);
+        makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 4, 0, NULL);
+        makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
     TEST(test_if_ok, "if_ok")
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_IF, 0, 0, 0);
@@ -795,6 +823,7 @@
         test_expr_comp3();
         test_expr_comp4();
         test_expr_comp5();
+        test_blocks_ok();
         test_if_ok();
         test_while();
         test_funccal();
