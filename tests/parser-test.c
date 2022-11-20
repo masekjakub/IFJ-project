@@ -473,6 +473,34 @@
     ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
+    TEST(test_blocks_ok, "Blocks of code ok")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+        makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+        makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+            makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+            makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+            makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+            makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 4, 0, NULL);
+        makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 4, 0, NULL);
+        makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
     TEST(test_if_ok, "if_ok")
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_IF, 0, 0, 0);
@@ -771,35 +799,36 @@
         printf("IFJ/IAL Project: Parser Tests\n");
         printf("================================================\n");
 
-        //test_prolog1();
-        //test_prolog2();
-        //test_epilog1();
-        //test_epilog2();
-        //test_epilog3();
-        //test_assign();
-        //test_add();
-        //test_add_nums();
-        //test_id_wrong();
-        //test_id_wrong2();
-        //test_num_alone();
-        //test_var_alone();
-        //test_var_alone_notdef();
-        //test_prec();
-        //test_expr();
-        //test_expr2();
-        //test_expr3();
-        //test_expr4();
-        //test_expr5();
-        //test_expr_comp();
-        //test_expr_comp2();
-        //test_expr_comp3();
-        //test_expr_comp4();
-        //test_expr_comp5();
-        //test_if_ok();
-        //test_while();
-        //test_funccal();
-        //test_funccal2();
-        //test_funccal3();
+        test_prolog1();
+        test_prolog2();
+        test_epilog1();
+        test_epilog2();
+        test_epilog3();
+        test_assign();
+        test_add();
+        test_add_nums();
+        test_id_wrong();
+        test_id_wrong2();
+        test_num_alone();
+        test_var_alone();
+        test_var_alone_notdef();
+        test_prec();
+        test_expr();
+        test_expr2();
+        test_expr3();
+        test_expr4();
+        test_expr5();
+        test_expr_comp();
+        test_expr_comp2();
+        test_expr_comp3();
+        test_expr_comp4();
+        test_expr_comp5();
+        test_blocks_ok();
+        test_if_ok();
+        test_while();
+        test_funccal();
+        test_funccal2();
+        test_funccal3();
         test_funcdef_ok();
         test_funcdef_ok2();
         test_return_ok();

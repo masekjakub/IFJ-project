@@ -224,7 +224,7 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
     token = newToken(0);
 
     // <st-list>
-    err = ruleStatList();
+    err = ruleStatList(false);
 
     return err;
 }
@@ -234,22 +234,21 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
  *
  * @return ErrorType
  */
-//udelat: vyřešit sekvence v bloku ( {<statlist>} - GOOD / {<statlist>}} - CHYBA )
-ErrorType ruleStatList()
+ErrorType ruleStatList(bool isInBlock)
 {
     ErrorType err = 0;
     ErrorType tmpErr = 0;
-    int openBracesBlocks = 0;
+    int openBracesBlocks = isInBlock ? 1 : 0;
 
     while (1)
     {        
         //if (err)
         //    return err;
 
-        //if(token.type = TYPE_LBRACES){
-        //    openBracesBlocks++;
-        //    token = newToken(0);
-        //}
+        if(token.type == TYPE_LBRACES){
+            openBracesBlocks++;
+            token = newToken(0);
+        }
         
         //<return>
         tmpErr = ruleReturn();
@@ -276,16 +275,17 @@ ErrorType ruleStatList()
         }
 
         // Check end of {<stat-list>}
-        if (token.type == TYPE_RBRACES) break;
-        //if (token.type == TYPE_RBRACES){
-        //    openBracesBlocks--;
-        //    if(openBracesBlocks < 0){
-        //        fprintf(stderr, "Unexpected \"}\" on line %d!\n", token.rowNumber);
-        //        makeError(ERR_SYN);
-        //        return (ERR_SYN);
-        //    }
-        //    if(openBracesBlocks == 0) break;
-        //}
+        //if (token.type == TYPE_RBRACES) break;
+        if (token.type == TYPE_RBRACES){
+            openBracesBlocks--;
+            if(openBracesBlocks < 0){
+                fprintf(stderr, "Unexpected \"}\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return (ERR_SYN);
+            }
+            if(openBracesBlocks == 0) break;
+            token = newToken(0);
+        }
 
         // statement rule
         tmpErr = ruleStat();
@@ -336,7 +336,7 @@ ErrorType ruleStat()
             token = newToken(0);
 
             // <stat_list>
-            errTmp = ruleStatList();
+            errTmp = ruleStatList(true);
             if (err == 0)
             {
                 err = errTmp;
@@ -382,7 +382,7 @@ ErrorType ruleStat()
             token = newToken(0);
 
             // <stat_list>
-            errTmp = ruleStatList();
+            errTmp = ruleStatList(true);
             if (err == 0)
             {
                 err = errTmp;
@@ -425,7 +425,7 @@ ErrorType ruleStat()
             token = newToken(0);
 
             // <stat_list>
-            errTmp = ruleStatList();
+            errTmp = ruleStatList(true);
             if (err == 0)
             {
                 err = errTmp;
@@ -552,7 +552,6 @@ ErrorType ruleId()
  *
  * @return ErrorType
  */
-// udelat: pridat fci do symtablu
 ErrorType ruleFuncdef()
 {
     ErrorType err = 0;
@@ -594,7 +593,7 @@ ErrorType ruleFuncdef()
     token = newToken(0);
 
     // <stat_list>
-    err = ruleStatList();
+    err = ruleStatList(true);
 
     // }
     if (token.type != TYPE_RBRACES)
@@ -687,7 +686,6 @@ ErrorType ruleAssign()
  *
  * @return ErrorType
  */
-//udelat: syntaxe + vkládání param do functionTypes
 ErrorType ruleParams()
 {
     // epsilon
@@ -792,6 +790,8 @@ ErrorType ruleParam(){
     STItemData newVarData;
     newVarData.varData.VarType = paramType;
     ST_insertItem(getTable(0), token.attribute.dString->string, ST_ITEM_TYPE_VARIABLE, newVarData);
+    //Adding param to functionTypes
+    DS_append(functionTypes, paramType);
     token = newToken(0);
 
     return err;

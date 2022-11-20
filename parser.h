@@ -31,7 +31,7 @@ typedef enum
 // rules funcs
 ErrorType exprAnal();
 ErrorType ruleProg();
-ErrorType ruleStatList();
+ErrorType ruleStatList(bool);
 ErrorType ruleStat();
 ErrorType ruleId();
 ErrorType ruleFuncdef();
