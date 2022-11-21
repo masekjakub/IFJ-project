@@ -1,16 +1,16 @@
-ALL_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c codeGenerator.c main.c
+ALL_C_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c codeGenerator.c main.c getTokenSim.c
 FLAGS := -std=c99 -Wall -Wextra
 
-all: $(ALL_FILES)
-	@gcc  $(FLAGS) -g $(ALL_FILES) -o translator
+all: $(ALL_C_FILES)
+	@gcc  $(FLAGS) -g $(ALL_C_FILES) -o translator
 
-debug: $(ALL_FILES)
-	@gcc $(FLAGS) -g $(ALL_FILES) -o translator
+debug: $(ALL_C_FILES)
+	@gcc $(FLAGS) -g $(ALL_C_FILES) -o translator
 
-parser: $(ALL_FILES)
+parser: $(ALL_C_FILES)
 	@gcc $(FLAGS) -g  tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test
 
-scanner: $(ALL_FILES)
+scanner: $(ALL_C_FILES)
 	@gcc $(FLAGS) main.c scanner.c dynamicString.c -o main
 	@./main text.php
 	@rm main
@@ -44,4 +44,14 @@ clean:
 	@rm -f symtable-test
 	@rm -f dynamicString-test
 	@rm -f translator
+	@rm -f xmasek19.zip
 	@rm -f *.o
+
+pack:
+	@zip xmasek19.zip *.c *.h Makefile
+
+check:
+	@bash tests/is_it_ok.sh xmasek19.zip testdir
+	@rm -f xmasek19.zip
+	@rm -rf testdir
+

@@ -1,3 +1,13 @@
+/**
+ * @file parser-test.c
+ * @authors Jakub Mašek, Martin Zelenák
+ * @brief test for parser.c
+ * @version 0.1
+ * @date 20-11-2022
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "../parser.h"
 
 #define TEST(NAME, DESCRIPTION)                  \
@@ -463,6 +473,34 @@
     ASSERT(returnedVal == 2, "Return code not 2", returnedVal)
     ENDTEST
 
+    TEST(test_blocks_ok, "Blocks of code ok")
+    PROLOG
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_INT, 0, 1, 0, NULL);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+
+    makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+        makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 2, 0, NULL);
+        makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_LBRACES, 0, 0, 0, NULL);
+            makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+            makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+            makeToken(tokensArr, TYPE_INT, 0, 3, 0, NULL);
+            makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 4, 0, NULL);
+        makeToken(tokensArr, TYPE_ADD, 0, 0, 0, NULL);
+        makeToken(tokensArr, TYPE_INT, 0, 4, 0, NULL);
+        makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_RBRACES, 0, 0, 0, NULL);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == 0, "Return code not 0", returnedVal)
+    ENDTEST
+
     TEST(test_if_ok, "if_ok")
     PROLOG
     makeToken(tokensArr, TYPE_KEYWORD, KEYWORD_IF, 0, 0, 0);
@@ -533,6 +571,21 @@
     EPILOG
     returnedVal = parser(tokensArr);
     ASSERT(returnedVal == 5, "Return code not 5", returnedVal)
+    ENDTEST
+
+    TEST(test_funccal3, "funccal_notdef_param")
+    PROLOG
+    FUNCDEF("fuction name")
+    makeToken(tokensArr, TYPE_FUNID, 0, 0, 0, "fuction name");
+    makeToken(tokensArr, TYPE_LBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_INT, 0, 5, 0, NULL);
+    makeToken(tokensArr, TYPE_COLON, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_FLOAT, 0, 0, 0.1, NULL);
+    makeToken(tokensArr, TYPE_RBRACKET, 0, 0, 0, 0);
+    makeToken(tokensArr, TYPE_SEMICOLON, 0, 0, 0, 0);
+    EPILOG
+    returnedVal = parser(tokensArr);
+    ASSERT(returnedVal == ERR_RUNPAR, "Return code not 4", returnedVal)
     ENDTEST
 
     TEST(test_funcdef_ok, "funcdef_ok")
@@ -770,10 +823,12 @@
         test_expr_comp3();
         test_expr_comp4();
         test_expr_comp5();
+        test_blocks_ok();
         test_if_ok();
         test_while();
         test_funccal();
         test_funccal2();
+        test_funccal3();
         test_funcdef_ok();
         test_funcdef_ok2();
         test_return_ok();

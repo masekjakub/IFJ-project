@@ -6,7 +6,8 @@
 int main(int argc, char** argv){
     FILE *f;
     Token token;
-    
+    ErrorType error = 0;
+
     if (argc == 1){
         fprintf(stderr, "Chybi vstupni soubor\n");
         return ERR_OTHER;
@@ -18,8 +19,9 @@ int main(int argc, char** argv){
 
 
     setSourceFile(f);
-    //parser();
+    //error = parser();
     
+    // Filip tester - vymazat
     for (int i = 0; i < 51; i++){
         token = getToken();
         if (token.type == TYPE_STRING || token.type == TYPE_ID || token.type == TYPE_FUNID){
@@ -37,4 +39,5 @@ int main(int argc, char** argv){
         }
     }
     fclose(f);
+    exit(error);
 }
