@@ -220,8 +220,8 @@ Token getToken(){
                         token.type = TYPE_END;
                         return token;
                     }
-                    fprintf(stderr, "Wrong epilog!\nExpected epilog: \"?>\" on line %d!\n", token.rowNumber);
-                    token.type = TYPE_LEXERR;
+                    ungetc(c, source);
+                    token.type = TYPE_QMARK;
                     return token;
                 }
                 // =, ===
