@@ -111,6 +111,7 @@ Token getToken(){
                     // Check for commentary in line
                     if (c == '/'){
                         while (c != '\n' && c != EOF){ c = getc(source); }
+                        ungetc(c, source);
                         token.type = TYPE_COMM;
                         return token;
                     }
@@ -306,6 +307,7 @@ Token getToken(){
                 // VARIABLE
                 else if (c == '$'){
                     state = STATE_VAR;
+                    ungetc(c, source);
                     break;
                 }
                 // FUNCTION
@@ -355,6 +357,8 @@ Token getToken(){
 
             // State for returning names of variables
             case STATE_VAR:
+                DS_append(dynamicString, c);
+                c = getc(source);
                 if (!isalpha(c) && c != '_'){
                     fprintf(stderr, "Variables in IFJ22 should begin with alphabetic character or underscore on line %d!\nFor examle: \"$a...\" or \"$A...\" or \"$_...\"\n", token.rowNumber);
                     token.type = TYPE_LEXERR;
