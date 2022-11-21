@@ -58,6 +58,11 @@ bool isKeyword(DynamicString *dynamicString, Token *token){
         token->attribute.keyword = KEYWORD_STRING;
         return true;
     }
+    if (!strcmp(DS_string(dynamicString), "int")){
+        token->type = TYPE_KEYWORD;
+        token->attribute.keyword = KEYWORD_INT;
+        return true;
+    }
     if (!strcmp(DS_string(dynamicString), "null")){
         token->type = TYPE_NULL;
         return true;
