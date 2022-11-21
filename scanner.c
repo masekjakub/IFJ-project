@@ -273,6 +273,7 @@ Token getToken(){
                             DS_append(dynamicString, c = getc(source));
                         }
                         if (!strcmp(DS_string(dynamicString), "php") && isspace((c = getc(source)))){
+                            ungetc(c, source);
                             token.type = TYPE_BEGIN;
                             DS_dispose(dynamicString);
                             return token;
