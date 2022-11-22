@@ -7,11 +7,8 @@ bile znaky pred a za programem????
 
 
 NAVOD NA SPOUSTENI MAIN:
-parser.c:
-    odkomentovat radky 83, 944
-    zakomentovat 82, 943, 946
 parser.h:
-    int parser(Token *); -> int parser();
+    odkomentovat define scanner
 
 
 GRAMATIKA

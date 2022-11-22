@@ -22,6 +22,7 @@ Symtable *localST;  // local symtable
 int isGlobal;       // program is not in function
 TokenType returnType = TYPE_VOID;   //Return type of currently parsed function
 DynamicString *functionTypes;       //Return type and param types of currently parsed function
+DynamicString *progCode;            //Program code
 
 const int precTable[8][8] = {
     {R, L, L, R, L, L, L, R},  // +
@@ -68,8 +69,11 @@ TokenType exprRules[numOfExprRules][3] = {
  */
 Token newToken(int includingComms)
 {
+    #ifdef scanner
+    token = getToken();
+    #else
     token = getTokenSim(tokenArr); // odstranit tokenarr
-    //token = getToken();
+    #endif
 
     if (!includingComms && token.type == TYPE_COMM)
         token = newToken(includingComms);
@@ -223,7 +227,6 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
     }
     token = newToken(0);
 
-    printf(".IFJcode22\n");
     // <st-list>
     err = ruleStatList(false);
 
@@ -968,7 +971,6 @@ ErrorType functionCallCheckAndProcess()
     token = newToken(0);
     while (token.type != TYPE_RBRACKET)
     {
-        
         if(isValueType(token.type)){
             argCount++;
             if(argCount > paramCount && paramCount != -1)
@@ -983,6 +985,8 @@ ErrorType functionCallCheckAndProcess()
             fprintf(stderr, "Empty expression in function call on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
         }
+
+        //CODEpushValue(progCode, token);
 
         if(token.type == TYPE_COMMA)
             token = newToken(0);
@@ -1210,10 +1214,15 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
  *
  * @return int error code
  */
+#ifdef scanner
+int parser()
+#else
 int parser(Token *tokenArrIN) // sim
-//int parser()
+#endif
 {
+    #ifndef scanner
     tokenArr = tokenArrIN; // sim
+    #endif
 
     firstError = 0;
     globalST = ST_initTable(16);
@@ -1221,13 +1230,23 @@ int parser(Token *tokenArrIN) // sim
     isGlobal = 1;
     returnType = TYPE_VOID;
     functionTypes = DS_init();
+    DynamicString *functionsCode;
+    functionsCode = DS_init();
+    progCode = DS_init();
+    DS_appendString(progCode, "LABEL @main\n");
 
     builtInFuncFillST(globalST);
 
-    // generateBuiltInFunc();
+    generateBuiltInFunc(functionsCode);
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     ruleProg();
 
+    #ifdef scanner
+    printf("%s",DS_string(functionsCode));
+    printf("%s",DS_string(progCode));
+    #endif
+    DS_dispose(functionsCode);
+    DS_dispose(progCode);
     DS_dispose(functionTypes);
     ST_freeTable(globalST);
     // printf("Parser OK!\n");

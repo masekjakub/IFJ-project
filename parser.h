@@ -8,6 +8,9 @@
  * @copyright Copyright (c) 2022
  *
  */
+//////////////////////////
+//#define scanner // use scanner
+//////////////////////////
 
 #ifndef _IFJ_PARSER
 #define _IFJ_PARSER
@@ -51,6 +54,10 @@ Symtable *getTable(int);
 void makeError();
 
 // other
+#ifndef scanner
 int parser(Token *);
+#else
+int parser();
+#endif
 
 #endif
