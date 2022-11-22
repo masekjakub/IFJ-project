@@ -1,3 +1,14 @@
+/**
+ * @file scanner-test.c
+ * @author Filip Polomski
+ * @brief test for scanner for IFJ22 translator
+ * @version 1.0
+ * @date 20-11-2022
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include "../scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,7 +137,7 @@ TEST(test_right_variable1, "Variable: $variable1_")
     setSourceFile(file);
     token = getToken();
     ASSERT(token.type == TYPE_ID, token.type);
-    ASSERT(!strcmp(DS_string(token.attribute.dString), "variable1_"), token.type);
+    ASSERT(!strcmp(DS_string(token.attribute.dString), "$variable1_"), token.type);
 ENDTEST
 
 TEST(test_right_variable2, "Variable: $_variable1_")
@@ -136,7 +147,7 @@ TEST(test_right_variable2, "Variable: $_variable1_")
     setSourceFile(file);
     token = getToken();
     ASSERT(token.type == TYPE_ID, token.type);
-    ASSERT(!strcmp(DS_string(token.attribute.dString), "_variable1_"), token.type);
+    ASSERT(!strcmp(DS_string(token.attribute.dString), "$_variable1_"), token.type);
 ENDTEST
 
 TEST(test_right_variable3, "Variable: $Variable1_")
@@ -146,7 +157,7 @@ TEST(test_right_variable3, "Variable: $Variable1_")
     setSourceFile(file);
     token = getToken();
     ASSERT(token.type == TYPE_ID, token.type);
-    ASSERT(!strcmp(DS_string(token.attribute.dString), "Variable1_"), token.type);
+    ASSERT(!strcmp(DS_string(token.attribute.dString), "$Variable1_"), token.type);
 ENDTEST
 
 TEST(test_wrong_variable, "Variable: $1variable1_")
@@ -337,13 +348,13 @@ TEST(test_program1, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$x"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_COMMA, token.type);
     token = getToken();
     ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$y"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_RBRACKET, token.type);
     token = getToken();
@@ -353,21 +364,21 @@ TEST(test_program1, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_LBRACES, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$x"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_ASSIGN, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$x"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$y"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
     ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_RETURN, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$x"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
@@ -375,13 +386,13 @@ TEST(test_program1, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$y"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
     ASSERT(token.type == TYPE_RBRACES, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$a"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_ASSIGN, token.type);
     token = getToken();
@@ -389,7 +400,7 @@ TEST(test_program1, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "ret"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$ret"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_ASSIGN, token.type);
     token = getToken();
@@ -397,7 +408,7 @@ TEST(test_program1, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_LBRACKET, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$a"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_COMMA, token.type);
     token = getToken();
@@ -411,11 +422,11 @@ TEST(test_program1, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_LBRACKET, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "ret"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$ret"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_COMMA, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$a"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_RBRACKET, token.type);
     token = getToken();
@@ -444,13 +455,13 @@ TEST(test_program1_one_line, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$x"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_COMMA, token.type);
     token = getToken();
     ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_STRING, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$y"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_RBRACKET, token.type);
     token = getToken();
@@ -460,21 +471,21 @@ TEST(test_program1_one_line, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_LBRACES, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$x"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_ASSIGN, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$x"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$y"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
     ASSERT(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_RETURN, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "x"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$x"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
@@ -482,13 +493,13 @@ TEST(test_program1_one_line, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "y"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$y"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
     ASSERT(token.type == TYPE_RBRACES, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$a"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_ASSIGN, token.type);
     token = getToken();
@@ -496,7 +507,7 @@ TEST(test_program1_one_line, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "ret"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$ret"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_ASSIGN, token.type);
     token = getToken();
@@ -504,7 +515,7 @@ TEST(test_program1_one_line, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_LBRACKET, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$a"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_COMMA, token.type);
     token = getToken();
@@ -518,11 +529,11 @@ TEST(test_program1_one_line, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_LBRACKET, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "ret"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$ret"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_COMMA, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "a"), token.type);
+    ASSERT(token.type == TYPE_ID && !strcmp(DS_string(token.attribute.dString), "$a"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_RBRACKET, token.type);
     token = getToken();
