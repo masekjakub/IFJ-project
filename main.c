@@ -19,10 +19,10 @@ int main(int argc, char** argv){
 
 
     setSourceFile(f);
-    //error = parser();
+    error = parser();
     
     // Filip tester - vymazat
-    for (int i = 0; i < 51; i++){
+    /*for (int i = 0; i < 51; i++){
         token = getToken();
         if (token.type == TYPE_STRING || token.type == TYPE_ID || token.type == TYPE_FUNID){
             printf("%d --- %s\n",token.type  ,token.attribute.dString->string);
@@ -37,7 +37,7 @@ int main(int argc, char** argv){
         else{
             printf("%d type\n", token.type);
         }
-    }
+    }*/
     fclose(f);
     exit(error);
 }

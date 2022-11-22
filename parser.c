@@ -69,7 +69,7 @@ TokenType exprRules[numOfExprRules][3] = {
 Token newToken(int includingComms)
 {
     token = getTokenSim(tokenArr); // odstranit tokenarr
-    // token = getToken();
+    //token = getToken();
 
     if (!includingComms && token.type == TYPE_COMM)
         token = newToken(includingComms);
@@ -89,7 +89,7 @@ void makeError(ErrorType err)
 
     //Skipping section of code with error in it
     //while(token.type != TYPE_RBRACKET && token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
-    while(token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON){
+    while(token.type != TYPE_RBRACES && token.type != TYPE_LBRACES &&token.type != TYPE_SEMICOLON){
         if(token.type == TYPE_EOF) return;
         token = newToken(0);
     }
@@ -223,6 +223,7 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
     }
     token = newToken(0);
 
+    printf(".IFJcode22\n");
     // <st-list>
     err = ruleStatList(false);
 
@@ -944,6 +945,7 @@ ErrorType functionCallCheckAndProcess()
 {
     int argCount = 0;
     Token funID = token;
+    int isEmpty = 0;
     STItem *item = ST_searchTable(getTable(isGlobal),DS_string(token.attribute.dString));
     if(item == NULL) // function not defined
     {
@@ -976,14 +978,20 @@ ErrorType functionCallCheckAndProcess()
                 return ERR_RUNPAR;
             }
         }
-
-
-        if (!isValueType(token.type) && token.type != TYPE_COMMA){
-            fprintf(stderr, "Expected value type in function argument on line %d!\n", token.rowNumber);
+        exprAnal(&isEmpty, 0);
+        if(isEmpty){
+            fprintf(stderr, "Empty expression in function call on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
-            break;
         }
-        token = newToken(0);
+
+        if(token.type == TYPE_COMMA)
+            token = newToken(0);
+        else if(token.type != TYPE_RBRACKET)
+        {
+            fprintf(stderr, "Expected \",\" or \")\" on line %d!\n", token.rowNumber);
+            makeError(ERR_SYN);
+            return (ERR_SYN);
+        }
     }
 
     token = funID;
@@ -1057,12 +1065,6 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
 
     if(token.type == TYPE_FUNID){
         err = functionCallCheckAndProcess();  
-        if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type))
-        {
-            STACK_dispose(stack);
-            *isEmpty = 0;
-            return err;
-        }
     }
 
     while (1)
@@ -1162,6 +1164,9 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
 
         case N: // error
             STACK_dispose(stack);
+            if (token.type == TYPE_RBRACKET){
+                return 0;
+            }
             token = endToken;
             fprintf(stderr, "Invalid expression on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
