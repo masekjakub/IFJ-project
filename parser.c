@@ -52,7 +52,7 @@ TokenType exprRules[numOfExprRules][3] = {
     {TYPE_EXPR, TYPE_SUB, TYPE_EXPR},          // E => E - E
     {TYPE_EXPR, TYPE_MUL, TYPE_EXPR},          // E => E * E
     {TYPE_EXPR, TYPE_DIV, TYPE_EXPR},          // E => E / E
-    {TYPE_EXPR, TYPE_COMMA, TYPE_EXPR},        // E => E . E
+    {TYPE_EXPR, TYPE_CONCAT, TYPE_EXPR},        // E => E . E
     {TYPE_RBRACKET, TYPE_EXPR, TYPE_LBRACKET}, // E => (E)
     {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},    // E => E === E
     {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR}, // E => E !== E
@@ -74,6 +74,10 @@ Token newToken(int includingComms)
     #else
     token = getTokenSim(tokenArr); // odstranit tokenarr
     #endif
+
+    if(token.type == TYPE_LEXERR){
+        makeError(ERR_LEX);
+    }
 
     if (!includingComms && token.type == TYPE_COMM)
         token = newToken(includingComms);
@@ -865,6 +869,7 @@ int getPrecTableIndex(Token token)
     {
     case TYPE_ADD:
     case TYPE_SUB:
+    case TYPE_CONCAT:
         return 0;
 
     case TYPE_MUL:
@@ -1015,7 +1020,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
         STItem *item = ST_searchTable(getTable(isGlobal),DS_string(tokenArr[0].attribute.dString));
         if(item == NULL){
             token = endToken;
-            fprintf(stderr, "Usage of not initialized variable \"$%s\" on line %d!\n",DS_string(token.attribute.dString), token.rowNumber);
+            fprintf(stderr, "Usage of not initialized variable \"%s\" on line %d!\n",DS_string(tokenArr[0].attribute.dString), token.rowNumber);
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
@@ -1242,8 +1247,8 @@ int parser(Token *tokenArrIN) // sim
     ruleProg();
 
     #ifdef scanner
-    printf("%s",DS_string(functionsCode));
-    printf("%s",DS_string(progCode));
+    //printf("%s",DS_string(functionsCode));
+    //printf("%s",DS_string(progCode));
     #endif
     DS_dispose(functionsCode);
     DS_dispose(progCode);

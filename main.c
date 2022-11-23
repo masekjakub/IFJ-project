@@ -8,16 +8,12 @@ int main(int argc, char** argv){
     Token token;
     ErrorType error = 0;
 
-    if (argc == 1){
-        fprintf(stderr, "Chybi vstupni soubor\n");
-        return ERR_OTHER;
-    }
-    if ((f = fopen(argv[1], "r")) == NULL){
+   /* if ((f = fopen(stdin, "r")) == NULL){
         fprintf(stderr, "Soubor neslo otevrit\n");
         return ERR_OTHER;
-    }
+    }*/
 
-
+    f = stdin;
     setSourceFile(f);
     error = parser();
     
