@@ -394,9 +394,14 @@ Token getToken(){
                                 c = getc(source);
                                 // * loading chars in brackets and then check if it is "strict_types=1"
                                 while (1){
+                                    if (isspace(c)){
+                                        c = getc(source);
+                                        continue;
+                                    }
                                     DS_append(dynamicString, c);
                                     c = getc(source);
                                     if (c == ')'){
+
                                         if (!strcmp(DS_string(dynamicString), "strict_types=1")){
                                             token.type = TYPE_DECLARE_ST;
                                             DS_dispose(dynamicString);
@@ -480,6 +485,11 @@ Token getToken(){
                                 }
                                 ungetc(c, source);
                                 DS_append(dynamicString, tmp);
+                            }
+                            else if (!isdigit(c)){
+                                fprintf(stderr, "Wrong float number in line %d!\nExpected number after e or E!\n", token.rowNumber);
+                                token.type = TYPE_LEXERR;
+                                return token;
                             }
                             else{
                                 ungetc(c, source);
