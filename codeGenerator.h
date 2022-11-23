@@ -5,6 +5,7 @@
 #include "stack.h"
 #include <string.h>
 
-int generateBuiltInFunc();
-
+int generateBuiltInFunc(DynamicString *);
+int callFunc();
+int CODEpushValue(DynamicString *, Token);
 #endif
