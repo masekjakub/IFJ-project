@@ -314,6 +314,15 @@ TEST(test_right_float5, "Float: 12.e+2")
     ASSERT(token.attribute.doubleV == 1200.000000, token.type);
 ENDTEST
 
+TEST(test_wrong_float, "Float: 12.")
+    fprintf(file, "12.\n");
+    fclose(file);
+    file = fopen("text.php", "r");
+    setSourceFile(file);
+    token = getToken();
+    ASSERT(token.type == TYPE_LEXERR, token.type);
+ENDTEST
+
 // TODO float testy pro nespravne floaty
 
 // Test with whole programs
@@ -585,6 +594,7 @@ int main(){
     test_right_float3();
     test_right_float4();
     test_right_float5();
+    test_wrong_float();
 
     // Test programs
     test_program1();

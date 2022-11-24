@@ -239,6 +239,7 @@ Token getToken(){
                             return token;
                         }
                         fprintf(stderr, "Non-existing operator \"==\" on line %d!\nThere are only operands: \"=\" or \"===\".\n", token.rowNumber);
+                        ungetc(c, source);
                         token.type = TYPE_LEXERR;
                         return token;
                     }
@@ -257,6 +258,7 @@ Token getToken(){
                             return token;
                         }
                         fprintf(stderr, "Non-existing operator \"!=\" on line %d!\nThere are only operands: \"!\" or \"!==\".\n", token.rowNumber);
+                        ungetc(c, source);
                         token.type = TYPE_LEXERR;
                         return token;
                     }
@@ -367,6 +369,7 @@ Token getToken(){
                 c = getc(source);
                 if (!isalpha(c) && c != '_'){
                     fprintf(stderr, "Variables in IFJ22 should begin with alphabetic character or underscore on line %d!\nFor examle: \"$a...\" or \"$A...\" or \"$_...\"\n", token.rowNumber);
+                    ungetc(c, source);
                     token.type = TYPE_LEXERR;
                     return token;
                 }
@@ -465,6 +468,7 @@ Token getToken(){
                     if (isdigit(c) || c == 'e' || c == '.' || c == '-' || c == 'E' || c == '+'){
                         if (((c == 'e' || c == 'E') && wasE) || (c == '.' && wasDot)){
                             fprintf(stderr, "Wrong float number on line %d!\nSymbol . or character e can be used only once in float!\nExpected: 1.2 or 1.2e10 or 1.2e-10\n", token.rowNumber);
+                            ungetc(c, source);
                             token.type = TYPE_LEXERR;
                             return token;
                         }
@@ -473,6 +477,14 @@ Token getToken(){
                         }
                         if (c == '.'){
                             wasDot = 1;
+                            DS_append(dynamicString, c);
+                            c = getc(source);
+                            if (!isdigit(c) && (c != 'e' && c != 'E')){
+                                fprintf(stderr, "Wrong float number on line %d!\nExpected number after \"12.\"!\n", token.rowNumber);
+                                ungetc(c, source);
+                                token.type = TYPE_LEXERR;
+                                return token;
+                            }
                         }
                         DS_append(dynamicString, c);
                         if (c == 'e' || c == 'E'){
@@ -480,13 +492,15 @@ Token getToken(){
                                 int tmp = c;
                                 if (!isdigit(c = getc(source))){
                                     fprintf(stderr, "Wrong float number on line %d!\nExpected number after + or -: \"2e-1 or 2e+3\"\n", token.rowNumber);
+                                    ungetc(c, source);
                                     token.type = TYPE_LEXERR;
                                     return token;
                                 }
-                                ungetc(c, source);
                                 DS_append(dynamicString, tmp);
+                                continue;
                             }
                             else if (!isdigit(c)){
+                                ungetc(c, source);
                                 fprintf(stderr, "Wrong float number in line %d!\nExpected number after e or E!\n", token.rowNumber);
                                 token.type = TYPE_LEXERR;
                                 return token;
@@ -506,6 +520,7 @@ Token getToken(){
                 }
                 token.type = TYPE_FLOAT;
                 token.attribute.doubleV = atof(DS_string(dynamicString));
+                printf("%s\n", DS_string(dynamicString));
                 DS_dispose(dynamicString);
                 ungetc(c, source);
                 return token;
