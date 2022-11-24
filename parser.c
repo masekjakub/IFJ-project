@@ -564,13 +564,20 @@ ErrorType ruleFuncdef()
 {
     ErrorType err = 0;
     ErrorType tmpErr = 0;
+    bool canBeNull = false;
     isGlobal = 0;   //Set parsing in function
     returnType = TYPE_VOID; //Set unspecified return type
 
-    // : TYPE
+    // : ?TYPE
     if (token.type == TYPE_COLON)
     {
         token = newToken(0);
+        
+        // ?
+        if(token.type == TYPE_QMARK){
+            canBeNull = true;
+            token = newToken(0);
+        }
 
         // TYPE
         if (token.type != TYPE_KEYWORD)
@@ -588,6 +595,7 @@ ErrorType ruleFuncdef()
             return ERR_SYN;
         }
         returnType = keywordType2VarType(token.attribute.keyword); // Set specified return type
+        if(canBeNull) returnType -= 32; //Capitalize if function can return null or other type
         token = newToken(0);
     }
 
