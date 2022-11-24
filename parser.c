@@ -131,14 +131,25 @@ void builtInFuncFillST(Symtable *stable)
     data.funData.funTypes = "U"; // unlimited
     ST_insertItem(stable, "write", ST_ITEM_TYPE_FUNCTION, data);
 
-    data.funData.funTypes = "I"; // readi
+    data.funData.funTypes = "";// no parameters
     ST_insertItem(stable, "readi", ST_ITEM_TYPE_FUNCTION, data);
-
-    data.funData.funTypes = "F"; // readf
     ST_insertItem(stable, "readf", ST_ITEM_TYPE_FUNCTION, data);
-
-    data.funData.funTypes = "S"; // reads
     ST_insertItem(stable, "reads", ST_ITEM_TYPE_FUNCTION, data);
+
+    data.funData.funTypes = "x"; // not defined type
+    ST_insertItem(stable, "floatval", ST_ITEM_TYPE_FUNCTION, data);
+    ST_insertItem(stable, "intval", ST_ITEM_TYPE_FUNCTION, data);
+    ST_insertItem(stable, "strval", ST_ITEM_TYPE_FUNCTION, data);
+
+    data.funData.funTypes = "s";
+    ST_insertItem(stable, "strlen", ST_ITEM_TYPE_FUNCTION, data);
+    ST_insertItem(stable, "ord", ST_ITEM_TYPE_FUNCTION, data);
+
+    data.funData.funTypes = "i";
+    ST_insertItem(stable, "chr", ST_ITEM_TYPE_FUNCTION, data);
+
+    data.funData.funTypes = "sii";
+    ST_insertItem(stable, "substring", ST_ITEM_TYPE_FUNCTION, data);
 }
 
 /**
@@ -962,7 +973,7 @@ ErrorType functionCallCheckAndProcess()
     int argCount = 0;
     Token funID = token;
     int isEmpty = 0;
-    STItem *item = ST_searchTable(getTable(isGlobal),DS_string(token.attribute.dString));
+    STItem *item = ST_searchTable(getTable(1),DS_string(token.attribute.dString));
     if(item == NULL) // function not defined
     {
         fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(token.attribute.dString), token.rowNumber);
@@ -1255,8 +1266,8 @@ int parser(Token *tokenArrIN) // sim
     ruleProg();
 
     #ifdef scanner
-    //printf("%s",DS_string(functionsCode));
-    //printf("%s",DS_string(progCode));
+    printf("%s",DS_string(functionsCode));
+    printf("%s",DS_string(progCode));
     #endif
     DS_dispose(functionsCode);
     DS_dispose(progCode);
