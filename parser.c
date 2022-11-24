@@ -220,12 +220,7 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
         return (ERR_SYN);
     }
 
-    token = newToken(1);
-    while (token.type == TYPE_COMM)
-    {
-        token = newToken(1);
-    }
-
+    token = newToken(0);
     if (token.type != TYPE_DECLARE_ST)
     {
         fprintf(stderr, "Expected \"declare(strict_types=1);\" at beggining of the file!\n");
@@ -233,7 +228,7 @@ ErrorType ruleProg() // remove tokenArr SIMULATION
         return (ERR_SYN);
     }
 
-    token = newToken(1);
+    token = newToken(0);
     if (token.type != TYPE_SEMICOLON)
     {
         fprintf(stderr, "Expected \";\" after declare(strict_types=1) on line %d!\n", token.rowNumber);
@@ -283,7 +278,7 @@ ErrorType ruleStatList(bool isInBlock)
 
         if (token.type == TYPE_END)
         {
-            token = newToken(1);
+            token = newToken(0);
             if (token.type == TYPE_EOF)
             {
                 return err;
@@ -1022,6 +1017,13 @@ ErrorType functionCallCheckAndProcess()
         }
     }
 
+    if(argCount < paramCount && paramCount != -1)
+    {
+        fprintf(stderr, "Too few arguments in function call on line %d!\n", token.rowNumber);
+        makeError(ERR_RUNPAR);
+        return ERR_RUNPAR;
+    }
+    
     token = funID;
     return 0;
 }
@@ -1266,8 +1268,10 @@ int parser(Token *tokenArrIN) // sim
     ruleProg();
 
     #ifdef scanner
-    printf("%s",DS_string(functionsCode));
-    printf("%s",DS_string(progCode));
+    if (firstError == 0){
+        printf("%s",DS_string(functionsCode));
+        printf("%s",DS_string(progCode));
+    }
     #endif
     DS_dispose(functionsCode);
     DS_dispose(progCode);
