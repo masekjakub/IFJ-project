@@ -1,22 +1,16 @@
 TODO
-MLK - scanner kody
-Kubik - volani fce, vestavene funkce do ST
 rozsireni globalni promenne?
-
-bile znaky pred a za programem????
+bile znaky pred a za programem - nesmi byt!!
 
 
 NAVOD NA SPOUSTENI MAIN:
 parser.h:
-    odkomentovat define scanner
+    odkomentovat #define scanner
 
 
 GRAMATIKA
 
 <prog> => BEGIN DECLARE_ST <stat_list>
-
-<id> => ID
-<id> => FUNID(<args>)
 
 <stat_list> => EPILOG EOF
 <stat_list> => EOF
@@ -41,25 +35,10 @@ GRAMATIKA
 <params_2> => epsilon
 
 <args> => epsilon
-<args> => <id> <args_2>
-<args_2> => , <id> <args_2>
+<args> => <expr> <args_2>
+<args_2> => , <expr> <args_2>
 <args_2> => epsilon
 
 <return> => RETURN ;
 <return> => RETURN <expr> ;
 <return> => epsilon
-
-------------------------------------
-        
-
-<value> => INT 
-<value> => FLOAT
-<value> => STRING
-<value> => <id>
-
-    FUNCCALL => funid(ARGS);
-
-    TYPE => ?TYPE
-    TYPE => int_type
-    TYPE => float_type
-    TYPE => string_type

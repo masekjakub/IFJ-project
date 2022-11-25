@@ -520,7 +520,6 @@ Token getToken(){
                 }
                 token.type = TYPE_FLOAT;
                 token.attribute.doubleV = atof(DS_string(dynamicString));
-                printf("%s\n", DS_string(dynamicString));
                 DS_dispose(dynamicString);
                 ungetc(c, source);
                 return token;

@@ -1052,7 +1052,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
 /**
  * @brief process expression
  *
- * @param isEmpty pointer, stores if expression is empty
+ * @param isEmpty pointer, stores 1 if expression is empty
  * @param usePrevToken use - 1, dont use - 0
  * @return ErrorType
  */
@@ -1269,8 +1269,8 @@ int parser(Token *tokenArrIN) // sim
 
     #ifdef scanner
     if (firstError == 0){
-        printf("%s",DS_string(functionsCode));
-        printf("%s",DS_string(progCode));
+        //printf("%s",DS_string(functionsCode));
+        //printf("%s",DS_string(progCode));
     }
     #endif
     DS_dispose(functionsCode);

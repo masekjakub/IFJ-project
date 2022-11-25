@@ -123,9 +123,10 @@
     makeToken(tokensArr, TYPE_END, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_COMM, 0, 0, 0, NULL);
     makeToken(tokensArr, TYPE_EOF, 0, 0, 0, NULL);
+    makeToken(tokensArr, TYPE_COMM, 0, 0, 0, NULL);
 
     returnedVal = parser(tokensArr);
-    ASSERT(returnedVal == ERR_SYN, "Return code is not SYN_ERR", returnedVal);
+    ASSERT(returnedVal == 0, "Return code is not 0", returnedVal);
     ENDTEST
 
     TEST(test_assign, "$var = 5+8; OK")
