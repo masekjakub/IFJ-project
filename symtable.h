@@ -28,7 +28,8 @@ typedef struct{
     //other chars represent types of params
     //("vii","ifi",...)
     //capital chars represent 1 type or null(?INT -> 'I')
-    //'x' represents any type
+    //'x' represents 1 of any type
+    //'U' represents unlimited of any type
     char *funTypes;
     bool defined;
 }STFunData;

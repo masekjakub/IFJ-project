@@ -9,7 +9,7 @@
  *
  */
 //////////////////////////
-#define scanner // use scanner
+//#define scanner // use scanner
 //////////////////////////
 
 #ifndef _IFJ_PARSER
