@@ -52,14 +52,14 @@ TokenType exprRules[numOfExprRules][3] = {
     {TYPE_EXPR, TYPE_SUB, TYPE_EXPR},          // E => E - E
     {TYPE_EXPR, TYPE_MUL, TYPE_EXPR},          // E => E * E
     {TYPE_EXPR, TYPE_DIV, TYPE_EXPR},          // E => E / E
-    {TYPE_EXPR, TYPE_CONCAT, TYPE_EXPR},        // E => E . E
+    {TYPE_EXPR, TYPE_CONCAT, TYPE_EXPR},       // E => E . E
     {TYPE_RBRACKET, TYPE_EXPR, TYPE_LBRACKET}, // E => (E)
-    {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},    // E => E === E
-    {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR}, // E => E !== E
-    {TYPE_EXPR, TYPE_LESS, TYPE_EXPR},       // E => E < E
-    {TYPE_EXPR, TYPE_GREATER, TYPE_EXPR},    // E => E > E
-    {TYPE_EXPR, TYPE_LESSEQ, TYPE_EXPR},     // E => E <= E
-    {TYPE_EXPR, TYPE_GREATEREQ, TYPE_EXPR}}; // E => E >= E
+    {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},      // E => E === E
+    {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR},   // E => E !== E
+    {TYPE_EXPR, TYPE_LESS, TYPE_EXPR},         // E => E < E
+    {TYPE_EXPR, TYPE_GREATER, TYPE_EXPR},      // E => E > E
+    {TYPE_EXPR, TYPE_LESSEQ, TYPE_EXPR},       // E => E <= E
+    {TYPE_EXPR, TYPE_GREATEREQ, TYPE_EXPR}};   // E => E >= E
 
 /**
  * @brief Returns new token from scanner
@@ -1044,7 +1044,69 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
+        // E => ID
+        DS_appendString(progCode, "DEFVAR TF@");
+        DS_appendString(progCode, tokenArr[0].attribute.dString->string);
+        DS_appendString(progCode, "\nPUSHS TF@");
+        DS_appendString(progCode, tokenArr[0].attribute.dString->string);
+        DS_appendString(progCode, "\n");
     }
+
+    if(ruleUsed == 1)
+    {
+        // E => INT
+        DS_appendString(progCode, "PUSHS int@");
+        char* int_string;
+        sprintf(int_string, "%d", tokenArr[0].attribute.intV);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, "\n");
+    }
+
+    if(ruleUsed == 2)
+    {
+        // E => FLOAT
+        DS_appendString(progCode, "PUSHS float@");
+        char* float_string;
+        sprintf(float_string, "%f", tokenArr[0].attribute.doubleV);
+        DS_appendString(progCode, float_string);
+        DS_appendString(progCode, "\n");
+    }
+
+    if(ruleUsed == 3)
+    {
+        // E => STRING
+        DS_appendString(progCode, "PUSHS string@");
+        DS_appendString(progCode, tokenArr[0].attribute.dString->string);
+        DS_appendString(progCode, "\n");
+    }
+
+    if(ruleUsed == 4)
+    {
+        // E => FUNID
+    }
+
+    if(ruleUsed == 5)
+    {
+        // E => NULL
+    }
+
+    if(ruleUsed == 6)
+    {
+        // E => E + E
+        DS_appendString(progCode, "ADDS ");
+        if(tokenArr[0].type == TYPE_FLOAT || tokenArr[2].type == TYPE_FLOAT)
+        {
+               
+        }
+        DS_appendString(progCode, "\n");
+    }
+
+
+
+
+
+
+
     return 0;
 }
 
