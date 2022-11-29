@@ -23,6 +23,7 @@ Symtable *localST;  // local symtable
 int isGlobal;       // program is not in function
 DynamicString *functionTypes;       //Return type and param types of currently parsed function
 DynamicString *progCode;            //Program code
+Stack *notDefinedCalls;             //Stack of not defined function calls
 
 const int precTable[8][8] = {
     {R, L, L, R, L, L, L, R},  // +
@@ -68,7 +69,7 @@ TokenType exprRules[numOfExprRules][3] = {
  * @return Token
  */
 Token newToken(int includingComms)
-{
+{   
     #ifdef scanner
     token = getToken();
     #else
@@ -126,30 +127,39 @@ Symtable *getTable(int global)
 void builtInFuncFillST(Symtable *stable)
 {
     STItemData data;
+    data.funData.funTypes = (char*)malloc(sizeof(char)*5);
     data.funData.defined = 1;
 
-    data.funData.funTypes = "U"; // unlimited
+    
+    strcpy(data.funData.funTypes, "vU"); // unlimited
     ST_insertItem(stable, "write", ST_ITEM_TYPE_FUNCTION, data);
 
-    data.funData.funTypes = "";// no parameters
+    
+    strcpy(data.funData.funTypes, "i");
     ST_insertItem(stable, "readi", ST_ITEM_TYPE_FUNCTION, data);
+    strcpy(data.funData.funTypes, "f");
     ST_insertItem(stable, "readf", ST_ITEM_TYPE_FUNCTION, data);
+    strcpy(data.funData.funTypes, "s");
     ST_insertItem(stable, "reads", ST_ITEM_TYPE_FUNCTION, data);
 
-    data.funData.funTypes = "x"; // not defined type
+    strcpy(data.funData.funTypes,"fx");
     ST_insertItem(stable, "floatval", ST_ITEM_TYPE_FUNCTION, data);
+    strcpy(data.funData.funTypes,"ix");
     ST_insertItem(stable, "intval", ST_ITEM_TYPE_FUNCTION, data);
+    strcpy(data.funData.funTypes,"Sx");
     ST_insertItem(stable, "strval", ST_ITEM_TYPE_FUNCTION, data);
 
-    data.funData.funTypes = "s";
-    ST_insertItem(stable, "strlen", ST_ITEM_TYPE_FUNCTION, data);
+    strcpy(data.funData.funTypes, "is");
+    ST_insertItem(stable, "strlen", ST_ITEM_TYPE_FUNCTION, data);;
     ST_insertItem(stable, "ord", ST_ITEM_TYPE_FUNCTION, data);
 
-    data.funData.funTypes = "i";
+    strcpy(data.funData.funTypes, "si");
     ST_insertItem(stable, "chr", ST_ITEM_TYPE_FUNCTION, data);
 
-    data.funData.funTypes = "sii";
+    strcpy(data.funData.funTypes,"Ssii");
     ST_insertItem(stable, "substring", ST_ITEM_TYPE_FUNCTION, data);
+
+    free(data.funData.funTypes);
 }
 
 /**
@@ -967,16 +977,25 @@ ErrorType functionCallCheckAndProcess()
     int argCount = 0;
     Token funID = token;
     int isEmpty = 0;
+    int openedBrackets = 0;
+
     STItem *item = ST_searchTable(getTable(1),DS_string(token.attribute.dString));
-    if(item == NULL) // function not defined
-    {
-        fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(token.attribute.dString), token.rowNumber);
-        makeError(ERR_UNDEF);
-        return ERR_UNDEF;
+    if(item == NULL){ // function not defined
+        if(isGlobal)
+        {
+            fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(funID.attribute.dString), funID.rowNumber);
+            makeError(ERR_UNDEF);
+            return ERR_UNDEF;
+        }else{
+            STItemData newFuncData;
+            newFuncData.funData.defined = 0;
+            ST_insertItem(getTable(1),DS_string(funID.attribute.dString),ST_ITEM_TYPE_FUNCTION,newFuncData);
+            STACK_push(notDefinedCalls,funID);
+        }
     }
     int paramCount = -1;
-    if(item->data.funData.funTypes[0] != 'U') //unlimited
-        paramCount = strlen(item->data.funData.funTypes) - 1;   //-1 <- first char is return type
+    if(isGlobal && item->data.funData.funTypes[1] != 'U') //unlimited
+        paramCount = strlen(item->data.funData.funTypes)-1;   //-1 <- first char is return type
     token = newToken(0);
 
     // (
@@ -991,7 +1010,7 @@ ErrorType functionCallCheckAndProcess()
     {
         if(isValueType(token.type)){
             argCount++;
-            if(argCount > paramCount && paramCount != -1)
+            if(argCount > paramCount && paramCount != -1 && isGlobal)
             {
                 fprintf(stderr, "Too many arguments in function call on line %d!\n", token.rowNumber);
                 makeError(ERR_RUNPAR);
@@ -1016,11 +1035,16 @@ ErrorType functionCallCheckAndProcess()
         }
     }
 
-    if(argCount < paramCount && paramCount != -1)
+    if(argCount < paramCount && paramCount != -1 && isGlobal)
     {
         fprintf(stderr, "Too few arguments in function call on line %d!\n", token.rowNumber);
         makeError(ERR_RUNPAR);
         return ERR_RUNPAR;
+    }else if(isGlobal == 0 && item == NULL){
+        Token tmpToken;
+        tmpToken.type = TYPE_INT;
+        tmpToken.attribute.intV = argCount;
+        STACK_push(notDefinedCalls,tmpToken);
     }
     
     token = funID;
@@ -1296,6 +1320,36 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
     return err;
 }
 
+ErrorType checkIfDefined(Stack *notDefinedCalls){
+    ErrorType err = 0;
+    int argCount = 0;
+    Token *bottom = STACK_bottom(notDefinedCalls);
+    Token funID;
+    printf("not defined calls\n");
+    fflush(stdout); 
+    while(bottom != NULL){
+        funID = *bottom;
+        printf("%s\n", funID.attribute.dString->string);
+        STItem *item = ST_searchTable(getTable(1),DS_string(funID.attribute.dString));
+        if(item->data.funData.defined == 0){
+            fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(funID.attribute.dString), funID.rowNumber);
+            makeError(ERR_UNDEF);
+            return ERR_UNDEF;
+        }
+        // check counts of arguments and paramaters
+        argCount = strlen(item->data.funData.funTypes)-1;
+        STACK_popBottom(notDefinedCalls);
+        if(argCount != STACK_bottom(notDefinedCalls)->attribute.intV){
+            fprintf(stderr, "Wrong count of arguments in function call on line %d!\n", funID.rowNumber);
+            makeError(ERR_RUNPAR);
+            return ERR_RUNPAR;
+        }
+        STACK_popBottom(notDefinedCalls);
+        bottom = STACK_bottom(notDefinedCalls);
+    }
+    return err;
+}
+
 /**
  * @brief main parser function
  *
@@ -1315,6 +1369,7 @@ int parser(Token *tokenArrIN) // sim
     globalST = ST_initTable(16);
     localST = NULL;
     isGlobal = 1;
+    notDefinedCalls = STACK_init();
     functionTypes = DS_init();
     DynamicString *functionsCode;
     functionsCode = DS_init();
@@ -1326,6 +1381,9 @@ int parser(Token *tokenArrIN) // sim
     generateBuiltInFunc(functionsCode);
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     ruleProg();
+
+    // check if all functions are defined
+    checkIfDefined(notDefinedCalls);
 
     #ifdef scanner
     if (firstError == 0){
