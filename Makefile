@@ -48,7 +48,7 @@ clean:
 	@rm -f *.o
 
 pack:
-	@zip xmasek19.zip *.c *.h Makefile
+	@zip xmasek19.zip *.c *.h dokumentace.pdf rozdeleni rozsireni Makefile
 
 check:
 	@bash tests/is_it_ok.sh xmasek19.zip testdir
