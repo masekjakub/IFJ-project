@@ -114,7 +114,7 @@ Token getToken(){
                         state = STATE_START;
                         break;
                     }
-                    fprintf(stderr, "Wrong start of program!\nThere can't be whitespaces before prolog: \"<?php\"");
+                    fprintf(stderr, "Wrong start of program!\nThere can't be whitespaces before prolog: \"<?php\"\n");
                     token.type = TYPE_LEXERR;
                     return token;
                 }
@@ -232,7 +232,6 @@ Token getToken(){
                 else if (c == '?'){
                     if ((c = getc(source)) == '>'){
                         token.type = TYPE_END;
-                        wasProlog = false;
                         return token;
                     }
                     ungetc(c, source);
