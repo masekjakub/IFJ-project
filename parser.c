@@ -516,19 +516,23 @@ ErrorType ruleStat()
             }
             token = newToken(0);
 
+            //Inserting incomplete function into symtable (needed for recursion)
+            STItemData newFunData;
+            newFunData.funData.defined = 1;
+            newFunData.funData.funTypes = functionTypes->string;
+            ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
+
             // <funcdef>
             errTmp = ruleFuncdef();
             if (err == 0)
             {
                 err = errTmp;
             }
-            
-            //Inserting function into symtable
-            STItemData newFunData;
-            newFunData.funData.defined = 1;
 
+            //Inserting function into symtable
             newFunData.funData.funTypes = functionTypes->string;
             ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
+            
             DS_dispose(functionTypes);  //ST_insertItem() copies funTypes string -> Original can be freed
             functionTypes = DS_init();
             DS_append(functionTypes, 'V');  //Set unspecified return type
