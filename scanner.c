@@ -400,8 +400,8 @@ Token getToken(){
             // State for returning ID, KEYWORD or declare(strict_types=1)
             case STATE_ID:
                 while (1){
-                    if (isalnum(c) || c == '_' || c == '('){
-                        if (c == '('){
+                    if (isalnum(c) || c == '_' || c == '(' || isspace(c)){
+                        if (c == '(' || isspace(c)){
                             // Check if id == "declare" and if it is clear dynamic string for *
                             if (!strcmp(DS_string(dynamicString), "declare")){
                                 DS_deleteAll(dynamicString);
@@ -412,10 +412,7 @@ Token getToken(){
                                         c = getc(source);
                                         continue;
                                     }
-                                    DS_append(dynamicString, c);
-                                    c = getc(source);
                                     if (c == ')'){
-
                                         if (!strcmp(DS_string(dynamicString), "strict_types=1")){
                                             token.type = TYPE_DECLARE_ST;
                                             DS_dispose(dynamicString);
@@ -430,6 +427,10 @@ Token getToken(){
                                         token.type = TYPE_LEXERR;
                                         return token;
                                     }
+                                    if (c != '('){
+                                        DS_append(dynamicString, c);
+                                    }
+                                    c = getc(source);
                                 }
                             }
                             // If id != declare stop loading chars and *

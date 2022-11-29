@@ -180,12 +180,22 @@ TEST(test_wrong_variable, "Variable: $1variable1_")
 ENDTEST
 
 // Tests for declare(strict_types=1)
-TEST(test_right_dec_str_types, "declare(strict_types=1)")
+TEST(test_right_dec_str_types1, "declare(strict_types=1)")
     fprintf(file, "declare(strict_types=1)\n");
     fclose(file);
     file = fopen("text.php", "r");
     setSourceFile(file);
     token = getToken();
+    ASSERT(token.type == TYPE_DECLARE_ST, token.type);
+ENDTEST
+
+TEST(test_right_dec_str_types2, "declare(          strict_types      =     1                )")
+    fprintf(file, "declare          (          strict_types      =     1                )\n");
+    fclose(file);
+    file = fopen("text.php", "r");
+    setSourceFile(file);
+    token = getToken();
+    //printf("%s", DS_string(token.attribute.dString));
     ASSERT(token.type == TYPE_DECLARE_ST, token.type);
 ENDTEST
 
@@ -584,7 +594,8 @@ int main(){
     test_wrong_variable();
 
     // Tests for declare(strict_types=1)
-    test_right_dec_str_types();
+    test_right_dec_str_types1();
+    test_right_dec_str_types2();
     test_wrong_dec_str_types1();
     test_wrong_dec_str_types2();
 
