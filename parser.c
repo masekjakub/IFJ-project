@@ -16,6 +16,11 @@
 #define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
 #define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING || KEYWORD == KEYWORD_VOID)
 #define isLower(CHAR) ('a' <= CHAR && CHAR <= 'z')
+#define formatString2string(DEST, FORMAT, FORMAT_ARGS...)   int formatedCodeLen = snprintf(NULL,0,FORMAT, FORMAT_ARGS)+1;   \
+                                                            DEST = malloc(formatedCodeLen*sizeof(char));                    \
+                                                            if(DEST == NULL) exit(ERR_INTERN);                              \
+                                                            sprintf(DEST, FORMAT, FORMAT_ARGS);
+
 
 int firstError;     // first encountered error
 Symtable *globalST; // global symtable
@@ -1096,9 +1101,10 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
         // E => INT
         DS_appendString(progCode, "PUSHS int@");
         char* int_string;
-        sprintf(int_string, "%d", tokenArr[0].attribute.intV);
+        formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
         DS_appendString(progCode, int_string);
         DS_appendString(progCode, "\n");
+        free(int_string);
     }
 
     if(ruleUsed == 2)
@@ -1106,10 +1112,12 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
         // E => FLOAT
         DS_appendString(progCode, "PUSHS float@");
         char* float_string;
-        sprintf(float_string, "%f", tokenArr[0].attribute.doubleV);
+        formatString2string(float_string, "%f", tokenArr[0].attribute.doubleV);
         DS_appendString(progCode, float_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(progCode, "\n");     
+        free(float_string);
     }
+    
 
     if(ruleUsed == 3)
     {
