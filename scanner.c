@@ -85,8 +85,6 @@ bool isKeyword(DynamicString *dynamicString, Token *token){
     return false;
 }
 
-// TODO pri vraceni erroru dispose string!!!
-
 /**
  * @brief Function for getting next token
  * 
@@ -96,7 +94,6 @@ Token getToken(){
     int c;
     int wasDot = 0;
     int wasE = 0;
-    static bool wasProlog = false;
     State state = STATE_START;
     DynamicString *dynamicString = DS_init();
     while (1){
@@ -110,13 +107,8 @@ Token getToken(){
             // Starting state of finite automat
             case STATE_START:
                 if (isspace(c)){
-                    if (wasProlog){
-                        state = STATE_START;
-                        break;
-                    }
-                    fprintf(stderr, "Wrong start of program!\nThere can't be whitespaces before prolog: \"<?php\"");
-                    token.type = TYPE_LEXERR;
-                    return token;
+                    state = STATE_START;
+                    break;
                 }
                 // DIV and commentary
                 else if (c == '/'){
@@ -159,7 +151,6 @@ Token getToken(){
                 // EOF
                 else if (c == EOF){
                     token.type = TYPE_EOF;
-                    wasProlog = false;
                     return token;
                 }
                 // MODULO
@@ -290,7 +281,6 @@ Token getToken(){
                         }
                         if (!strcmp(DS_string(dynamicString), "php") && isspace((c = getc(source)))){
                             ungetc(c, source);
-                            wasProlog = true;
                             token.type = TYPE_BEGIN;
                             DS_dispose(dynamicString);
                             return token;
@@ -530,7 +520,6 @@ Token getToken(){
                 }
                 token.type = TYPE_FLOAT;
                 token.attribute.doubleV = atof(DS_string(dynamicString));
-                printf("%s\n", DS_string(dynamicString));
                 DS_dispose(dynamicString);
                 ungetc(c, source);
                 return token;

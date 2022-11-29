@@ -46,25 +46,15 @@ Token token;
 
 // Tests for prolog
 TEST(test_prolog, "Prolog: \"<?php \"")
-    fprintf(file, "<?php ");
-    fclose(file);
-    file = fopen("text.php", "r");
-    setSourceFile(file);
-    token = getToken();
-    ASSERT(token.type == TYPE_BEGIN, token.type);
-    getToken();
-ENDTEST
-
-TEST(test_wrong_prolog1, "Prolog: \"     <?php \"")
     fprintf(file, "   <?php ");
     fclose(file);
     file = fopen("text.php", "r");
     setSourceFile(file);
     token = getToken();
-    ASSERT(token.type == TYPE_LEXERR, token.type);
+    ASSERT(token.type == TYPE_BEGIN, token.type);
 ENDTEST
 
-TEST(test_wrong_prolog2, "Prolog: \"<?phph\"")
+TEST(test_wrong_prolog, "Prolog: \"<?phph\"")
     fprintf(file, "<?phph");
     fclose(file);
     file = fopen("text.php", "r");
@@ -337,7 +327,8 @@ ENDTEST
 
 // Test with whole programs
 TEST(test_program1, "Test program 1")
-    fprintf(file, "<?php \n                                     \
+    fprintf(file, "                                             \
+        <?php \n                                                \
         declare(strict_types=1);\n                              \
         function concat(string $x, string $y) : string{\n       \
             $x = $x . $y;\n                                     \
@@ -563,8 +554,7 @@ ENDTEST
 int main(){
     // Tests for prolog
     test_prolog();
-    test_wrong_prolog1();
-    test_wrong_prolog2();
+    test_wrong_prolog();
 
     // Tests for commentary
     test_commentary_in_line();
