@@ -81,18 +81,6 @@ MOVE LF@input nill@nil\n\
 LABEL $readi$righttype\n\
 POPFRAME\n\
 RETURN\n\
-\n\
-\n\
-\n\
-LABEL @_float2int\n\
-CREATEFRAME\n\
-PUSHFRAME\n\
-DEFVAR LF@retval\n\
-\
-\n\
-LABEL $float2int$righttype\n\
-POPFRAME\n\
-RETURN\n\
 ";
 
     DS_appendString(dString, code);
