@@ -207,6 +207,8 @@ int getTypeChar(TokenType type)
         return 'f';
     else if (type == TYPE_STRING)
         return 's';
+    else if (type == TYPE_VOID)
+        return 'V';
     return 0;
 }
 
@@ -615,7 +617,7 @@ ErrorType ruleFuncdef()
             return ERR_SYN;
         }
         functionTypes->string[0] = getTypeChar(keywordType2VarType(token.attribute.keyword)); // Set specified return type
-        if(canBeNull) functionTypes->string[0] -= 32; //Capitalize if function can return null or other type
+        if(canBeNull && functionTypes->string[0] != 'V') functionTypes->string[0] -= 32; //Capitalize if function can return null or other type
         token = newToken(0);
     }
 
@@ -981,9 +983,8 @@ ErrorType functionCallCheckAndProcess()
     int argCount = 0;
     Token funID = token;
     int isEmpty = 0;
-    int openedBrackets = 0;
 
-    STItem *item = ST_searchTable(getTable(1),DS_string(token.attribute.dString));
+    STItem *item = ST_searchTable(getTable(1),DS_string(funID.attribute.dString));
     if(item == NULL){ // function not defined
         if(isGlobal)
         {
@@ -994,11 +995,15 @@ ErrorType functionCallCheckAndProcess()
             STItemData newFuncData;
             newFuncData.funData.defined = 0;
             ST_insertItem(getTable(1),DS_string(funID.attribute.dString),ST_ITEM_TYPE_FUNCTION,newFuncData);
-            STACK_push(notDefinedCalls,funID);
+            item = ST_searchTable(getTable(1),DS_string(funID.attribute.dString));
         }
     }
+    if(item->data.funData.defined == 0){
+        STACK_push(notDefinedCalls,funID);
+    }
+    
     int paramCount = -1;
-    if(isGlobal && item->data.funData.funTypes[1] != 'U') //unlimited
+    if(item->data.funData.defined == 1 && item->data.funData.funTypes[1] != 'U') //unlimited
         paramCount = strlen(item->data.funData.funTypes)-1;   //-1 <- first char is return type
     token = newToken(0);
 
@@ -1014,7 +1019,7 @@ ErrorType functionCallCheckAndProcess()
     {
         if(isValueType(token.type)){
             argCount++;
-            if(argCount > paramCount && paramCount != -1 && isGlobal)
+            if(argCount > paramCount && paramCount != -1 && item->data.funData.defined == 1)
             {
                 fprintf(stderr, "Too many arguments in function call on line %d!\n", token.rowNumber);
                 makeError(ERR_RUNPAR);
@@ -1029,8 +1034,14 @@ ErrorType functionCallCheckAndProcess()
 
         //CODEpushValue(progCode, token);
 
-        if(token.type == TYPE_COMMA)
+        if(token.type == TYPE_COMMA){
             token = newToken(0);
+            if(token.type == TYPE_RBRACKET){
+            fprintf(stderr, "Empty expression in function call on line %d!\n", token.rowNumber);
+            makeError(ERR_SYN);
+            return (ERR_SYN);
+            }
+        }
         else if(token.type != TYPE_RBRACKET)
         {
             fprintf(stderr, "Expected \",\" or \")\" on line %d!\n", token.rowNumber);
@@ -1039,12 +1050,12 @@ ErrorType functionCallCheckAndProcess()
         }
     }
 
-    if(argCount < paramCount && paramCount != -1 && isGlobal)
+    if(argCount < paramCount && paramCount != -1 && item->data.funData.defined == 1)
     {
         fprintf(stderr, "Too few arguments in function call on line %d!\n", token.rowNumber);
         makeError(ERR_RUNPAR);
         return ERR_RUNPAR;
-    }else if(isGlobal == 0 && item == NULL){
+    }else if(item->data.funData.defined == 0){
         Token tmpToken;
         tmpToken.type = TYPE_INT;
         tmpToken.attribute.intV = argCount;
@@ -1174,14 +1185,14 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
     else
     {
         // empty expression
-        if (!isOperatorType(token.type) && !isValueType(token.type) && !isBracket(token.type))
+        if (!isOperatorType(token.type) && !isValueType(token.type) && token.type != TYPE_LBRACKET)
         {
             STACK_dispose(stack);
+            *isEmpty = 1;
             return err;
         }
 
     }
-
     if(token.type == TYPE_FUNID){
         err = functionCallCheckAndProcess();  
     }
@@ -1329,11 +1340,8 @@ ErrorType checkIfDefined(Stack *notDefinedCalls){
     int argCount = 0;
     Token *bottom = STACK_bottom(notDefinedCalls);
     Token funID;
-    printf("not defined calls\n");
-    fflush(stdout); 
     while(bottom != NULL){
         funID = *bottom;
-        printf("%s\n", funID.attribute.dString->string);
         STItem *item = ST_searchTable(getTable(1),DS_string(funID.attribute.dString));
         if(item->data.funData.defined == 0){
             fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(funID.attribute.dString), funID.rowNumber);
