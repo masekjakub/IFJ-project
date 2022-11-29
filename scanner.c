@@ -231,6 +231,10 @@ Token getToken(){
                 // ?, ?>
                 else if (c == '?'){
                     if ((c = getc(source)) == '>'){
+                        if (isspace(c = getc(source))){
+                            token.type = TYPE_LEXERR;
+                            return token;
+                        }
                         token.type = TYPE_END;
                         return token;
                     }

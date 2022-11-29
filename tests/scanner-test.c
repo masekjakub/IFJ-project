@@ -356,8 +356,7 @@ TEST(test_program1, "Test program 1")
         $a = \"ahoj \";\n                                       \
         $ret = concat($a, \"svete\");\n                         \
         write($ret, $a);\n                                      \
-        ?>\n                                                    \
-    ");
+        ?>");
     fclose(file);
     file = fopen("text.php", "r");
     setSourceFile(file);
