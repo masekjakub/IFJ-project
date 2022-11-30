@@ -8,7 +8,7 @@ debug: $(ALL_C_FILES)
 	@gcc $(FLAGS) -g $(ALL_C_FILES) -o translator
 
 parser: $(ALL_C_FILES)
-	@gcc $(FLAGS) -g  tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test
+	@gcc $(FLAGS) -g tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test
 
 scanner: $(ALL_C_FILES)
 	@gcc $(FLAGS) main.c scanner.c dynamicString.c -o main

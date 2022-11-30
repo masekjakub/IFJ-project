@@ -1,5 +1,75 @@
 #include "codeGenerator.h"
 
+#define formatString2string(DEST, FORMAT, FORMAT_ARGS...)   int formatedCodeLen = snprintf(NULL,0,FORMAT, FORMAT_ARGS)+1;   \
+                                                            DEST = malloc(formatedCodeLen*sizeof(char));                    \
+                                                            if(DEST == NULL) exit(ERR_INTERN);                              \
+                                                            sprintf(DEST, FORMAT, FORMAT_ARGS);
+
+/**
+ * @brief Generates code for if statement header
+ * Expects the condition value on stack
+ * @param dString Dynamic string to append the code to
+ * @param ifCount Number used for unique label
+ * @return int 
+ */
+//udelat: konverze výsledku výrazu
+int CODEifStart(DynamicString *dString, int ifCount)
+{   
+    char *code_format = "\
+DEFVAR LF@%%if_cond%d\n\
+POPS LF@%%if_cond%d\n\
+JUMPIFEQ @_else%d LF@%%if_cond%d bool@false\n\
+LABEL @_if%d\n\
+";
+    char *code = NULL;
+    formatString2string(code, code_format, ifCount,ifCount,ifCount,ifCount,ifCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+/**
+ * @brief Generates code for if statement else header
+ * Expects the condition value on stack
+ * @param dString Dynamic string to append the code to
+ * @param ifCount Number used for unique label
+ * @return int 
+ */
+int CODEelse(DynamicString *dString, int ifCount)
+{   
+    char *code_format = "\
+JUMP @_endif%d\n\
+LABEL @_else%d\n\
+";
+    char *code = NULL;
+    formatString2string(code, code_format, ifCount,ifCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+/**
+ * @brief Generates code for if statement end
+ * Expects the condition value on stack
+ * @param dString Dynamic string to append the code to
+ * @param ifCount Number used for unique label
+ * @return int 
+ */
+int CODEendIf(DynamicString *dString, int ifCount)
+{   
+    char *code_format = "\
+LABEL @_endif%d\n\
+";
+    char *code = NULL;
+    formatString2string(code, code_format, ifCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
 int CODEpushValue(DynamicString *dString, Token token){
     char *code ="\
     CREATEFRAME\n";

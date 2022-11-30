@@ -8,4 +8,7 @@
 int generateBuiltInFunc(DynamicString *);
 int callFunc();
 int CODEpushValue(DynamicString *, Token);
+int CODEifStart(DynamicString *, int);
+int CODEelse(DynamicString *, int);
+int CODEendIf(DynamicString *, int);
 #endif
