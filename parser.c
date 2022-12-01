@@ -1474,6 +1474,7 @@ int parser(Token *tokenArrIN)      // sim
     builtInFuncFillST(globalST);
 
     generateBuiltInFunc(functionsCode);
+
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     ruleProg();
 

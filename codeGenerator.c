@@ -11,7 +11,6 @@ int CODEcheckAndConvert2SameType(DynamicString *dString, char *varName1, char *v
 /**
  * @brief Checks the type of given variable and
  * converts it ot given type indicated by char type.
- * \n Expects existing TF !!!
  * @param varName Name of varible to convert
  * @param dString Dynamic string to append the code to
  * @param type Char representing the type to convert to:
@@ -23,6 +22,7 @@ int CODEconvert2Type(DynamicString *dString, char *varName, char type){
     varNameNum++;
     
     char *codeFormat = "\
+CREATEFRAME\n\
 DEFVAR TF@%%convType%d\n\
 TYPE TF@%%convType%d %s\n\
 "; //, varNameNum, varNameNum, varName
@@ -149,7 +149,7 @@ MOVE %s nil@nil\n\
     }
 
     codeFormat="\
-LABEL _noConv%d\n\
+LABEL _noConv%d\n\n\
 "; //, varNameNum
 
     code = NULL;
@@ -173,6 +173,32 @@ int CODEifStart(DynamicString *dString, int ifCount)
     char *codeFormat = "\
 DEFVAR LF@%%if_cond%d\n\
 POPS LF@%%if_cond%d\n\
+"; //, ifCount,ifCount
+
+    char *code = NULL;
+    formatString2string(code, codeFormat, ifCount,ifCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    //Conversion to bool
+    codeFormat = "LF@%%if_cond%d";
+    code = NULL;
+    formatString2string(code, codeFormat, ifCount);
+    CODEconvert2Type(dString,code,'b');
+
+    codeFormat = "\
+JUMPIFEQ _else%d LF@%%if_cond%d bool@false\n\
+LABEL _if%d\n\
+"; //, ifCount,ifCount,ifCount
+
+    code = NULL;
+    formatString2string(code, codeFormat, ifCount,ifCount,ifCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    /*char *codeFormat = "\
+DEFVAR LF@%%if_cond%d\n\
+POPS LF@%%if_cond%d\n\
 JUMPIFEQ _else%d LF@%%if_cond%d bool@false\n\
 LABEL _if%d\n\
 "; //, ifCount,ifCount,ifCount,ifCount,ifCount
@@ -180,7 +206,7 @@ LABEL _if%d\n\
     char *code = NULL;
     formatString2string(code, codeFormat, ifCount,ifCount,ifCount,ifCount,ifCount);
     DS_appendString(dString, code);
-    free(code);
+    free(code);*/
 
     return 0;
 }
@@ -235,8 +261,8 @@ int CODEpushValue(DynamicString *dString, Token token){
     case TYPE_FLOAT:
         
         code_format = "\
-        PUSHS float@%a\n\
-        ";
+PUSHS float@%a\n\
+";
         formatString2string(code, code_format,token.attribute.doubleV);
         DS_appendString(dString, code);
         free(code);
@@ -254,7 +280,7 @@ int CODEgenerateFuncDef(DynamicString *dString, char *functionName){
 LABEL _%s\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
-    ";
+";
     formatString2string(code, codeFormat, functionName);
     DS_appendString(dString, code);
     free(code);
@@ -263,8 +289,7 @@ PUSHFRAME\n\
 
 int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
     char *code = NULL;
-    char *code_format = "CALL _%s\n\
-    ";
+    char *code_format = "CALL _%s\n";
     formatString2string(code, code_format,DS_string(token.attribute.dString));
     DS_appendString(dString, code);
     free(code);
@@ -273,8 +298,7 @@ int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
 
 int CODEdefVar(DynamicString *dString, Token token){
     char *code = NULL;
-    char *code_format = "DEFVAR LF@%s\n\
-    ";
+    char *code_format = "DEFVAR LF@%s\n";
     formatString2string(code, code_format,DS_string(token.attribute.dString));
     DS_appendString(dString, code);
     free(code);
