@@ -699,13 +699,14 @@ ErrorType ruleAssign()
             STItemData data;
             token = newToken(0);
             err = exprAnal(&varType, 0);
-
             if (item == NULL)
             {
                 STItemData STdata;
                 STdata.varData.VarType = varType;
                 ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
+                CODEdefVar(progCode, prevToken);
             }
+            CODEassign(progCode, prevToken);
 
             if (token.type != TYPE_SEMICOLON)
             {
@@ -1134,9 +1135,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
             return ERR_UNDEF;
         }
         // E => ID
-        DS_appendString(progCode, "DEFVAR TF@");
-        DS_appendString(progCode, tokenArr[0].attribute.dString->string);
-        DS_appendString(progCode, "\nPUSHS TF@");
+        DS_appendString(progCode, "\nPUSHS LF@");
         DS_appendString(progCode, tokenArr[0].attribute.dString->string);
         DS_appendString(progCode, "\n");
     }
@@ -1451,7 +1450,10 @@ int parser(Token *tokenArrIN)      // sim
     DynamicString *functionsCode;
     functionsCode = DS_init();
     progCode = DS_init();
+    DS_appendString(progCode, "######MAIN######\n");
     DS_appendString(progCode, "LABEL _main\n");
+    DS_appendString(progCode, "CREATEFRAME\n");
+    DS_appendString(progCode, "PUSHFRAME\n");
 
     builtInFuncFillST(globalST);
 

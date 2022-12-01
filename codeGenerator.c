@@ -259,21 +259,39 @@ int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
 }
 
 int CODEdefVar(DynamicString *dString, Token token){
-    
+    char *code = NULL;
+    char *code_format = "DEFVAR LF@%s\n\
+    ";
+    formatString2string(code, code_format,DS_string(token.attribute.dString));
+    DS_appendString(dString, code);
+    free(code);
+    return 0;
 }
 
 int CODEassign(DynamicString *dString, Token token){
-
+char *code = NULL;
+char *code_format = "\
+CREATEFRAME\n\
+DEFVAR TF@toassign\n\
+POPS TF@toassign\n\
+MOVE LF@%s TF@toassign\n";
+formatString2string(code, code_format,DS_string(token.attribute.dString));
+DS_appendString(dString, code);
+free(code);
+return 0;
 }
 
 // read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
 int generateBuiltInFunc(DynamicString *dString)
 {   
-//write
 char *code = "\
 .IFJcode22\n\
-JUMP _main\n\
-\n\
+JUMP _main\n\n";
+DS_appendString(dString, code);
+
+//write
+code = "\
+######WRITE######\n\
 LABEL _write\n\
 CREATEFRAME\n\
 DEFVAR TF@tmpwrite\n\
@@ -286,16 +304,19 @@ DS_appendString(dString, code);
 
 //readi
 code = "\
+######READI######\n\
 LABEL _readi\n\
 CREATEFRAME\n\
+DEFVAR TF@input\n\
 DEFVAR TF@input$type\n\
-READ LF@input int\n\
-TYPE TF@input$type LF@input\n\
+READ TF@input int\n\
+TYPE TF@input$type TF@input\n\
 JUMPIFEQ _readiOk TF@input$type string@int\n\
+PUSHS int@0\n\
 CREATEFRAME\n\
-MOVE LF@input int@0\n\
 RETURN\n\
 LABEL _readiOk\n\
+PUSHS TF@input\n\
 CREATEFRAME\n\
 RETURN\n\
 \n";
@@ -303,16 +324,19 @@ DS_appendString(dString, code);
 
 //readf
 code = "\
+######READF######\n\
 LABEL _readf\n\
 CREATEFRAME\n\
+DEFVAR TF@input\n\
 DEFVAR TF@input$type\n\
-READ LF@input float\n\
-TYPE TF@input$type LF@input\n\
+READ TF@input float\n\
+TYPE TF@input$type TF@input\n\
 JUMPIFEQ _readfOk TF@input$type string@float\n\
-MOVE LF@input float@0x0p+0\n\
+PUSHS float@0x0p+0\n\
 CREATEFRAME\n\
 RETURN\n\
 LABEL _readfOk\n\
+PUSHS TF@input\n\
 CREATEFRAME\n\
 RETURN\n\
 \n";
@@ -320,16 +344,19 @@ DS_appendString(dString, code);
 
 //readf
 code = "\
+######READS######\n\
 LABEL _reads\n\
 CREATEFRAME\n\
+DEFVAR TF@input\n\
 DEFVAR TF@input$type\n\
-READ LF@input string\n\
-TYPE TF@input$type LF@input\n\
+READ TF@input string\n\
+TYPE TF@input$type TF@input\n\
 JUMPIFEQ _readsOk TF@input$type string@string\n\
-MOVE TF@input string@ \n\
+PUSHS string@\n\
 CREATEFRAME\n\
 RETURN\n\
 LABEL _readsOk\n\
+PUSHS TF@input\n\
 CREATEFRAME\n\
 RETURN\n\
 \n";
