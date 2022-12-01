@@ -361,6 +361,11 @@ ErrorType ruleStat()
             // (<expr>)
             err = exprAnal(&varType, 0);
 
+            //Generate code for if start
+            static int ifCount = 0;
+            ifCount++;
+            CODEifStart(progCode, ifCount);
+
             // {
             if (token.type != TYPE_LBRACES)
             {
@@ -407,6 +412,9 @@ ErrorType ruleStat()
             }
             token = newToken(0);
 
+            //Generate code for else
+            CODEelse(progCode, ifCount);
+
             // {
             if (token.type != TYPE_LBRACES)
             {
@@ -433,6 +441,10 @@ ErrorType ruleStat()
                 break;
             }
             token = newToken(0);
+
+            //Generate code for if end
+            CODEendIf(progCode, ifCount);
+
             break;
 
         case KEYWORD_WHILE:
@@ -550,6 +562,9 @@ ErrorType ruleStat()
             newFunData.funData.funTypes = functionTypes->string;
             ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
 
+            //Generate code for function start
+            CODEgenerateFuncDef(progCode, funId->string);
+
             // <funcdef>
             errTmp = ruleFuncdef();
             if (err == 0)
@@ -561,6 +576,7 @@ ErrorType ruleStat()
             newFunData.funData.funTypes = functionTypes->string;
             ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
 
+            DS_dispose(funId);
             DS_dispose(functionTypes); // ST_insertItem() copies funTypes string -> Original can be freed
             functionTypes = DS_init();
             DS_append(functionTypes, 'V'); // Set unspecified return type

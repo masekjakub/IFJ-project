@@ -227,8 +227,8 @@ LABEL _endif%d\n\
 }
 
 int CODEpushValue(DynamicString *dString, Token token){
-char *code = NULL;
-char *code_format;
+    char *code = NULL;
+    char *code_format;
 
     switch (token.type)
     {
@@ -245,6 +245,19 @@ char *code_format;
     default:
         break;
     }
+    return 0;
+}
+
+int CODEgenerateFuncDef(DynamicString *dString, char *functionName){
+    char *code = NULL;
+    char *codeFormat = "\
+LABEL _%s\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+    ";
+    formatString2string(code, codeFormat, functionName);
+    DS_appendString(dString, code);
+    free(code);
     return 0;
 }
 

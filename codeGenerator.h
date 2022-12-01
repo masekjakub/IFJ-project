@@ -7,6 +7,7 @@
 
 int generateBuiltInFunc(DynamicString *);
 int callFunc();
+int CODEgenerateFuncDef(DynamicString *, char *);
 int CODEgenerateFuncCall(DynamicString *,Token,int);
 int CODEassign(DynamicString *, Token);
 int CODEdefVar(DynamicString *dString, Token token);
