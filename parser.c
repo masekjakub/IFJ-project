@@ -16,9 +16,11 @@
 #define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
 #define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING || KEYWORD == KEYWORD_VOID)
 #define isLower(CHAR) ('a' <= CHAR && CHAR <= 'z')
-#define formatString2string(DEST, FORMAT, FORMAT_ARGS...)   DEST = malloc((snprintf(NULL,0,FORMAT, FORMAT_ARGS)+1)*sizeof(char));   \
-                                                            if(DEST == NULL) exit(ERR_INTERN);                                      \
-                                                            sprintf(DEST, FORMAT, FORMAT_ARGS);
+#define formatString2string(DEST, FORMAT, FORMAT_ARGS...)                       \
+    DEST = malloc((snprintf(NULL, 0, FORMAT, FORMAT_ARGS) + 1) * sizeof(char)); \
+    if (DEST == NULL)                                                           \
+        exit(ERR_INTERN);                                                       \
+    sprintf(DEST, FORMAT, FORMAT_ARGS);
 
 int firstError;               // first encountered error
 Symtable *globalST;           // global symtable
@@ -1084,7 +1086,8 @@ ErrorType functionCallCheckAndProcess()
             }
         }
         exprAnal(&isEmpty, 0);
-        if(isEmpty){
+        if (isEmpty)
+        {
             fprintf(stderr, "Empty argument in function call on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
         }
@@ -1095,10 +1098,11 @@ ErrorType functionCallCheckAndProcess()
 
         if(token.type == TYPE_COMMA){
             token = newToken(0);
-            if(token.type == TYPE_RBRACKET){
-            fprintf(stderr, "Empty argument in function call on line %d!\n", token.rowNumber);
-            makeError(ERR_SYN);
-            return (ERR_SYN);
+            if (token.type == TYPE_RBRACKET)
+            {
+                fprintf(stderr, "Empty argument in function call on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return (ERR_SYN);
             }
         }
         else if (token.type != TYPE_RBRACKET)
@@ -1199,32 +1203,134 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
     if (ruleUsed == 6)
     {
         // E => E + E
-        Token result;
-        if (tokenArr[0].type == TYPE_FLOAT && tokenArr[2].type == TYPE_FLOAT)
+        static int counter = 0;
+        counter++;
+
+        DS_appendString(progCode, "CREATEFRAME\n");
+        if (tokenArr[0].type == TYPE_FLOAT)
         {
-            result.attribute.doubleV = tokenArr[0].attribute.doubleV + tokenArr[2].attribute.doubleV;
+            DS_appendString(progCode, "PUSHS float@");
+            char *float_string;
+            formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
+            DS_appendString(progCode, float_string);
+            free(float_string);
         }
-        if (tokenArr[0].type == TYPE_INT && tokenArr[2].type == TYPE_FLOAT)
+        else if (tokenArr[0].type == TYPE_INT)
         {
-            result.attribute.doubleV = tokenArr[0].attribute.intV + tokenArr[2].attribute.doubleV;
+            DS_appendString(progCode, "PUSHS int@");
+            char *int_string;
+            formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
+            DS_appendString(progCode, int_string);
+            free(int_string);
         }
-        if (tokenArr[0].type == TYPE_FLOAT && tokenArr[2].type == TYPE_INT)
-        {
-            result.attribute.doubleV = tokenArr[0].attribute.doubleV + tokenArr[2].attribute.intV;
-        }
-        if (tokenArr[0].type == TYPE_INT && tokenArr[2].type == TYPE_INT)
-        {
-            result.attribute.doubleV = tokenArr[0].attribute.intV + tokenArr[2].attribute.intV;
-        }
-        DS_appendString(progCode, "ADDS ");
         DS_appendString(progCode, "\n");
+
+        if (tokenArr[2].type == TYPE_FLOAT)
+        {
+            DS_appendString(progCode, "PUSHS float@");
+            char *float_string;
+            formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
+            DS_appendString(progCode, float_string);
+            free(float_string);
+        }
+        else if (tokenArr[2].type == TYPE_INT)
+        {
+            DS_appendString(progCode, "PUSHS int@");
+            char *int_string;
+            formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
+            DS_appendString(progCode, int_string);
+            free(int_string);
+        }
+
+        char *int_string;
+
+        DS_appendString(progCode, "\n");
+        DS_appendString(progCode, "DEFVAR TF@a\n");
+        DS_appendString(progCode, "DEFVAR TF@b\n");
+        DS_appendString(progCode, "POPS TF@b\n");
+        DS_appendString(progCode, "POPS TF@a\n");
+        DS_appendString(progCode, "PUSHS TF@a\n");
+        DS_appendString(progCode, "PUSHS TF@b\n");
+        DS_appendString(progCode, "DEFVAR TF@atype\n");
+        DS_appendString(progCode, "DEFVAR TF@btype\n");
+        DS_appendString(progCode, "TYPE TF@atype TF@a\n");
+        DS_appendString(progCode, "TYPE TF@btype TF@b\n");
+
+        DS_appendString(progCode, "JUMPIFEQ _afloat");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, " TF@atype string@float\n");
+        
+        DS_appendString(progCode, "JUMPIFEQ _aint");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, " TF@atype string@int\n");
+
+        DS_appendString(progCode, "LABEL _afloat");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, "\n");
+
+        DS_appendString(progCode, "JUMPIFEQ _canadd");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, " TF@btype string@float\n");
+
+        DS_appendString(progCode, "JUMPIFEQ _bint");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, " TF@btype string@int\n");
+
+        DS_appendString(progCode, "LABEL _bint");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, "\n");
+
+        DS_appendString(progCode, "INT2FLOATS\n");
+        
+        DS_appendString(progCode, "JUMP _canadd");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, "\n");
+
+        DS_appendString(progCode, "LABEL _aint");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, "\n");
+
+        DS_appendString(progCode, "JUMPIFEQ _canadd");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, " TF@btype string@int\n");
+        
+        DS_appendString(progCode, "JUMPIFEQ _bfloat");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, " TF@btype string@float\n");
+
+        DS_appendString(progCode, "LABEL _bfloat");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, "\n");
+
+        DS_appendString(progCode, "POPS TF@b\n");
+        DS_appendString(progCode, "INT2FLOATS\n");
+        DS_appendString(progCode, "PUSHS TF@b\n");
+
+        DS_appendString(progCode, "LABEL _canadd");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(progCode, int_string);
+        DS_appendString(progCode, "\n");
+
+        DS_appendString(progCode, "ADDS\n");
+        DS_appendString(progCode, "CREATEFRAME\n");
     }
 
     return 0;
 }
 
 /**
- * @brief process expression
+ * @brief process expression0
  *
  * @param isEmpty pointer, stores 1 if expression is empty
  * @param usePrevToken use - 1, dont use - 0
@@ -1481,10 +1587,11 @@ int parser(Token *tokenArrIN)      // sim
     // check if all functions are defined
     checkIfDefined(notDefinedCalls);
 
-    #ifdef scanner
-    if (firstError == 0){
-        printf("%s",DS_string(functionsCode));
-        printf("%s",DS_string(progCode));
+#ifdef scanner
+    if (firstError == 0)
+    {
+        printf("%s", DS_string(functionsCode));
+        printf("%s", DS_string(progCode));
     }
 #endif
     DS_dispose(functionsCode);
