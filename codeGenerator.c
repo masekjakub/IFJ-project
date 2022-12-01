@@ -228,13 +228,13 @@ LABEL _endif%d\n\
 
 int CODEpushValue(DynamicString *dString, Token token){
 char *code = NULL;
-
+char *code_format;
 
     switch (token.type)
     {
     case TYPE_FLOAT:
         
-        char *code_format = "\
+        code_format = "\
         PUSHS float@%a\n\
         ";
         formatString2string(code, code_format,token.attribute.doubleV);
@@ -258,9 +258,18 @@ int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
     return 0;
 }
 
+int CODEdefVar(DynamicString *dString, Token token){
+    
+}
+
+int CODEassign(DynamicString *dString, Token token){
+
+}
+
 // read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
 int generateBuiltInFunc(DynamicString *dString)
 {   
+//write
 char *code = "\
 .IFJcode22\n\
 JUMP _main\n\
@@ -270,23 +279,58 @@ CREATEFRAME\n\
 DEFVAR TF@tmpwrite\n\
 POPS TF@tmpwrite\n\
 WRITE TF@tmpwrite\n\
+CREATEFRAME\n\
 RETURN\n\
 \n";
 DS_appendString(dString, code);
 
+//readi
 code = "\
 LABEL _readi\n\
 CREATEFRAME\n\
-DEFVAR TF@input\n\
 DEFVAR TF@input$type\n\
-READ TF@input int\n\
-TYPE TF@input$type TF@input\n\
+READ LF@input int\n\
+TYPE TF@input$type LF@input\n\
 JUMPIFEQ _readiOk TF@input$type string@int\n\
-MOVE TF@input int@0\n\
-PUSHFRAME\n\
+CREATEFRAME\n\
+MOVE LF@input int@0\n\
 RETURN\n\
 LABEL _readiOk\n\
-PUSHFRAME\n\
+CREATEFRAME\n\
+RETURN\n\
+\n";
+DS_appendString(dString, code);
+
+//readf
+code = "\
+LABEL _readf\n\
+CREATEFRAME\n\
+DEFVAR TF@input$type\n\
+READ LF@input float\n\
+TYPE TF@input$type LF@input\n\
+JUMPIFEQ _readfOk TF@input$type string@float\n\
+MOVE LF@input float@0x0p+0\n\
+CREATEFRAME\n\
+RETURN\n\
+LABEL _readfOk\n\
+CREATEFRAME\n\
+RETURN\n\
+\n";
+DS_appendString(dString, code);
+
+//readf
+code = "\
+LABEL _reads\n\
+CREATEFRAME\n\
+DEFVAR TF@input$type\n\
+READ LF@input string\n\
+TYPE TF@input$type LF@input\n\
+JUMPIFEQ _readsOk TF@input$type string@string\n\
+MOVE TF@input string@ \n\
+CREATEFRAME\n\
+RETURN\n\
+LABEL _readsOk\n\
+CREATEFRAME\n\
 RETURN\n\
 \n";
 DS_appendString(dString, code);
