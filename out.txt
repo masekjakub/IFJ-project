@@ -1,0 +1,2 @@
+LABEL @main
+PUSHS float@0x1.6p+2

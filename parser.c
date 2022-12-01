@@ -20,14 +20,13 @@
                                                             if(DEST == NULL) exit(ERR_INTERN);                                      \
                                                             sprintf(DEST, FORMAT, FORMAT_ARGS);
 
-
-int firstError;     // first encountered error
-Symtable *globalST; // global symtable
-Symtable *localST;  // local symtable
-int isGlobal;       // program is not in function
-DynamicString *functionTypes;       //Return type and param types of currently parsed function
-DynamicString *progCode;            //Program code
-Stack *notDefinedCalls;             //Stack of not defined function calls
+int firstError;               // first encountered error
+Symtable *globalST;           // global symtable
+Symtable *localST;            // local symtable
+int isGlobal;                 // program is not in function
+DynamicString *functionTypes; // Return type and param types of currently parsed function
+DynamicString *progCode;      // Program code
+Stack *notDefinedCalls;       // Stack of not defined function calls
 
 const int precTable[8][8] = {
     {R, L, L, R, L, L, L, R},  // +
@@ -73,14 +72,15 @@ TokenType exprRules[numOfExprRules][3] = {
  * @return Token
  */
 Token newToken(int includingComms)
-{   
-    #ifdef scanner
+{
+#ifdef scanner
     token = getToken();
-    #else
+#else
     token = getTokenSim(tokenArr); // odstranit tokenarr
-    #endif
+#endif
 
-    if(token.type == TYPE_LEXERR){
+    if (token.type == TYPE_LEXERR)
+    {
         makeError(ERR_LEX);
     }
 
@@ -96,18 +96,21 @@ Token newToken(int includingComms)
  */
 void makeError(ErrorType err)
 {
-    if(firstError == 0){
+    if (firstError == 0)
+    {
         firstError = err;
     }
 
-    //Skipping section of code with error in it
-    //while(token.type != TYPE_RBRACKET && token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
-    while(token.type != TYPE_RBRACES && token.type != TYPE_LBRACES &&token.type != TYPE_SEMICOLON){
-        if(token.type == TYPE_EOF) return;
+    // Skipping section of code with error in it
+    // while(token.type != TYPE_RBRACKET && token.type != TYPE_RBRACES && token.type != TYPE_SEMICOLON && token.type != TYPE_COMMA){
+    while (token.type != TYPE_RBRACES && token.type != TYPE_LBRACES && token.type != TYPE_SEMICOLON)
+    {
+        if (token.type == TYPE_EOF)
+            return;
         token = newToken(0);
     }
-    //token = newToken(0);
-    // exit(err);
+    // token = newToken(0);
+    //  exit(err);
 }
 
 /**
@@ -131,14 +134,12 @@ Symtable *getTable(int global)
 void builtInFuncFillST(Symtable *stable)
 {
     STItemData data;
-    data.funData.funTypes = (char*)malloc(sizeof(char)*5);
+    data.funData.funTypes = (char *)malloc(sizeof(char) * 5);
     data.funData.defined = 1;
 
-    
     strcpy(data.funData.funTypes, "vU"); // unlimited
     ST_insertItem(stable, "write", ST_ITEM_TYPE_FUNCTION, data);
 
-    
     strcpy(data.funData.funTypes, "i");
     ST_insertItem(stable, "readi", ST_ITEM_TYPE_FUNCTION, data);
     strcpy(data.funData.funTypes, "f");
@@ -146,21 +147,22 @@ void builtInFuncFillST(Symtable *stable)
     strcpy(data.funData.funTypes, "s");
     ST_insertItem(stable, "reads", ST_ITEM_TYPE_FUNCTION, data);
 
-    strcpy(data.funData.funTypes,"fx");
+    strcpy(data.funData.funTypes, "fx");
     ST_insertItem(stable, "floatval", ST_ITEM_TYPE_FUNCTION, data);
-    strcpy(data.funData.funTypes,"ix");
+    strcpy(data.funData.funTypes, "ix");
     ST_insertItem(stable, "intval", ST_ITEM_TYPE_FUNCTION, data);
-    strcpy(data.funData.funTypes,"Sx");
+    strcpy(data.funData.funTypes, "Sx");
     ST_insertItem(stable, "strval", ST_ITEM_TYPE_FUNCTION, data);
 
     strcpy(data.funData.funTypes, "is");
-    ST_insertItem(stable, "strlen", ST_ITEM_TYPE_FUNCTION, data);;
+    ST_insertItem(stable, "strlen", ST_ITEM_TYPE_FUNCTION, data);
+    ;
     ST_insertItem(stable, "ord", ST_ITEM_TYPE_FUNCTION, data);
 
     strcpy(data.funData.funTypes, "si");
     ST_insertItem(stable, "chr", ST_ITEM_TYPE_FUNCTION, data);
 
-    strcpy(data.funData.funTypes,"Ssii");
+    strcpy(data.funData.funTypes, "Ssii");
     ST_insertItem(stable, "substring", ST_ITEM_TYPE_FUNCTION, data);
 
     free(data.funData.funTypes);
@@ -271,19 +273,22 @@ ErrorType ruleStatList(bool isInBlock)
     int openBracesBlocks = isInBlock ? 1 : 0;
 
     while (1)
-    {        
-        //if (err)
-        //    return err;
+    {
+        // if (err)
+        //     return err;
 
-        if(token.type == TYPE_LBRACES){
+        if (token.type == TYPE_LBRACES)
+        {
             openBracesBlocks++;
             token = newToken(0);
         }
-        
+
         //<return>
-        while(token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_RETURN){
+        while (token.type == TYPE_KEYWORD && token.attribute.keyword == KEYWORD_RETURN)
+        {
             tmpErr = ruleReturn();
-            if(!err) err = tmpErr;
+            if (!err)
+                err = tmpErr;
         }
 
         // EPILOG
@@ -303,20 +308,24 @@ ErrorType ruleStatList(bool isInBlock)
         }
 
         // Check end of {<stat-list>}
-        if (token.type == TYPE_RBRACES){
+        if (token.type == TYPE_RBRACES)
+        {
             openBracesBlocks--;
-            if(openBracesBlocks < 0){
+            if (openBracesBlocks < 0)
+            {
                 fprintf(stderr, "Unexpected \"}\" on line %d!\n", token.rowNumber);
                 makeError(ERR_SYN);
                 return (ERR_SYN);
             }
-            if(openBracesBlocks == 0) break;
+            if (openBracesBlocks == 0)
+                break;
             token = newToken(0);
         }
 
         // statement rule
         tmpErr = ruleStat();
-        if(!err) err = tmpErr;
+        if (!err)
+            err = tmpErr;
     }
 
     return err;
@@ -470,14 +479,16 @@ ErrorType ruleStat()
             break;
 
         case KEYWORD_FUNCTION:
-            //Defining inside function
-            if(!isGlobal){
+            // Defining inside function
+            if (!isGlobal)
+            {
                 fprintf(stderr, "Definition of function inside function on line %d!\n", token.rowNumber);
                 makeError(ERR_FUNDEF);
-                while(token.type != TYPE_RBRACES){
+                while (token.type != TYPE_RBRACES)
+                {
                     token = newToken(0);
                 }
-                //token = newToken(0);
+                // token = newToken(0);
                 return ERR_FUNDEF;
                 break;
             }
@@ -491,10 +502,11 @@ ErrorType ruleStat()
                 return ERR_SYN;
                 break;
             }
-            //Check redefinition
-            STItem *foundFunction = ST_searchTable(getTable(1),token.attribute.dString->string);
-            if( foundFunction != NULL)
-                if(foundFunction->type == ST_ITEM_TYPE_FUNCTION && foundFunction->data.funData.defined == true){
+            // Check redefinition
+            STItem *foundFunction = ST_searchTable(getTable(1), token.attribute.dString->string);
+            if (foundFunction != NULL)
+                if (foundFunction->type == ST_ITEM_TYPE_FUNCTION && foundFunction->data.funData.defined == true)
+                {
                     fprintf(stderr, "Redefinition of function \"%s\" on line %d!\n", token.attribute.dString->string, token.rowNumber);
                     makeError(ERR_FUNDEF);
                     return ERR_FUNDEF;
@@ -519,9 +531,9 @@ ErrorType ruleStat()
             ST_freeTable(localST);
             localST = ST_initTable(8);
             DS_deleteAll(functionTypes);
-            DS_append(functionTypes,'V'); //Set unspecified return type
+            DS_append(functionTypes, 'V'); // Set unspecified return type
             err = ruleParams();
-            
+
             // )
             if (token.type != TYPE_RBRACKET)
             {
@@ -532,7 +544,7 @@ ErrorType ruleStat()
             }
             token = newToken(0);
 
-            //Inserting incomplete function into symtable (needed for recursion)
+            // Inserting incomplete function into symtable (needed for recursion)
             STItemData newFunData;
             newFunData.funData.defined = 1;
             newFunData.funData.funTypes = functionTypes->string;
@@ -545,13 +557,13 @@ ErrorType ruleStat()
                 err = errTmp;
             }
 
-            //Inserting function into symtable
+            // Inserting function into symtable
             newFunData.funData.funTypes = functionTypes->string;
             ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
-            
-            DS_dispose(functionTypes);  //ST_insertItem() copies funTypes string -> Original can be freed
+
+            DS_dispose(functionTypes); // ST_insertItem() copies funTypes string -> Original can be freed
             functionTypes = DS_init();
-            DS_append(functionTypes, 'V');  //Set unspecified return type
+            DS_append(functionTypes, 'V'); // Set unspecified return type
             break;
 
         default:
@@ -592,15 +604,16 @@ ErrorType ruleFuncdef()
     ErrorType err = 0;
     ErrorType tmpErr = 0;
     bool canBeNull = false;
-    isGlobal = 0;   //Set parsing in function
+    isGlobal = 0; // Set parsing in function
 
     // : ?TYPE
     if (token.type == TYPE_COLON)
     {
         token = newToken(0);
-        
+
         // ?
-        if(token.type == TYPE_QMARK){
+        if (token.type == TYPE_QMARK)
+        {
             canBeNull = true;
             token = newToken(0);
         }
@@ -621,7 +634,8 @@ ErrorType ruleFuncdef()
             return ERR_SYN;
         }
         functionTypes->string[0] = getTypeChar(keywordType2VarType(token.attribute.keyword)); // Set specified return type
-        if(canBeNull && functionTypes->string[0] != 'V') functionTypes->string[0] -= 32; //Capitalize if function can return null or other type
+        if (canBeNull && functionTypes->string[0] != 'V')
+            functionTypes->string[0] -= 32; // Capitalize if function can return null or other type
         token = newToken(0);
     }
 
@@ -646,7 +660,7 @@ ErrorType ruleFuncdef()
     }
     token = newToken(0);
 
-    isGlobal = 1; //Set parsing in global scale
+    isGlobal = 1; // Set parsing in global scale
 
     return err;
 }
@@ -686,10 +700,11 @@ ErrorType ruleAssign()
             token = newToken(0);
             err = exprAnal(&varType, 0);
 
-            if (item == NULL){
+            if (item == NULL)
+            {
                 STItemData STdata;
                 STdata.varData.VarType = varType;
-                ST_insertItem(getTable(isGlobal),DS_string(prevToken.attribute.dString),ST_ITEM_TYPE_VARIABLE, data);
+                ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
             }
 
             if (token.type != TYPE_SEMICOLON)
@@ -730,37 +745,42 @@ ErrorType ruleAssign()
 ErrorType ruleParams()
 {
     // epsilon
-    //Check empty parametr list
-    if(token.type == TYPE_RBRACKET) return 0;
+    // Check empty parametr list
+    if (token.type == TYPE_RBRACKET)
+        return 0;
 
     ErrorType err = 0;
     ErrorType tmpErr = 0;
-    
+
     // <param>
     err = ruleParam();
 
     // <params_2>
     tmpErr = ruleParams2();
-    if(!err) err = tmpErr;
+    if (!err)
+        err = tmpErr;
 
     return err;
 }
 
 /**
  * @brief params2 rule
- * 
- * @return ErrorType 
+ *
+ * @return ErrorType
  */
-ErrorType ruleParams2(){
+ErrorType ruleParams2()
+{
     // epsilon
-    //Check end of parametr list
-    if(token.type == TYPE_RBRACKET) return 0;
+    // Check end of parametr list
+    if (token.type == TYPE_RBRACKET)
+        return 0;
 
     ErrorType err = 0;
     ErrorType tmpErr = 0;
-    
+
     // ,
-    if(token.type != TYPE_COMMA){
+    if (token.type != TYPE_COMMA)
+    {
         fprintf(stderr, "Expected \",\" between parametrs of function on line %d!\n", token.rowNumber);
         makeError(ERR_SYN);
         return (ERR_SYN);
@@ -772,66 +792,76 @@ ErrorType ruleParams2(){
 
     // <params_2>
     tmpErr = ruleParams2();
-    if(!err) err = tmpErr;
+    if (!err)
+        err = tmpErr;
 
     return err;
 }
 
 /**
  * @brief param rule
- * 
- * @return ErrorType 
+ *
+ * @return ErrorType
  */
-ErrorType ruleParam(){
+ErrorType ruleParam()
+{
     ErrorType err = 0;
     bool canBeNull = 0;
     char paramType = '!';
 
-    if(token.type != TYPE_QMARK && token.type != TYPE_KEYWORD){
+    if (token.type != TYPE_QMARK && token.type != TYPE_KEYWORD)
+    {
         fprintf(stderr, "Expected type of function parametr on line %d!\n", token.rowNumber);
         makeError(ERR_SYN);
         return (ERR_SYN);
     }
 
     // ?
-    if(token.type == TYPE_QMARK){
+    if (token.type == TYPE_QMARK)
+    {
         canBeNull = true;
         token = newToken(0);
     }
 
     // TYPE
-    if(token.type != TYPE_KEYWORD){
+    if (token.type != TYPE_KEYWORD)
+    {
         err = 1;
     }
-    else if(!isKeywordType(token.attribute.keyword)){
+    else if (!isKeywordType(token.attribute.keyword))
+    {
         err = 1;
     }
-    if(err){
+    if (err)
+    {
         fprintf(stderr, "Expected type of function parametr on line %d!\n", token.rowNumber);
         makeError(ERR_SYN);
         return (ERR_SYN);
     }
     paramType = getTypeChar(keywordType2VarType(token.attribute.keyword));
-    if(canBeNull) paramType -= 32; //Capitalize if param can be null
+    if (canBeNull)
+        paramType -= 32; // Capitalize if param can be null
     token = newToken(0);
 
     // ID
-    if(token.type != TYPE_ID){
+    if (token.type != TYPE_ID)
+    {
         fprintf(stderr, "Expected a name of function parametr on line %d!\n", token.rowNumber);
         makeError(ERR_SYN);
         return (ERR_SYN);
     }
-    //Check same name params
-    if(ST_searchTable(getTable(0), token.attribute.dString->string) != NULL){
+    // Check same name params
+    if (ST_searchTable(getTable(0), token.attribute.dString->string) != NULL)
+    {
         fprintf(stderr, "Redefinition of function parametr \"%s\" on line %d!\n", token.attribute.dString->string, token.rowNumber);
         makeError(ERR_OTHER);
         return (ERR_OTHER);
     }
-    //Insert param as local variable into symtable
+    // Insert param as local variable into symtable
     STItemData newVarData;
     newVarData.varData.VarType = paramType;
     ST_insertItem(getTable(0), token.attribute.dString->string, ST_ITEM_TYPE_VARIABLE, newVarData);
-    //Adding param to functionTypes
+    // Adding param to functionTypes
     DS_append(functionTypes, paramType);
     token = newToken(0);
 
@@ -880,7 +910,7 @@ ErrorType ruleReturn()
         return err;
     } // ;
     else if (isLower(functionTypes->string[0]) && isGlobal == 0)
-    {   // Must be ";" -> checking return value
+    { // Must be ";" -> checking return value
         fprintf(stderr, "No return value in non-void function on line %d!\n", token.rowNumber);
         makeError(ERR_EXPRES);
         return (ERR_EXPRES);
@@ -892,7 +922,7 @@ ErrorType ruleReturn()
 
 /**
  * @brief Get the Prec Table Index object
- * 
+ *
  * @param token inspected token
  * @return int, index of token type in precedence table
  */
@@ -945,7 +975,7 @@ int getPrecTableIndex(Token token)
 
 /**
  * @brief finds reduction of expression
- * 
+ *
  * @param tokenArr array[3] of operands and operator
  * @return int used rule
  */
@@ -979,8 +1009,8 @@ int exprUseRule(Token *tokenArr)
 
 /**
  * @brief proccess function call
- * 
- * @return ErrorType 
+ *
+ * @return ErrorType
  */
 ErrorType functionCallCheckAndProcess()
 {
@@ -988,31 +1018,36 @@ ErrorType functionCallCheckAndProcess()
     Token funID = token;
     int isEmpty = 0;
 
-    STItem *item = ST_searchTable(getTable(1),DS_string(funID.attribute.dString));
-    if(item == NULL){ // function not defined
-        if(isGlobal)
+    STItem *item = ST_searchTable(getTable(1), DS_string(funID.attribute.dString));
+    if (item == NULL)
+    { // function not defined
+        if (isGlobal)
         {
             fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(funID.attribute.dString), funID.rowNumber);
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
-        }else{
+        }
+        else
+        {
             STItemData newFuncData;
             newFuncData.funData.defined = 0;
-            ST_insertItem(getTable(1),DS_string(funID.attribute.dString),ST_ITEM_TYPE_FUNCTION,newFuncData);
-            item = ST_searchTable(getTable(1),DS_string(funID.attribute.dString));
+            ST_insertItem(getTable(1), DS_string(funID.attribute.dString), ST_ITEM_TYPE_FUNCTION, newFuncData);
+            item = ST_searchTable(getTable(1), DS_string(funID.attribute.dString));
         }
     }
-    if(item->data.funData.defined == 0){
-        STACK_push(notDefinedCalls,funID);
+    if (item->data.funData.defined == 0)
+    {
+        STACK_push(notDefinedCalls, funID);
     }
-    
+
     int paramCount = -1;
-    if(item->data.funData.defined == 1 && item->data.funData.funTypes[1] != 'U') //unlimited
-        paramCount = strlen(item->data.funData.funTypes)-1;   //-1 <- first char is return type
+    if (item->data.funData.defined == 1 && item->data.funData.funTypes[1] != 'U') // unlimited
+        paramCount = strlen(item->data.funData.funTypes) - 1;                     //-1 <- first char is return type
     token = newToken(0);
 
     // (
-    if(token.type != TYPE_LBRACKET){
+    if (token.type != TYPE_LBRACKET)
+    {
         fprintf(stderr, "Expected \"(\" on line %d!\n", token.rowNumber);
         makeError(ERR_SYN);
         return (ERR_SYN);
@@ -1021,9 +1056,10 @@ ErrorType functionCallCheckAndProcess()
     token = newToken(0);
     while (token.type != TYPE_RBRACKET)
     {
-        if(isValueType(token.type)){
+        if (isValueType(token.type))
+        {
             argCount++;
-            if(argCount > paramCount && paramCount != -1 && item->data.funData.defined == 1)
+            if (argCount > paramCount && paramCount != -1 && item->data.funData.defined == 1)
             {
                 fprintf(stderr, "Too many arguments in function call on line %d!\n", token.rowNumber);
                 makeError(ERR_RUNPAR);
@@ -1044,7 +1080,7 @@ ErrorType functionCallCheckAndProcess()
             return (ERR_SYN);
             }
         }
-        else if(token.type != TYPE_RBRACKET)
+        else if (token.type != TYPE_RBRACKET)
         {
             fprintf(stderr, "Expected \",\" or \")\" on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
@@ -1052,18 +1088,20 @@ ErrorType functionCallCheckAndProcess()
         }
     }
 
-    if(argCount < paramCount && paramCount != -1 && item->data.funData.defined == 1)
+    if (argCount < paramCount && paramCount != -1 && item->data.funData.defined == 1)
     {
         fprintf(stderr, "Too few arguments in function call on line %d!\n", token.rowNumber);
         makeError(ERR_RUNPAR);
         return ERR_RUNPAR;
-    }else if(item->data.funData.defined == 0){
+    }
+    else if (item->data.funData.defined == 0)
+    {
         Token tmpToken;
         tmpToken.type = TYPE_INT;
         tmpToken.attribute.intV = argCount;
-        STACK_push(notDefinedCalls,tmpToken);
+        STACK_push(notDefinedCalls, tmpToken);
     }
-    
+
     token = funID;
     CODEgenerateFuncCall(progCode, token, argCount);
     return 0;
@@ -1071,18 +1109,21 @@ ErrorType functionCallCheckAndProcess()
 
 /**
  * @brief semantics rules for expression
- * 
+ *
  * @param ruleUsed index of used rule
  * @param tokenArr array of used tokens while reducing
  * @param endToken last legit token
- * @return ErrorType 
+ * @return ErrorType
  */
-ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
-    if(ruleUsed == 0){
-        STItem *item = ST_searchTable(getTable(isGlobal),DS_string(tokenArr[0].attribute.dString));
-        if(item == NULL){
+ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
+{
+    if (ruleUsed == 0)
+    {
+        STItem *item = ST_searchTable(getTable(isGlobal), DS_string(tokenArr[0].attribute.dString));
+        if (item == NULL)
+        {
             token = endToken;
-            fprintf(stderr, "Usage of not initialized variable \"%s\" on line %d!\n",DS_string(tokenArr[0].attribute.dString), token.rowNumber);
+            fprintf(stderr, "Usage of not initialized variable \"%s\" on line %d!\n", DS_string(tokenArr[0].attribute.dString), token.rowNumber);
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
@@ -1094,30 +1135,29 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
         DS_appendString(progCode, "\n");
     }
 
-    if(ruleUsed == 1)
+    if (ruleUsed == 1)
     {
         // E => INT
         DS_appendString(progCode, "PUSHS int@");
-        char* int_string;
+        char *int_string;
         formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
         DS_appendString(progCode, int_string);
         DS_appendString(progCode, "\n");
         free(int_string);
     }
 
-    if(ruleUsed == 2)
+    if (ruleUsed == 2)
     {
         // E => FLOAT
         DS_appendString(progCode, "PUSHS float@");
-        char* float_string;
-        formatString2string(float_string, "%f", tokenArr[0].attribute.doubleV);
+        char *float_string;
+        formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
         DS_appendString(progCode, float_string);
-        DS_appendString(progCode, "\n");     
+        DS_appendString(progCode, "\n");
         free(float_string);
     }
-    
 
-    if(ruleUsed == 3)
+    if (ruleUsed == 3)
     {
         // E => STRING
         DS_appendString(progCode, "PUSHS string@");
@@ -1125,32 +1165,39 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken){
         DS_appendString(progCode, "\n");
     }
 
-    if(ruleUsed == 4)
+    if (ruleUsed == 4)
     {
         // E => FUNID
     }
 
-    if(ruleUsed == 5)
+    if (ruleUsed == 5)
     {
         // E => NULL
     }
 
-    if(ruleUsed == 6)
+    if (ruleUsed == 6)
     {
         // E => E + E
-        DS_appendString(progCode, "ADDS ");
-        if(tokenArr[0].type == TYPE_FLOAT || tokenArr[2].type == TYPE_FLOAT)
+        Token result;
+        if (tokenArr[0].type == TYPE_FLOAT && tokenArr[2].type == TYPE_FLOAT)
         {
-               
+            result.attribute.doubleV = tokenArr[0].attribute.doubleV + tokenArr[2].attribute.doubleV;
         }
+        if (tokenArr[0].type == TYPE_INT && tokenArr[2].type == TYPE_FLOAT)
+        {
+            result.attribute.doubleV = tokenArr[0].attribute.intV + tokenArr[2].attribute.doubleV;
+        }
+        if (tokenArr[0].type == TYPE_FLOAT && tokenArr[2].type == TYPE_INT)
+        {
+            result.attribute.doubleV = tokenArr[0].attribute.doubleV + tokenArr[2].attribute.intV;
+        }
+        if (tokenArr[0].type == TYPE_INT && tokenArr[2].type == TYPE_INT)
+        {
+            result.attribute.doubleV = tokenArr[0].attribute.intV + tokenArr[2].attribute.intV;
+        }
+        DS_appendString(progCode, "ADDS ");
         DS_appendString(progCode, "\n");
     }
-
-
-
-
-
-
 
     return 0;
 }
@@ -1197,10 +1244,10 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             *isEmpty = 1;
             return err;
         }
-
     }
-    if(token.type == TYPE_FUNID){
-        err = functionCallCheckAndProcess();  
+    if (token.type == TYPE_FUNID)
+    {
+        err = functionCallCheckAndProcess();
     }
 
     while (1)
@@ -1253,7 +1300,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
                 STACK_push(stack, tmpToken);
             }
 
-            //push new token
+            // push new token
             STACK_push(stack, token);
             token = newToken(0);
             break;
@@ -1300,7 +1347,8 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
 
         case N: // error
             STACK_dispose(stack);
-            if (token.type == TYPE_RBRACKET){
+            if (token.type == TYPE_RBRACKET)
+            {
                 return 0;
             }
             token = endToken;
@@ -1310,8 +1358,9 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             break;
         }
 
-        if(token.type == TYPE_FUNID){
-            err = functionCallCheckAndProcess();  
+        if (token.type == TYPE_FUNID)
+        {
+            err = functionCallCheckAndProcess();
         }
 
         // non-expression token loaded
@@ -1341,23 +1390,27 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
     return err;
 }
 
-ErrorType checkIfDefined(Stack *notDefinedCalls){
+ErrorType checkIfDefined(Stack *notDefinedCalls)
+{
     ErrorType err = 0;
     int argCount = 0;
     Token *bottom = STACK_bottom(notDefinedCalls);
     Token funID;
-    while(bottom != NULL){
+    while (bottom != NULL)
+    {
         funID = *bottom;
-        STItem *item = ST_searchTable(getTable(1),DS_string(funID.attribute.dString));
-        if(item->data.funData.defined == 0){
+        STItem *item = ST_searchTable(getTable(1), DS_string(funID.attribute.dString));
+        if (item->data.funData.defined == 0)
+        {
             fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(funID.attribute.dString), funID.rowNumber);
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
         // check counts of arguments and paramaters
-        argCount = strlen(item->data.funData.funTypes)-1;
+        argCount = strlen(item->data.funData.funTypes) - 1;
         STACK_popBottom(notDefinedCalls);
-        if(argCount != STACK_bottom(notDefinedCalls)->attribute.intV){
+        if (argCount != STACK_bottom(notDefinedCalls)->attribute.intV)
+        {
             fprintf(stderr, "Wrong count of arguments in function call on line %d!\n", funID.rowNumber);
             makeError(ERR_RUNPAR);
             return ERR_RUNPAR;
@@ -1376,12 +1429,12 @@ ErrorType checkIfDefined(Stack *notDefinedCalls){
 #ifdef scanner
 int parser()
 #else
-int parser(Token *tokenArrIN) // sim
+int parser(Token *tokenArrIN)      // sim
 #endif
 {
-    #ifndef scanner
+#ifndef scanner
     tokenArr = tokenArrIN; // sim
-    #endif
+#endif
 
     firstError = 0;
     globalST = ST_initTable(16);
@@ -1408,7 +1461,7 @@ int parser(Token *tokenArrIN) // sim
         printf("%s",DS_string(functionsCode));
         printf("%s",DS_string(progCode));
     }
-    #endif
+#endif
     DS_dispose(functionsCode);
     DS_dispose(progCode);
     DS_dispose(functionTypes);
