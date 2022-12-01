@@ -7,6 +7,7 @@
 
 int generateBuiltInFunc(DynamicString *);
 int callFunc();
+int CODEgenerateFuncCall(DynamicString *,Token,int);
 int CODEpushValue(DynamicString *, Token);
 int CODEifStart(DynamicString *, int);
 int CODEelse(DynamicString *, int);

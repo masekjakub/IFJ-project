@@ -1032,16 +1032,14 @@ ErrorType functionCallCheckAndProcess()
         }
         exprAnal(&isEmpty, 0);
         if(isEmpty){
-            fprintf(stderr, "Empty expression in function call on line %d!\n", token.rowNumber);
+            fprintf(stderr, "Empty argument in function call on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
         }
-
-        //CODEpushValue(progCode, token);
 
         if(token.type == TYPE_COMMA){
             token = newToken(0);
             if(token.type == TYPE_RBRACKET){
-            fprintf(stderr, "Empty expression in function call on line %d!\n", token.rowNumber);
+            fprintf(stderr, "Empty argument in function call on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
             return (ERR_SYN);
             }
@@ -1067,6 +1065,7 @@ ErrorType functionCallCheckAndProcess()
     }
     
     token = funID;
+    CODEgenerateFuncCall(progCode, token, argCount);
     return 0;
 }
 
@@ -1406,8 +1405,8 @@ int parser(Token *tokenArrIN) // sim
 
     #ifdef scanner
     if (firstError == 0){
-        //printf("%s",DS_string(functionsCode));
-        //printf("%s",DS_string(progCode));
+        printf("%s",DS_string(functionsCode));
+        printf("%s",DS_string(progCode));
     }
     #endif
     DS_dispose(functionsCode);

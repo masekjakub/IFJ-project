@@ -227,16 +227,19 @@ LABEL _endif%d\n\
 }
 
 int CODEpushValue(DynamicString *dString, Token token){
-    char *code ="\
-    CREATEFRAME\n";
-    DS_appendString(dString, code);
+char *code = NULL;
+
 
     switch (token.type)
     {
     case TYPE_FLOAT:
-        DS_appendString(dString, "PUSHS ");
-        sprintf(code, "%d", token.attribute.intV);
+        
+        char *code_format = "\
+        PUSHS float@%a\n\
+        ";
+        formatString2string(code, code_format,token.attribute.doubleV);
         DS_appendString(dString, code);
+        free(code);
         break;
     
     default:
@@ -245,82 +248,62 @@ int CODEpushValue(DynamicString *dString, Token token){
     return 0;
 }
 
+int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
+    char *code = NULL;
+    char *code_format = "CALL _%s\n\
+    ";
+    formatString2string(code, code_format,DS_string(token.attribute.dString));
+    DS_appendString(dString, code);
+    free(code);
+    return 0;
+}
+
 // read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
 int generateBuiltInFunc(DynamicString *dString)
-{    char *code = "\
+{   
+char *code = "\
 .IFJcode22\n\
 JUMP _main\n\
 \n\
 LABEL _write\n\
 CREATEFRAME\n\
-PUSHFRAME\n\
 DEFVAR TF@tmpwrite\n\
 POPS TF@tmpwrite\n\
 WRITE TF@tmpwrite\n\
 RETURN\n\
-\n\
+\n";
+DS_appendString(dString, code);
+
+code = "\
 LABEL _readi\n\
 CREATEFRAME\n\
+DEFVAR TF@input\n\
+DEFVAR TF@input$type\n\
+READ TF@input int\n\
+TYPE TF@input$type TF@input\n\
+JUMPIFEQ _readiOk TF@input$type string@int\n\
+MOVE TF@input int@0\n\
 PUSHFRAME\n\
-DEFVAR LF@input\n\
-DEFVAR LF@input$type\n\
-READ LF@input int\n\
-TYPE LF@input$type LF@input\n\
-JUMPIFEQ $righttype LF@input$type int@0\n\
-\n\
-MOVE LF@input nill@nil\n\
-\n\
-LABEL $readi$righttype\n\
-POPFRAME\n\
 RETURN\n\
-\n\
-\n\
-\n\
-LABEL _readf\n\
-CREATEFRAME\n\
+LABEL _readiOk\n\
 PUSHFRAME\n\
-DEFVAR LF@input\n\
-DEFVAR LF@input$type\n\
-READ LF@input float\n\
-TYPE LF@input$type LF@input\n\
-JUMPIFEQ $righttype LF@input$type float@0\n\
-\n\
-MOVE LF@input nill@nil\n\
-\n\
-LABEL $readi$righttype\n\
-POPFRAME\n\
 RETURN\n\
-\n\
-\n\
-\n\
-LABEL _reads\n\
-CREATEFRAME\n\
-PUSHFRAME\n\
-DEFVAR LF@input\n\
-DEFVAR LF@input$type\n\
-READ LF@input string\n\
-TYPE LF@input$type LF@input\n\
-JUMPIFEQ $righttype LF@input$type string@0\n\
-\n\
-MOVE LF@input nill@nil\n\
-\n\
-LABEL $readi$righttype\n\
-POPFRAME\n\
-RETURN\n\
-\n\
-\n\
-\n\
+\n";
+DS_appendString(dString, code);
+
+code = "\
 LABEL _float2int\n\
 CREATEFRAME\n\
-PUSHFRAME\n\
 DEFVAR LF@retval\n\
-\
-\n\
-LABEL $float2int$righttype\n\
+RETURN\n\
+\n";
+DS_appendString(dString, code);
+
+code = "\
+LABEL float2int$righttype\n\
 POPFRAME\n\
 RETURN\n\
-";
-
-    DS_appendString(dString, code);
+\n";
+DS_appendString(dString, code);
     return 0;
 }
