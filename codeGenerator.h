@@ -11,4 +11,5 @@ int CODEpushValue(DynamicString *, Token);
 int CODEifStart(DynamicString *, int);
 int CODEelse(DynamicString *, int);
 int CODEendIf(DynamicString *, int);
+int CODEconvert2Type(DynamicString *, char *, char);
 #endif

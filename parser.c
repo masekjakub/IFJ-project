@@ -16,9 +16,8 @@
 #define isBracket(TYPE) (TYPE == TYPE_LBRACKET || TYPE == TYPE_RBRACKET)
 #define isKeywordType(KEYWORD) (KEYWORD == KEYWORD_INT || KEYWORD == KEYWORD_FLOAT || KEYWORD == KEYWORD_STRING || KEYWORD == KEYWORD_VOID)
 #define isLower(CHAR) ('a' <= CHAR && CHAR <= 'z')
-#define formatString2string(DEST, FORMAT, FORMAT_ARGS...)   int formatedCodeLen = snprintf(NULL,0,FORMAT, FORMAT_ARGS)+1;   \
-                                                            DEST = malloc(formatedCodeLen*sizeof(char));                    \
-                                                            if(DEST == NULL) exit(ERR_INTERN);                              \
+#define formatString2string(DEST, FORMAT, FORMAT_ARGS...)   DEST = malloc((snprintf(NULL,0,FORMAT, FORMAT_ARGS)+1)*sizeof(char));   \
+                                                            if(DEST == NULL) exit(ERR_INTERN);                                      \
                                                             sprintf(DEST, FORMAT, FORMAT_ARGS);
 
 
@@ -1394,7 +1393,7 @@ int parser(Token *tokenArrIN) // sim
     DynamicString *functionsCode;
     functionsCode = DS_init();
     progCode = DS_init();
-    DS_appendString(progCode, "LABEL @main\n");
+    DS_appendString(progCode, "LABEL _main\n");
 
     builtInFuncFillST(globalST);
 
