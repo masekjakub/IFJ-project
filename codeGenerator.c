@@ -185,7 +185,6 @@ LABEL _noConv%d\n\n\
  * @param ifCount Number used for unique label
  * @return int 
  */
-//udelat: konverze výsledku výrazu
 int CODEifStart(DynamicString *dString, int ifCount)
 {   
     char *codeFormat = "\
@@ -435,6 +434,7 @@ EXIT int@6\n\n\
  */
 int CODEcallWrite(DynamicString *dString, int argCount){
     char *code = "\
+#CODEcallWrite\n\
 CREATEFRAME\n\
 DEFVAR TF@tmpwrite\n\
 POPS TF@tmpwrite\n\
