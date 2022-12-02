@@ -390,7 +390,7 @@ JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
     }
 
     codeFormat = "\
-WRITE string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
+DPRINT string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
 EXIT int@6\n\
 LABEL _rightReturnType%d\n\
 PUSHS TF@retVal\n\
@@ -415,7 +415,7 @@ RETURN\n\n\
     }else{
         code = "\
 #CODEfuncDefEnd\n\
-WRITE string@No\\032return\\032in\\032non-void\\032function!\\010\n\
+DPRINT string@No\\032return\\032in\\032non-void\\032function!\\010\n\
 EXIT int@6\n\n\
 ";
     }
