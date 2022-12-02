@@ -27,7 +27,8 @@ Symtable *globalST;           // global symtable
 Symtable *localST;            // local symtable
 int isGlobal;                 // program is not in function
 DynamicString *functionTypes; // Return type and param types of currently parsed function
-DynamicString *progCode;      // Program code
+DynamicString *progCode;      // Main body program code
+DynamicString *functionsCode; // Function def. program code
 Stack *notDefinedCalls;       // Stack of not defined function calls
 
 const int precTable[8][8] = {
@@ -126,6 +127,13 @@ Symtable *getTable(int global)
     if (global)
         return globalST;
     return localST;
+}
+
+DynamicString *getCode(int global)
+{
+    if(global)
+        return progCode;
+    return functionsCode;
 }
 
 /**
@@ -366,7 +374,7 @@ ErrorType ruleStat()
             //Generate code for if start
             static int ifCount = 0;
             ifCount++;
-            CODEifStart(progCode, ifCount);
+            CODEifStart(getCode(isGlobal), ifCount);
 
             // {
             if (token.type != TYPE_LBRACES)
@@ -415,7 +423,7 @@ ErrorType ruleStat()
             token = newToken(0);
 
             //Generate code for else
-            CODEelse(progCode, ifCount);
+            CODEelse(getCode(isGlobal), ifCount);
 
             // {
             if (token.type != TYPE_LBRACES)
@@ -445,7 +453,7 @@ ErrorType ruleStat()
             token = newToken(0);
 
             //Generate code for if end
-            CODEendIf(progCode, ifCount);
+            CODEendIf(getCode(isGlobal), ifCount);
 
             break;
 
@@ -531,6 +539,9 @@ ErrorType ruleStat()
             DS_appendString(funId, token.attribute.dString->string);
             token = newToken(0);
 
+            //Generate code for function start
+            CODEfuncDef(getCode(0), funId->string);
+
             // (
             if (token.type != TYPE_LBRACKET)
             {
@@ -564,9 +575,6 @@ ErrorType ruleStat()
             newFunData.funData.funTypes = functionTypes->string;
             ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
 
-            //Generate code for function start
-            CODEgenerateFuncDef(progCode, funId->string);
-
             // <funcdef>
             errTmp = ruleFuncdef();
             if (err == 0)
@@ -577,6 +585,13 @@ ErrorType ruleStat()
             // Inserting function into symtable
             newFunData.funData.funTypes = functionTypes->string;
             ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
+
+            //Generate code for function end
+            if(isLower(functionTypes->string[0])){
+                CODEfuncDefEnd(getCode(false), false);
+            }else{
+                CODEfuncDefEnd(getCode(false), true);
+            }
 
             DS_dispose(funId);
             DS_dispose(functionTypes); // ST_insertItem() copies funTypes string -> Original can be freed
@@ -722,9 +737,9 @@ ErrorType ruleAssign()
                 STItemData STdata;
                 STdata.varData.VarType = varType;
                 ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
-                CODEdefVar(progCode, prevToken);
+                CODEdefVar(getCode(isGlobal), prevToken);
             }
-            CODEassign(progCode, prevToken);
+            CODEassign(getCode(isGlobal), prevToken);
 
             if (token.type != TYPE_SEMICOLON)
             {
@@ -763,6 +778,10 @@ ErrorType ruleAssign()
  */
 ErrorType ruleParams()
 {
+    //Stack of param IDs for POPping param value in code
+    Stack *paramStack = STACK_init();
+    STACK_popAll(paramStack);
+
     // epsilon
     // Check empty parametr list
     if (token.type == TYPE_RBRACKET)
@@ -772,12 +791,19 @@ ErrorType ruleParams()
     ErrorType tmpErr = 0;
 
     // <param>
-    err = ruleParam();
+    err = ruleParam(paramStack);
 
     // <params_2>
-    tmpErr = ruleParams2();
+    tmpErr = ruleParams2(paramStack);
     if (!err)
         err = tmpErr;
+
+    // Generate code for POPping param value in code
+    while(!STACK_isEmpty(paramStack)){
+        CODEpopValue(getCode(false),STACK_top(paramStack)->attribute.dString->string,false);
+        STACK_pop(paramStack);
+    }
+    STACK_dispose(paramStack);
 
     return err;
 }
@@ -787,7 +813,7 @@ ErrorType ruleParams()
  *
  * @return ErrorType
  */
-ErrorType ruleParams2()
+ErrorType ruleParams2(Stack *paramStack)
 {
     // epsilon
     // Check end of parametr list
@@ -807,10 +833,10 @@ ErrorType ruleParams2()
     token = newToken(0);
 
     // <param>
-    err = ruleParam();
+    err = ruleParam(paramStack);
 
     // <params_2>
-    tmpErr = ruleParams2();
+    tmpErr = ruleParams2(paramStack);
     if (!err)
         err = tmpErr;
 
@@ -822,7 +848,7 @@ ErrorType ruleParams2()
  *
  * @return ErrorType
  */
-ErrorType ruleParam()
+ErrorType ruleParam(Stack *paramStack)
 {
     ErrorType err = 0;
     bool canBeNull = 0;
@@ -876,6 +902,11 @@ ErrorType ruleParam()
         makeError(ERR_OTHER);
         return (ERR_OTHER);
     }
+
+    // Generate code for parametr
+    CODEparam(getCode(false), token.attribute.dString->string);
+    STACK_push(paramStack, token); // Pushing param name on stack for later value pop in ruleParams()
+
     // Insert param as local variable into symtable
     STItemData newVarData;
     newVarData.varData.VarType = paramType;
@@ -896,6 +927,7 @@ ErrorType ruleReturn()
 {
     ErrorType err = 0;
     char varType = 'i';
+    char *code = NULL;
 
     // RETURN
     if (token.type != TYPE_KEYWORD)
@@ -916,7 +948,6 @@ ErrorType ruleReturn()
             makeError(ERR_SYN);
             return (ERR_SYN);
         }
-        token = newToken(0);
 
         // Returns a value but is of type void
         if (functionTypes->string[0] == 'V' && isGlobal == 0 && err == 0)
@@ -926,6 +957,15 @@ ErrorType ruleReturn()
             return (ERR_EXPRES);
         }
 
+        //Generate code for returning a value
+        if(isGlobal){
+            code = "EXIT int@0\n";
+            DS_appendString(getCode(true),code);
+        }else{
+            CODEfuncReturn(getCode(false),functionTypes->string[0], token.rowNumber);
+        }
+
+        token = newToken(0);
         return err;
     } // ;
     else if (isLower(functionTypes->string[0]) && isGlobal == 0)
@@ -935,6 +975,15 @@ ErrorType ruleReturn()
         return (ERR_EXPRES);
     }
     token = newToken(0);
+
+    //Generate code for return without a value
+    if(isGlobal){
+        code = "EXIT int@0\n";
+        DS_appendString(getCode(true),code);
+    }else{
+        code = "RETURN\n";
+        DS_appendString(getCode(false),code);
+    }
 
     return err;
 }
@@ -1124,7 +1173,7 @@ ErrorType functionCallCheckAndProcess()
     }
 
     token = funID;
-    CODEgenerateFuncCall(progCode, funID, argCount);
+    CODEfuncCall(getCode(isGlobal), funID, argCount);
     return 0;
 }
 
@@ -1149,39 +1198,39 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
             return ERR_UNDEF;
         }
         // E => ID
-        DS_appendString(progCode, "\nPUSHS LF@");
-        DS_appendString(progCode, tokenArr[0].attribute.dString->string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), "\nPUSHS LF@");
+        DS_appendString(getCode(isGlobal), tokenArr[0].attribute.dString->string);
+        DS_appendString(getCode(isGlobal), "\n");
     }
 
     if (ruleUsed == 1)
     {
         // E => INT
-        DS_appendString(progCode, "PUSHS int@");
+        DS_appendString(getCode(isGlobal), "PUSHS int@");
         char *int_string;
         formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
         free(int_string);
     }
 
     if (ruleUsed == 2)
     {
         // E => FLOAT
-        DS_appendString(progCode, "PUSHS float@");
+        DS_appendString(getCode(isGlobal), "PUSHS float@");
         char *float_string;
         formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-        DS_appendString(progCode, float_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), float_string);
+        DS_appendString(getCode(isGlobal), "\n");
         free(float_string);
     }
 
     if (ruleUsed == 3)
     {
         // E => STRING
-        DS_appendString(progCode, "PUSHS string@");
-        DS_appendString(progCode, tokenArr[0].attribute.dString->string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), "PUSHS string@");
+        DS_appendString(getCode(isGlobal), tokenArr[0].attribute.dString->string);
+        DS_appendString(getCode(isGlobal), "\n");
     }
 
     if (ruleUsed == 4)
@@ -1200,124 +1249,124 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         static int counter = 0;
         counter++;
 
-        DS_appendString(progCode, "CREATEFRAME\n");
+        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
         if (tokenArr[0].type == TYPE_FLOAT)
         {
-            DS_appendString(progCode, "PUSHS float@");
+            DS_appendString(getCode(isGlobal), "PUSHS float@");
             char *float_string;
             formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-            DS_appendString(progCode, float_string);
+            DS_appendString(getCode(isGlobal), float_string);
             free(float_string);
         }
         else if (tokenArr[0].type == TYPE_INT)
         {
-            DS_appendString(progCode, "PUSHS int@");
+            DS_appendString(getCode(isGlobal), "PUSHS int@");
             char *int_string;
             formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-            DS_appendString(progCode, int_string);
+            DS_appendString(getCode(isGlobal), int_string);
             free(int_string);
         }
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), "\n");
 
         if (tokenArr[2].type == TYPE_FLOAT)
         {
-            DS_appendString(progCode, "PUSHS float@");
+            DS_appendString(getCode(isGlobal), "PUSHS float@");
             char *float_string;
             formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
-            DS_appendString(progCode, float_string);
+            DS_appendString(getCode(isGlobal), float_string);
             free(float_string);
         }
         else if (tokenArr[2].type == TYPE_INT)
         {
-            DS_appendString(progCode, "PUSHS int@");
+            DS_appendString(getCode(isGlobal), "PUSHS int@");
             char *int_string;
             formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
-            DS_appendString(progCode, int_string);
+            DS_appendString(getCode(isGlobal), int_string);
             free(int_string);
         }
 
         char *int_string;
 
-        DS_appendString(progCode, "\n");
-        DS_appendString(progCode, "DEFVAR TF@a\n");
-        DS_appendString(progCode, "DEFVAR TF@b\n");
-        DS_appendString(progCode, "POPS TF@b\n");
-        DS_appendString(progCode, "POPS TF@a\n");
-        DS_appendString(progCode, "PUSHS TF@a\n");
-        DS_appendString(progCode, "PUSHS TF@b\n");
-        DS_appendString(progCode, "DEFVAR TF@atype\n");
-        DS_appendString(progCode, "DEFVAR TF@btype\n");
-        DS_appendString(progCode, "TYPE TF@atype TF@a\n");
-        DS_appendString(progCode, "TYPE TF@btype TF@b\n");
+        DS_appendString(getCode(isGlobal), "\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
+        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
+        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
+        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
+        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
 
-        DS_appendString(progCode, "JUMPIFEQ _afloat");
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _afloat");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, " TF@atype string@float\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@float\n");
         
-        DS_appendString(progCode, "JUMPIFEQ _aint");
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _aint");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, " TF@atype string@int\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
 
-        DS_appendString(progCode, "LABEL _afloat");
+        DS_appendString(getCode(isGlobal), "LABEL _afloat");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
 
-        DS_appendString(progCode, "JUMPIFEQ _canadd");
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _canadd");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, " TF@btype string@float\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
 
-        DS_appendString(progCode, "JUMPIFEQ _bint");
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bint");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, " TF@btype string@int\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
 
-        DS_appendString(progCode, "LABEL _bint");
+        DS_appendString(getCode(isGlobal), "LABEL _bint");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
 
-        DS_appendString(progCode, "INT2FLOATS\n");
+        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
         
-        DS_appendString(progCode, "JUMP _canadd");
+        DS_appendString(getCode(isGlobal), "JUMP _canadd");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
 
-        DS_appendString(progCode, "LABEL _aint");
+        DS_appendString(getCode(isGlobal), "LABEL _aint");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
 
-        DS_appendString(progCode, "JUMPIFEQ _canadd");
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _canadd");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, " TF@btype string@int\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
         
-        DS_appendString(progCode, "JUMPIFEQ _bfloat");
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bfloat");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, " TF@btype string@float\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
 
-        DS_appendString(progCode, "LABEL _bfloat");
+        DS_appendString(getCode(isGlobal), "LABEL _bfloat");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
 
-        DS_appendString(progCode, "POPS TF@b\n");
-        DS_appendString(progCode, "INT2FLOATS\n");
-        DS_appendString(progCode, "PUSHS TF@b\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
+        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
+        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
 
-        DS_appendString(progCode, "LABEL _canadd");
+        DS_appendString(getCode(isGlobal), "LABEL _canadd");
         formatString2string(int_string, "%d", counter);
-        DS_appendString(progCode, int_string);
-        DS_appendString(progCode, "\n");
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
 
-        DS_appendString(progCode, "ADDS\n");
-        DS_appendString(progCode, "CREATEFRAME\n");
+        DS_appendString(getCode(isGlobal), "ADDS\n");
+        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
 
     return 0;
@@ -1563,14 +1612,13 @@ int parser(Token *tokenArrIN)      // sim
     isGlobal = 1;
     notDefinedCalls = STACK_init();
     functionTypes = DS_init();
-    DynamicString *functionsCode;
     functionsCode = DS_init();
     progCode = DS_init();
 
     builtInFuncFillST(globalST);
 
-    CODEgenerateBuiltInFunc(functionsCode);
-    CODEgenerateMain(progCode);
+    CODEbuiltInFunc(getCode(false));
+    CODEmain(getCode(true));
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     ruleProg();
 
@@ -1580,8 +1628,8 @@ int parser(Token *tokenArrIN)      // sim
 #ifdef scanner
     if (firstError == 0)
     {
-        printf("%s", DS_string(functionsCode));
-        printf("%s", DS_string(progCode));
+        printf("%s", DS_string(getCode(false)));
+        printf("%s", DS_string(getCode(true)));
     }
 #endif
     DS_dispose(functionsCode);

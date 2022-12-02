@@ -3,8 +3,13 @@
 #define formatString2string(DEST, FORMAT, FORMAT_ARGS...)   DEST = malloc((snprintf(NULL,0,FORMAT, FORMAT_ARGS)+1)*sizeof(char));   \
                                                             if(DEST == NULL) exit(ERR_INTERN);                                      \
                                                             sprintf(DEST, FORMAT, FORMAT_ARGS);
+#define isLower(CHAR) ('a' <= CHAR && CHAR <= 'z')
 
 int CODEcheckAndConvert2SameType(DynamicString *dString, char *varName1, char *varName2){
+    (void)dString;
+    (void)varName1;
+    (void)varName2;
+    
     return 0;
 }
 
@@ -13,7 +18,7 @@ int CODEcheckAndConvert2SameType(DynamicString *dString, char *varName1, char *v
  * 
  * @param dString 
  */
-void CODEgenerateMain(DynamicString *dString){
+void CODEmain(DynamicString *dString){
     DS_appendString(dString, "######MAIN######\n");
     DS_appendString(dString, "LABEL _main\n");
     DS_appendString(dString, "CREATEFRAME\n");
@@ -34,6 +39,7 @@ int CODEconvert2Type(DynamicString *dString, char *varName, char type){
     varNameNum++;
     
     char *codeFormat = "\
+#CODEconvert2Type\n\
 CREATEFRAME\n\
 DEFVAR TF@%%convType%d\n\
 TYPE TF@%%convType%d %s\n\
@@ -183,6 +189,7 @@ LABEL _noConv%d\n\n\
 int CODEifStart(DynamicString *dString, int ifCount)
 {   
     char *codeFormat = "\
+#CODEifStart\n\
 DEFVAR LF@%%if_cond%d\n\
 POPS LF@%%if_cond%d\n\
 "; //, ifCount,ifCount
@@ -208,18 +215,6 @@ LABEL _if%d\n\
     DS_appendString(dString, code);
     free(code);
 
-    /*char *codeFormat = "\
-DEFVAR LF@%%if_cond%d\n\
-POPS LF@%%if_cond%d\n\
-JUMPIFEQ _else%d LF@%%if_cond%d bool@false\n\
-LABEL _if%d\n\
-"; //, ifCount,ifCount,ifCount,ifCount,ifCount
-
-    char *code = NULL;
-    formatString2string(code, codeFormat, ifCount,ifCount,ifCount,ifCount,ifCount);
-    DS_appendString(dString, code);
-    free(code);*/
-
     return 0;
 }
 
@@ -232,12 +227,13 @@ LABEL _if%d\n\
  */
 int CODEelse(DynamicString *dString, int ifCount)
 {   
-    char *code_format = "\
+    char *codeFormat = "\
+#CODEelse\n\
 JUMP _endif%d\n\
 LABEL _else%d\n\
 ";
     char *code = NULL;
-    formatString2string(code, code_format, ifCount,ifCount);
+    formatString2string(code, codeFormat, ifCount,ifCount);
     DS_appendString(dString, code);
     free(code);
 
@@ -253,11 +249,12 @@ LABEL _else%d\n\
  */
 int CODEendIf(DynamicString *dString, int ifCount)
 {   
-    char *code_format = "\
+    char *codeFormat = "\
+#CODEendIf\n\
 LABEL _endif%d\n\
 ";
     char *code = NULL;
-    formatString2string(code, code_format, ifCount);
+    formatString2string(code, codeFormat, ifCount);
     DS_appendString(dString, code);
     free(code);
 
@@ -266,16 +263,17 @@ LABEL _endif%d\n\
 
 int CODEpushValue(DynamicString *dString, Token token){
     char *code = NULL;
-    char *code_format;
+    char *codeFormat;
 
     switch (token.type)
     {
     case TYPE_FLOAT:
         
-        code_format = "\
+        codeFormat = "\
+#CODEpushValue\n\
 PUSHS float@%a\n\
 ";
-        formatString2string(code, code_format,token.attribute.doubleV);
+        formatString2string(code, codeFormat,token.attribute.doubleV);
         DS_appendString(dString, code);
         free(code);
         break;
@@ -286,16 +284,144 @@ PUSHS float@%a\n\
     return 0;
 }
 
-int CODEgenerateFuncDef(DynamicString *dString, char *functionName){
+int CODEpopValue(DynamicString *dString, char *varName, bool isGlobalFrame){
+    char *codeFormat;
+    
+    if(isGlobalFrame){
+        codeFormat = "\
+#CODEpopValue\n\
+POPS GF@%s\n\
+"; //, varName
+    }else{
+        codeFormat = "\
+#CODEpopValue\n\
+POPS LF@%s\n\
+";
+    }
+
     char *code = NULL;
+    formatString2string(code, codeFormat, varName);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+int CODEfuncDef(DynamicString *dString, char *functionName){
     char *codeFormat = "\
+#CODEfuncDef\n\
+######%s######\n\
 LABEL _%s\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
-";
-    formatString2string(code, codeFormat, functionName);
+"; //, functionName,functionName
+
+    char *code = NULL;
+    formatString2string(code, codeFormat, functionName,functionName);
     DS_appendString(dString, code);
     free(code);
+    return 0;
+}
+
+int CODEparam(DynamicString *dString, char *paramName){
+    char *codeFormat = "\
+#CODEparam\n\
+DEFVAR LF@%s\n\
+"; //, paramName
+
+    char *code = NULL;
+    formatString2string(code, codeFormat, paramName);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+int CODEfuncReturn(DynamicString *dString, char returnType, int lineNum){
+    static int returnNum = 0;
+    returnNum++;
+    
+    char *code = "\
+#CODEreturn\n\
+CREATEFRAME\n\
+DEFVAR TF@retVal\n\
+POPS TF@retVal\n\
+DEFVAR TF@retValType\n\
+TYPE TF@retValType TF@retVal\n\
+";
+    DS_appendString(dString,code);
+    
+    //Type control
+    char *codeFormat = NULL;
+    switch (returnType){
+        case 'i':
+            codeFormat = "\
+JUMPIFEQ _rightReturnType%d TF@retValType string@int\n\
+"; //, returnNum
+            break;
+        case 'f':
+            codeFormat = "\
+JUMPIFEQ _rightReturnType%d TF@retValType string@float\n\
+"; //, returnNum
+            break;
+        case 's':
+            codeFormat = "\
+JUMPIFEQ _rightReturnType%d TF@retValType string@string\n\
+"; //, returnNum
+            break;
+        default:
+            fprintf(stderr,"Error in calling CODEreturn()!\n");
+            exit(ERR_INTERN);
+            break;
+    }
+    
+    code = NULL;
+    formatString2string(code, codeFormat, returnNum);
+    DS_appendString(dString, code);
+    free(code);
+
+    if(!isLower(returnType)){   //If function can return null(nil)
+        codeFormat = "\
+JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
+"; //, returnNum
+        code = NULL;
+        formatString2string(code, codeFormat, returnNum);
+        DS_appendString(dString, code);
+        free(code);
+    }
+
+    codeFormat = "\
+WRITE string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
+EXIT int@6\n\
+LABEL _rightReturnType%d\n\
+PUSHS TF@retVal\n\
+RETURN\n\
+"; //, lineNum,returnNum
+
+    code = NULL;
+    formatString2string(code, codeFormat, lineNum,returnNum);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+int CODEfuncDefEnd(DynamicString *dString, bool isVoid){
+    char *code = NULL;
+    if(isVoid){
+        code = "\
+#CODEfuncDefEnd\n\
+RETURN\n\n\
+";
+    }else{
+        code = "\
+#CODEfuncDefEnd\n\
+WRITE string@No\\032return\\032in\\032non-void\\032function!\\010\n\
+EXIT int@6\n\n\
+";
+    }
+    DS_appendString(dString, code);
+    
     return 0;
 }
 
@@ -330,13 +456,16 @@ return 0;
  * @param argCount count of arguments
  * @return int 
  */
-int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
+int CODEfuncCall(DynamicString *dString, Token token, int argCount){
     if (!strcmp(DS_string(token.attribute.dString),"write")){
         return CODEcallWrite(dString, argCount);
     }
     char *code = NULL;
-    char *code_format = "CALL _%s\n";
-    formatString2string(code, code_format,DS_string(token.attribute.dString));
+    char *codeFormat = "\
+#CODEfuncCall\n\
+CALL _%s\n\
+";
+    formatString2string(code, codeFormat,DS_string(token.attribute.dString));
     DS_appendString(dString, code);
     free(code);
     return 0;
@@ -351,8 +480,11 @@ int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
  */
 int CODEdefVar(DynamicString *dString, Token token){
     char *code = NULL;
-    char *code_format = "DEFVAR LF@%s\n";
-    formatString2string(code, code_format,DS_string(token.attribute.dString));
+    char *codeFormat = "\
+#CODEdefVar\n\
+DEFVAR LF@%s\n\
+";
+    formatString2string(code, codeFormat,DS_string(token.attribute.dString));
     DS_appendString(dString, code);
     free(code);
     return 0;
@@ -360,16 +492,17 @@ int CODEdefVar(DynamicString *dString, Token token){
 
 int CODEassign(DynamicString *dString, Token token){
 char *code = NULL;
-char *code_format = "\
+char *codeFormat = "\
+#CODEassign\n\
 POPS LF@%s\n";
-formatString2string(code, code_format,DS_string(token.attribute.dString));
-DS_appendString(dString, code);
-free(code);
-return 0;
+    formatString2string(code, codeFormat,DS_string(token.attribute.dString));
+    DS_appendString(dString, code);
+    free(code);
+    return 0;
 }
 
 // read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
-int CODEgenerateBuiltInFunc(DynamicString *dString)
+int CODEbuiltInFunc(DynamicString *dString)
 {   
 char *code = "\
 .IFJcode22\n\

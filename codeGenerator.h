@@ -5,12 +5,18 @@
 #include "stack.h"
 #include <string.h>
 
-void CODEgenerateMain(DynamicString *);
-int CODEgenerateBuiltInFunc(DynamicString *);
-int CODEgenerateFuncCall(DynamicString *,Token,int);
+void CODEmain(DynamicString *);
+int CODEbuiltInFunc(DynamicString *);
+int callFunc();
+int CODEfuncDef(DynamicString *, char *);
+int CODEparam(DynamicString *, char *);
+int CODEfuncReturn(DynamicString *, char, int);
+int CODEfuncDefEnd(DynamicString *, bool);
+int CODEfuncCall(DynamicString *,Token,int);
 int CODEcallWrite(DynamicString *, int);
 int CODEassign(DynamicString *, Token);
-int CODEdefVar(DynamicString *dString, Token token);
+int CODEdefVar(DynamicString *, Token);
+int CODEpopValue(DynamicString *, char *, bool);
 int CODEpushValue(DynamicString *, Token);
 int CODEifStart(DynamicString *, int);
 int CODEelse(DynamicString *, int);
