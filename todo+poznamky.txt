@@ -1,3 +1,4 @@
+python3 test.py ../IFJ-project/translator ../IFJ-project/tests/ifjcode/ic22int_linux64_2022-11-24/ic22int
 TODO
 rozsireni globalni promenne?
 bile znaky pred a za programem - nesmi byt!!

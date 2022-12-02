@@ -1572,15 +1572,11 @@ int parser(Token *tokenArrIN)      // sim
     DynamicString *functionsCode;
     functionsCode = DS_init();
     progCode = DS_init();
-    DS_appendString(progCode, "######MAIN######\n");
-    DS_appendString(progCode, "LABEL _main\n");
-    DS_appendString(progCode, "CREATEFRAME\n");
-    DS_appendString(progCode, "PUSHFRAME\n");
 
     builtInFuncFillST(globalST);
 
-    generateBuiltInFunc(functionsCode);
-
+    CODEgenerateBuiltInFunc(functionsCode);
+    CODEgenerateMain(progCode);
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     ruleProg();
 

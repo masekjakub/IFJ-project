@@ -9,6 +9,18 @@ int CODEcheckAndConvert2SameType(DynamicString *dString, char *varName1, char *v
 }
 
 /**
+ * @brief generate start of main
+ * 
+ * @param dString 
+ */
+void CODEgenerateMain(DynamicString *dString){
+    DS_appendString(dString, "######MAIN######\n");
+    DS_appendString(dString, "LABEL _main\n");
+    DS_appendString(dString, "CREATEFRAME\n");
+    DS_appendString(dString, "PUSHFRAME\n");
+}
+
+/**
  * @brief Checks the type of given variable and
  * converts it ot given type indicated by char type.
  * @param varName Name of varible to convert
@@ -287,6 +299,14 @@ PUSHFRAME\n\
     return 0;
 }
 
+/**
+ * @brief generates func call
+ * 
+ * @param dString string to save in
+ * @param token functionID token
+ * @param argCount count of argument
+ * @return int 
+ */
 int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
     char *code = NULL;
     char *code_format = "CALL _%s\n";
@@ -296,6 +316,13 @@ int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
     return 0;
 }
 
+/**
+ * @brief defines new var
+ * 
+ * @param dString string to save in
+ * @param token variable token
+ * @return int 
+ */
 int CODEdefVar(DynamicString *dString, Token token){
     char *code = NULL;
     char *code_format = "DEFVAR LF@%s\n";
@@ -308,10 +335,7 @@ int CODEdefVar(DynamicString *dString, Token token){
 int CODEassign(DynamicString *dString, Token token){
 char *code = NULL;
 char *code_format = "\
-CREATEFRAME\n\
-DEFVAR TF@toassign\n\
-POPS TF@toassign\n\
-MOVE LF@%s TF@toassign\n";
+POPS LF@%s\n";
 formatString2string(code, code_format,DS_string(token.attribute.dString));
 DS_appendString(dString, code);
 free(code);
@@ -319,7 +343,7 @@ return 0;
 }
 
 // read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
-int generateBuiltInFunc(DynamicString *dString)
+int CODEgenerateBuiltInFunc(DynamicString *dString)
 {   
 char *code = "\
 .IFJcode22\n\
