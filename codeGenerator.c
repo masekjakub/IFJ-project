@@ -300,14 +300,40 @@ PUSHFRAME\n\
 }
 
 /**
+ * @brief call write function with arguments in right order
+ * 
+ * @param dString string to save in
+ * @param token functionID token
+ * @param argCount count of arguments
+ * @return int 
+ */
+int CODEcallWrite(DynamicString *dString, int argCount){
+    char *code = "\
+CREATEFRAME\n\
+DEFVAR TF@tmpwrite\n\
+POPS TF@tmpwrite\n\
+PUSHFRAME\n";
+DS_appendString(dString, code);
+argCount--;
+if(argCount)
+    CODEcallWrite(dString,argCount);
+code = "CALL _write\n";
+DS_appendString(dString, code);
+return 0;
+}
+
+/**
  * @brief generates func call
  * 
  * @param dString string to save in
  * @param token functionID token
- * @param argCount count of argument
+ * @param argCount count of arguments
  * @return int 
  */
 int CODEgenerateFuncCall(DynamicString *dString, Token token, int argCount){
+    if (!strcmp(DS_string(token.attribute.dString),"write")){
+        return CODEcallWrite(dString, argCount);
+    }
     char *code = NULL;
     char *code_format = "CALL _%s\n";
     formatString2string(code, code_format,DS_string(token.attribute.dString));
@@ -354,10 +380,9 @@ DS_appendString(dString, code);
 code = "\
 ######WRITE######\n\
 LABEL _write\n\
-CREATEFRAME\n\
-DEFVAR TF@tmpwrite\n\
-POPS TF@tmpwrite\n\
-WRITE TF@tmpwrite\n\
+WRITE LF@tmpwrite\n\
+PUSHS nil@nil\n\
+POPFRAME\n\
 CREATEFRAME\n\
 RETURN\n\
 \n";

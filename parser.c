@@ -1092,10 +1092,6 @@ ErrorType functionCallCheckAndProcess()
             makeError(ERR_SYN);
         }
 
-        if (!strcmp(DS_string(funID.attribute.dString),"write")){
-            CODEgenerateFuncCall(progCode, funID, argCount);
-        }
-
         if(token.type == TYPE_COMMA){
             token = newToken(0);
             if (token.type == TYPE_RBRACKET)
@@ -1128,9 +1124,7 @@ ErrorType functionCallCheckAndProcess()
     }
 
     token = funID;
-    if (strcmp(DS_string(funID.attribute.dString),"write")){
-        CODEgenerateFuncCall(progCode, funID, argCount);
-    }
+    CODEgenerateFuncCall(progCode, funID, argCount);
     return 0;
 }
 

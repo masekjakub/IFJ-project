@@ -8,6 +8,7 @@
 void CODEgenerateMain(DynamicString *);
 int CODEgenerateBuiltInFunc(DynamicString *);
 int CODEgenerateFuncCall(DynamicString *,Token,int);
+int CODEcallWrite(DynamicString *, int);
 int CODEassign(DynamicString *, Token);
 int CODEdefVar(DynamicString *dString, Token token);
 int CODEpushValue(DynamicString *, Token);
