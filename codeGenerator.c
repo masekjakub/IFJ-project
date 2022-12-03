@@ -531,7 +531,7 @@ DEFVAR TF@input$type\n\
 READ TF@input int\n\
 TYPE TF@input$type TF@input\n\
 JUMPIFEQ _readiOk TF@input$type string@int\n\
-PUSHS int@0\n\
+PUSHS nil@nil\n\
 CREATEFRAME\n\
 RETURN\n\
 LABEL _readiOk\n\
@@ -551,7 +551,7 @@ DEFVAR TF@input$type\n\
 READ TF@input float\n\
 TYPE TF@input$type TF@input\n\
 JUMPIFEQ _readfOk TF@input$type string@float\n\
-PUSHS float@0x0p+0\n\
+PUSHS nil@nil\n\
 CREATEFRAME\n\
 RETURN\n\
 LABEL _readfOk\n\
@@ -571,7 +571,7 @@ DEFVAR TF@input$type\n\
 READ TF@input string\n\
 TYPE TF@input$type TF@input\n\
 JUMPIFEQ _readsOk TF@input$type string@string\n\
-PUSHS string@\n\
+PUSHS nil@nil\n\
 CREATEFRAME\n\
 RETURN\n\
 LABEL _readsOk\n\
