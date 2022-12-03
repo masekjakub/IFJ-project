@@ -374,7 +374,8 @@ ErrorType ruleStat()
             //Generate code for if start
             static int ifCount = 0;
             ifCount++;
-            CODEifStart(getCode(isGlobal), ifCount);
+            int curIfCount = ifCount;   //Fixes 'if' within another 'if'
+            CODEifStart(getCode(isGlobal), curIfCount);
 
             // {
             if (token.type != TYPE_LBRACES)
@@ -423,7 +424,7 @@ ErrorType ruleStat()
             token = newToken(0);
 
             //Generate code for else
-            CODEelse(getCode(isGlobal), ifCount);
+            CODEelse(getCode(isGlobal), curIfCount);
 
             // {
             if (token.type != TYPE_LBRACES)
@@ -453,7 +454,7 @@ ErrorType ruleStat()
             token = newToken(0);
 
             //Generate code for if end
-            CODEendIf(getCode(isGlobal), ifCount);
+            CODEendIf(getCode(isGlobal), curIfCount);
 
             break;
 
@@ -981,7 +982,7 @@ ErrorType ruleReturn()
         code = "EXIT int@0\n";
         DS_appendString(getCode(true),code);
     }else{
-        code = "RETURN\n";
+        code = "RETURN\nPOPFRAME\n";
         DS_appendString(getCode(false),code);
     }
 

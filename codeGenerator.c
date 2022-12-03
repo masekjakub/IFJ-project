@@ -390,10 +390,11 @@ JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
     }
 
     codeFormat = "\
-DPRINT string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
+WRITE string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
 EXIT int@6\n\
 LABEL _rightReturnType%d\n\
 PUSHS TF@retVal\n\
+POPFRAME\n\
 RETURN\n\
 "; //, lineNum,returnNum
 
@@ -410,6 +411,7 @@ int CODEfuncDefEnd(DynamicString *dString, bool isVoid){
     if(isVoid){
         code = "\
 #CODEfuncDefEnd\n\
+POPFRAME\n\
 RETURN\n\n\
 ";
     }else{
