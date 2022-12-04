@@ -1398,7 +1398,6 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
 
-
     if (ruleUsed == 7)
     {
         // E => E - E
@@ -1527,7 +1526,6 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         DS_appendString(getCode(isGlobal), "SUBS\n");
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
-
     
     if (ruleUsed == 8)
     {
@@ -1657,7 +1655,6 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         DS_appendString(getCode(isGlobal), "MULS\n");
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
-
     
     if (ruleUsed == 9)
     {
@@ -1746,8 +1743,6 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         DS_appendString(getCode(isGlobal), "DIVS\n");
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
-
-
 
     return 0;
 }
