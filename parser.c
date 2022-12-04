@@ -27,8 +27,8 @@ Symtable *globalST;           // global symtable
 Symtable *localST;            // local symtable
 int isGlobal;                 // program is not in function
 DynamicString *functionTypes; // Return type and param types of currently parsed function
-DynamicString *progCode;      // Main body program code
-DynamicString *functionsCode; // Function def. program code
+Code progCode;                // Main body program code
+Code functionsCode;           // Function def. program code
 Stack *notDefinedCalls;       // Stack of not defined function calls
 
 const int precTable[8][8] = {
@@ -44,11 +44,11 @@ const int precTable[8][8] = {
 
 Token token, prevToken;
 
-Token *tokenArr; // simulation
+Token *tokenArr; // simulation DELETE ME!
 
 #define numOfExprRules 18
 // rules are flipped because of stack
-TokenType exprRules[numOfExprRules][3] = {
+const TokenType exprRules[numOfExprRules][3] = {
     {TYPE_ID, TYPE_UNDEF, TYPE_UNDEF},         // E => ID
     {TYPE_INT, TYPE_UNDEF, TYPE_UNDEF},        // E => INT
     {TYPE_FLOAT, TYPE_UNDEF, TYPE_UNDEF},      // E => FLOAT
@@ -132,8 +132,22 @@ Symtable *getTable(int global)
 DynamicString *getCode(int global)
 {
     if(global)
-        return progCode;
-    return functionsCode;
+        return progCode.string;
+    return functionsCode.string;
+}
+
+DynamicString **getCodePtr(int global)
+{
+    if(global)
+        return &(progCode.string);
+    return &(functionsCode.string);
+}
+
+Code *getCodeStruct(int global)
+{
+    if(global)
+        return &progCode;
+    return &functionsCode;
 }
 
 /**
@@ -371,10 +385,16 @@ ErrorType ruleStat()
             // (<expr>)
             err = exprAnal(&varType, 0);
 
-            //Generate code for if start
             static int ifCount = 0;
             ifCount++;
             int curIfCount = ifCount;   //Fixes 'if' within another 'if'
+            bool outerIf = false;   //Whether current 'if' is not contained in another 'if' or 'while'
+            //Set last unconditioned line
+            if(getCodeStruct(isGlobal)->lastUnconditionedLine == -1){
+                outerIf = true;
+                getCodeStruct(isGlobal)->lastUnconditionedLine = getCode(isGlobal)->numOfChars;
+            }
+            //Generate code for if start
             CODEifStart(getCode(isGlobal), curIfCount);
 
             // {
@@ -452,6 +472,9 @@ ErrorType ruleStat()
                 break;
             }
             token = newToken(0);
+
+            //Unset last unconditioned line, if current 'if' ends conditioned code block 
+            if(outerIf) getCodeStruct(isGlobal)->lastUnconditionedLine = -1;
 
             //Generate code for if end
             CODEendIf(getCode(isGlobal), curIfCount);
@@ -589,9 +612,9 @@ ErrorType ruleStat()
 
             //Generate code for function end
             if(isLower(functionTypes->string[0])){
-                CODEfuncDefEnd(getCode(false), false);
+                CODEfuncDefEnd(getCode(false), funId->string, false);
             }else{
-                CODEfuncDefEnd(getCode(false), true);
+                CODEfuncDefEnd(getCode(false), funId->string, true);
             }
 
             DS_dispose(funId);
@@ -738,7 +761,7 @@ ErrorType ruleAssign()
                 STItemData STdata;
                 STdata.varData.VarType = varType;
                 ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
-                CODEdefVar(getCode(isGlobal), prevToken);
+                CODEdefVar(getCodePtr(isGlobal), prevToken, getCodeStruct(isGlobal)->lastUnconditionedLine);
             }
             CODEassign(getCode(isGlobal), prevToken);
 
@@ -982,7 +1005,7 @@ ErrorType ruleReturn()
         code = "EXIT int@0\n";
         DS_appendString(getCode(true),code);
     }else{
-        code = "RETURN\nPOPFRAME\n";
+        code = "POPFRAME\nRETURN\n";
         DS_appendString(getCode(false),code);
     }
 
@@ -1199,7 +1222,8 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
             return ERR_UNDEF;
         }
         // E => ID
-        DS_appendString(getCode(isGlobal), "\nPUSHS LF@");
+        CODEcheckInitVar(getCode(isGlobal), tokenArr[0].attribute.dString->string, false, tokenArr[0].rowNumber);
+        DS_appendString(getCode(isGlobal), "PUSHS LF@");
         DS_appendString(getCode(isGlobal), tokenArr[0].attribute.dString->string);
         DS_appendString(getCode(isGlobal), "\n");
     }
@@ -1250,6 +1274,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         static int counter = 0;
         counter++;
 
+        DS_appendString(getCode(isGlobal), "#E => E + E\n");
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
         if (tokenArr[0].type == TYPE_FLOAT)
         {
@@ -1258,6 +1283,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
             formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
             DS_appendString(getCode(isGlobal), float_string);
             free(float_string);
+            DS_appendString(getCode(isGlobal), "\n");
         }
         else if (tokenArr[0].type == TYPE_INT)
         {
@@ -1266,8 +1292,8 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
             formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
             DS_appendString(getCode(isGlobal), int_string);
             free(int_string);
+            DS_appendString(getCode(isGlobal), "\n");
         }
-        DS_appendString(getCode(isGlobal), "\n");
 
         if (tokenArr[2].type == TYPE_FLOAT)
         {
@@ -1276,6 +1302,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
             formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
             DS_appendString(getCode(isGlobal), float_string);
             free(float_string);
+            DS_appendString(getCode(isGlobal), "\n");
         }
         else if (tokenArr[2].type == TYPE_INT)
         {
@@ -1284,11 +1311,11 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
             formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
             DS_appendString(getCode(isGlobal), int_string);
             free(int_string);
+            DS_appendString(getCode(isGlobal), "\n");
         }
 
         char *int_string;
 
-        DS_appendString(getCode(isGlobal), "\n");
         DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
         DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
         DS_appendString(getCode(isGlobal), "POPS TF@b\n");
@@ -1613,8 +1640,10 @@ int parser(Token *tokenArrIN)      // sim
     isGlobal = 1;
     notDefinedCalls = STACK_init();
     functionTypes = DS_init();
-    functionsCode = DS_init();
-    progCode = DS_init();
+    functionsCode.string = DS_init();
+    functionsCode.lastUnconditionedLine = -1;
+    progCode.string = DS_init();
+    progCode.lastUnconditionedLine = -1;
 
     builtInFuncFillST(globalST);
 
@@ -1623,7 +1652,7 @@ int parser(Token *tokenArrIN)      // sim
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     ruleProg();
 
-    // check if all functions are defined
+    // Check if all functions are defined
     checkIfDefined(notDefinedCalls);
 
 #ifdef scanner
@@ -1633,8 +1662,8 @@ int parser(Token *tokenArrIN)      // sim
         printf("%s", DS_string(getCode(true)));
     }
 #endif
-    DS_dispose(functionsCode);
-    DS_dispose(progCode);
+    DS_dispose(functionsCode.string);
+    DS_dispose(progCode.string);
     DS_dispose(functionTypes);
     ST_freeTable(globalST);
     // printf("Parser OK!\n");

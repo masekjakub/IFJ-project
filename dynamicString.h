@@ -1,6 +1,6 @@
 /**
  * @file dynamicString.h
- * @author Vojtěch Kuchař
+ * @author Vojtěch Kuchař, Martin Zelenák(DS_insertString)
  * @brief Dynamic string header file
  * @version 1.0
  * @date 2022-10-28
@@ -22,6 +22,7 @@ typedef struct
 DynamicString *DS_init();
 DynamicString *DS_append(DynamicString *dynamicString, char character);
 DynamicString *DS_appendString(DynamicString *dynamicString, char *string);
+DynamicString *DS_insertString(DynamicString **dynamicStringPtr, char *string, int index);
 void DS_deleteChar(DynamicString *dynamicString);
 void DS_deleteAll(DynamicString *dynamicString);
 void DS_dispose(DynamicString *dynamicString);

@@ -1,6 +1,6 @@
 /**
  * @file dynamicString.c
- * @author Vojtěch Kuchař
+ * @author Vojtěch Kuchař, Martin Zelenák(DS_insertString)
  * @brief Functions operating dynamic string
  * @version 1.0
  * @date 2022-10-15
@@ -57,7 +57,6 @@ DynamicString *DS_append(DynamicString *dynamicString, char character)
     dynamicString->string[dynamicString->numOfChars] = character;
     dynamicString->string[dynamicString->numOfChars + 1] = '\0';
     dynamicString->numOfChars++;
-    // printf("l:%d c:%d |%s|\n", dynamicString->length, dynamicString->numOfChars, dynamicString->string);
     return dynamicString;
 }
 
@@ -77,6 +76,50 @@ DynamicString *DS_appendString(DynamicString *dynamicString, char *string)
         DS_append(dynamicString, string[i]);
     }
     return dynamicString;
+}
+
+/**
+ * @brief Function inserts string into dynamic string based on given index.
+ * If string is full, function doubles it´s length and inserts string.
+ * 
+ * @param dynamicString Dynamic structure of DynamicString type. Pointer to it will be modified.
+ * @param string String inserting into the dynamic string.
+ * @param index Index where to insert. Char of this index and rest of DS is appended to inserted string
+ * @return Dynamic string with inserted string
+ */
+DynamicString *DS_insertString(DynamicString **dynamicStringPtr, char *string, int index)
+{
+    DynamicString *dynamicString = *dynamicStringPtr;
+    int newLength = (int)strlen(string)+dynamicString->numOfChars;
+    
+    //Expand DS if current allocated length is not enough
+    if(newLength >= dynamicString->length){
+        dynamicString->string = realloc(dynamicString->string, (2 * dynamicString->length + 1) * sizeof(char));
+        if (dynamicString->string == NULL){
+            exit(ERR_INTERN);
+        }
+        else{
+            dynamicString->length *= 2;
+        }
+    }
+
+    DynamicString *newDS = DS_init();
+    //Insert orig. DS upto (not including) given index
+    for(int i = 0; i < index; i++){
+        DS_append(newDS,dynamicString->string[i]);
+    }
+    //Insert given string
+    DS_appendString(newDS,string);
+    //Insert the rest of orig. DS
+    for(int i = index; i < dynamicString->numOfChars; i++){
+        DS_append(newDS,dynamicString->string[i]);
+    }
+
+    //Dispose orig. DS and set given pointer to newDS
+    DS_dispose(dynamicString);
+    *dynamicStringPtr = newDS;
+
+    return newDS;
 }
 
 /**

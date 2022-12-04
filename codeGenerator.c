@@ -206,11 +206,10 @@ POPS LF@%%if_cond%d\n\
 
     codeFormat = "\
 JUMPIFEQ _else%d LF@%%if_cond%d bool@false\n\
-LABEL _if%d\n\
-"; //, ifCount,ifCount,ifCount
+"; //, ifCount,ifCount
 
     code = NULL;
-    formatString2string(code, codeFormat, ifCount,ifCount,ifCount);
+    formatString2string(code, codeFormat, ifCount,ifCount);
     DS_appendString(dString, code);
     free(code);
 
@@ -308,8 +307,8 @@ POPS LF@%s\n\
 
 int CODEfuncDef(DynamicString *dString, char *functionName){
     char *codeFormat = "\
-#CODEfuncDef\n\
 ######%s######\n\
+#CODEfuncDef\n\
 LABEL _%s\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
@@ -350,6 +349,11 @@ TYPE TF@retValType TF@retVal\n\
 ";
     DS_appendString(dString,code);
     
+    //Convert returnType to lower case
+    if(!isLower(returnType)){
+        returnType += 32; //To lower case
+    }
+
     //Type control
     char *codeFormat = NULL;
     switch (returnType){
@@ -369,7 +373,7 @@ JUMPIFEQ _rightReturnType%d TF@retValType string@string\n\
 "; //, returnNum
             break;
         default:
-            fprintf(stderr,"Error in calling CODEreturn()!\n");
+            fprintf(stderr,"Error in calling CODEfuncReturn()!\n");
             exit(ERR_INTERN);
             break;
     }
@@ -406,22 +410,26 @@ RETURN\n\
     return 0;
 }
 
-int CODEfuncDefEnd(DynamicString *dString, bool isVoid){
+int CODEfuncDefEnd(DynamicString *dString, char *funId, bool isVoid){
     char *code = NULL;
     if(isVoid){
         code = "\
 #CODEfuncDefEnd\n\
+PUSHS nil@nil\n\
 POPFRAME\n\
 RETURN\n\n\
 ";
-    }else{
-        code = "\
-#CODEfuncDefEnd\n\
-DPRINT string@No\\032return\\032in\\032non-void\\032function!\\010\n\
-EXIT int@6\n\n\
-";
-    }
     DS_appendString(dString, code);
+    }else{
+        char *codeFormat = "\
+#CODEfuncDefEnd\n\
+WRITE string@No\\032return\\032in\\032non-void\\032function\\032\"%s\"!\\010\n\
+EXIT int@6\n\n\
+"; //, funId
+    formatString2string(code, codeFormat, funId);
+    DS_appendString(dString, code);
+    free(code);
+    }
     
     return 0;
 }
@@ -474,20 +482,26 @@ CALL _%s\n\
 }
 
 /**
- * @brief defines new var
+ * @brief defines new var on last unconditioned line (always performed)
  * 
- * @param dString string to save in
+ * @param dString ptr of ptr to string to save in
  * @param token variable token
+ * @param lastUnconditionedLine 
+ * Index in dString, where definition of variable should be generated
  * @return int 
  */
-int CODEdefVar(DynamicString *dString, Token token){
+int CODEdefVar(DynamicString **dStringPtr, Token token, int lastUnconditionedLine){
     char *code = NULL;
     char *codeFormat = "\
 #CODEdefVar\n\
 DEFVAR LF@%s\n\
 ";
     formatString2string(code, codeFormat,DS_string(token.attribute.dString));
-    DS_appendString(dString, code);
+    if(lastUnconditionedLine == -1){
+        DS_appendString(*dStringPtr, code);
+    }else{
+        DS_insertString(dStringPtr, code, lastUnconditionedLine);
+    }
     free(code);
     return 0;
 }
@@ -500,6 +514,41 @@ POPS LF@%s\n";
     formatString2string(code, codeFormat,DS_string(token.attribute.dString));
     DS_appendString(dString, code);
     free(code);
+    return 0;
+}
+
+int CODEcheckInitVar(DynamicString *dString, char *varName, bool isGlobalFrame, int lineNum){
+    static int labelCount = 0;
+    labelCount++;
+    
+    char *code = NULL;
+    char *codeFormat= "\
+CREATEFRAME\n\
+DEFVAR TF@%sType\n\
+"; //, varName
+    formatString2string(code, codeFormat, varName);
+    DS_appendString(dString, code);
+    free(code);
+    
+    if(isGlobalFrame){
+        codeFormat = "TYPE TF@%sType GF@%s\n"; //, varName,varName
+    }else{
+        codeFormat = "TYPE TF@%sType LF@%s\n"; //, varName,varName
+    }
+    formatString2string(code, codeFormat, varName,varName);
+    DS_appendString(dString, code);
+    free(code);
+
+    codeFormat="\
+JUMPIFNEQ _varInitOk%d TF@%sType string@\n\
+WRITE string@Variable\\032%s\\032is\\032undefined\\032on\\032line\\032%d!\\010\n\
+EXIT int@5\n\
+LABEL _varInitOk%d\n\
+"; //, labelCount,varName,varName,lineNum,labelCount
+    formatString2string(code, codeFormat, labelCount,varName,varName,lineNum,labelCount);
+    DS_appendString(dString, code);
+    free(code);
+
     return 0;
 }
 

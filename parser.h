@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include "symtable.h"
 #include "stack.h"
+#include "dynamicString.h"
 #include "codeGenerator.h"
 
 typedef enum
@@ -30,6 +31,18 @@ typedef enum
     E, // =
     N  // none
 } precTableSymbols;
+
+typedef struct
+{
+    //String of generated code
+    DynamicString *string;
+    //Index of line in code string
+    //-Last line of code, that is always performed(unconditioned)
+    //-Index of first char after last unconditioned line
+    //- -1 if current line is unconditioned
+    int lastUnconditionedLine;
+} Code;
+
 
 // rules funcs
 ErrorType exprAnal();
@@ -49,7 +62,9 @@ ErrorType functionCallCheckAndProcess();
 
 // to use in rule functions
 Token newToken(int);
-void freeAll(Symtable *);
+DynamicString *getCode(int);
+DynamicString **getCodePtr(int);
+Code *getCodeStruct(int);
 Symtable *getTable(int);
 void makeError();
 
