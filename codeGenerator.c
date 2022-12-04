@@ -96,23 +96,24 @@ MOVE %s bool@true\n\
 JUMP _noConv%d\n\
 \n\
 LABEL _convString2Bool%d\n\
-JUMPIFNEQ _convString2Bool%d_true %s string@\n\
-MOVE %s bool@false\n\
-JUMP _noConv%d\n\
-LABEL _convString2Bool%d_true\n\
+JUMPIFEQ _convString2Bool%d_false %s string@\n\
+JUMPIFEQ _convString2Bool%d_false %s string@0\n\
 MOVE %s bool@true\n\
+JUMP _noConv%d\n\
+LABEL _convString2Bool%d_false\n\
+MOVE %s bool@false\n\
 JUMP _noConv%d\n\
 \n\
 LABEL _convNil2Bool%d\n\
 MOVE %s bool@false\n\
 "; /*, varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum
 ,varName,varName,varNameNum,varNameNum,varName,varNameNum,varNameNum,varNameNum,varName,varName,varNameNum,varNameNum
-,varName,varNameNum,varNameNum,varNameNum,varName,varName,varNameNum,varNameNum,varName,varNameNum,varNameNum,varName
+,varName,varNameNum,varNameNum,varNameNum,varName,varNameNum,varName,varName,varNameNum,varNameNum,varName,varNameNum,varNameNum,varName
 */
         code = NULL;
         formatString2string(code, codeFormat, varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum
         ,varName,varName,varNameNum,varNameNum,varName,varNameNum,varNameNum,varNameNum,varName,varName,varNameNum,varNameNum
-        ,varName,varNameNum,varNameNum,varNameNum,varName,varName,varNameNum,varNameNum,varName,varNameNum,varNameNum,varName);
+        ,varName,varNameNum,varNameNum,varNameNum,varName,varNameNum,varName,varName,varNameNum,varNameNum,varName,varNameNum,varNameNum,varName);
         DS_appendString(dString, code);
         free(code);
         break;

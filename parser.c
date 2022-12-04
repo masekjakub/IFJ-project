@@ -1266,6 +1266,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
     if (ruleUsed == 5)
     {
         // E => NULL
+        DS_appendString(getCode(isGlobal), "PUSHS nil@nil\n");
     }
 
     if (ruleUsed == 6)
