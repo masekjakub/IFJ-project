@@ -16,11 +16,14 @@ int CODEfuncCall(DynamicString *,Token,int);
 int CODEcallWrite(DynamicString *, int);
 int CODEassign(DynamicString *, Token);
 int CODEcheckInitVar(DynamicString *, char *, bool, int);
-int CODEdefVar(DynamicString **, Token, int);
+int CODEdefVar(DynamicString **, char *, int);
 int CODEpopValue(DynamicString *, char *, bool);
 int CODEpushValue(DynamicString *, Token);
-int CODEifStart(DynamicString *, int);
+int CODEifStart(DynamicString **, int, int);
 int CODEelse(DynamicString *, int);
-int CODEendIf(DynamicString *, int);
+int CODEifEnd(DynamicString *, int);
+int CODEwhileStart(DynamicString **, int, int);
+int CODEwhileCond(DynamicString *, int);
+int CODEwhileEnd(DynamicString *, int);
 int CODEconvert2Type(DynamicString *, char *, char);
 #endif

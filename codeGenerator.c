@@ -182,20 +182,34 @@ LABEL _noConv%d\n\n\
 /**
  * @brief Generates code for if statement header
  * Expects the condition value on stack
- * @param dString Dynamic string to append the code to
+ * @param dStringPtr Ptr to ptr to dynamic string to append the code to
  * @param ifCount Number used for unique label
+ * @param lastUnconditionedLine Index of last line in dString outside
+ * any 'if' or 'while' code block.
+ * -1 = not inside conditioned code block
  * @return int 
  */
-int CODEifStart(DynamicString *dString, int ifCount)
+int CODEifStart(DynamicString **dStringPtr, int ifCount, int lastUnconditionedLine)
 {   
+    DynamicString *dString = *dStringPtr;
+    char *code = NULL;
     char *codeFormat = "\
 #CODEifStart\n\
-DEFVAR LF@%%if_cond%d\n\
-POPS LF@%%if_cond%d\n\
-"; //, ifCount,ifCount
+";
+    DS_appendString(dString, codeFormat);
 
-    char *code = NULL;
-    formatString2string(code, codeFormat, ifCount,ifCount);
+    //Definition of 'if' condition variable
+    codeFormat = "%%if_cond%d"; //, ifCount
+    formatString2string(code, codeFormat, ifCount);
+    CODEdefVar(dStringPtr, code, lastUnconditionedLine);
+    dString = *dStringPtr;
+    free(code);
+
+    codeFormat = "\
+POPS LF@%%if_cond%d\n\
+"; //, ifCount
+
+    formatString2string(code, codeFormat, ifCount);
     DS_appendString(dString, code);
     free(code);
 
@@ -242,18 +256,90 @@ LABEL _else%d\n\
 /**
  * @brief Generates code for if statement end
  * Expects the condition value on stack
- * @param dString Dynamic string to append the code to
+ * @param dStringPtr Ptr to ptr to dynamic string to append the code to
  * @param ifCount Number used for unique label
  * @return int 
  */
-int CODEendIf(DynamicString *dString, int ifCount)
+int CODEifEnd(DynamicString *dString, int ifCount)
 {   
     char *codeFormat = "\
-#CODEendIf\n\
+#CODEifEnd\n\
 LABEL _endif%d\n\
 ";
     char *code = NULL;
     formatString2string(code, codeFormat, ifCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+int CODEwhileStart(DynamicString **dStringPtr, int whileCount, int lastUnconditionedLine)
+{   
+    DynamicString *dString = *dStringPtr;
+    char *code = NULL;
+    char *codeFormat = "\
+#CODEwhileStart\n\
+";
+    DS_appendString(dString, codeFormat);
+
+    //Definition of 'while' condition variable
+    codeFormat="%%while_cond%d"; //, whileCount
+    formatString2string(code, codeFormat, whileCount);
+    CODEdefVar(dStringPtr, code, lastUnconditionedLine);
+    dString = *dStringPtr;
+    free(code);
+
+    codeFormat = "\
+LABEL _whileStart%d\n\
+"; //, whileCount
+
+    formatString2string(code, codeFormat, whileCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+int CODEwhileCond(DynamicString *dString, int whileCount)
+{
+    char *code = NULL;
+    char *codeFormat = "\
+#CODEwhileCond\n\
+POPS LF@%%while_cond%d\n\
+"; //, whileCount
+
+    formatString2string(code, codeFormat, whileCount);
+    DS_appendString(dString, code);
+    free(code);
+    
+    //Conversion to bool
+    codeFormat = "LF@%%while_cond%d";
+    code = NULL;
+    formatString2string(code, codeFormat, whileCount);
+    CODEconvert2Type(dString,code,'b');
+
+    codeFormat = "\
+JUMPIFEQ _whileEnd%d LF@%%while_cond%d bool@false\n\
+"; //, whileCount,whileCount
+
+    code = NULL;
+    formatString2string(code, codeFormat, whileCount,whileCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+int CODEwhileEnd(DynamicString *dString, int whileCount)
+{
+    char *code = NULL;
+    char *codeFormat = "\
+JUMP _whileStart%d\n\
+LABEL _whileEnd%d\n\
+"; //, whileCount,whileCount
+
+    formatString2string(code, codeFormat, whileCount,whileCount);
     DS_appendString(dString, code);
     free(code);
 
@@ -400,6 +486,7 @@ EXIT int@6\n\
 LABEL _rightReturnType%d\n\
 PUSHS TF@retVal\n\
 POPFRAME\n\
+CREATEFRAME\n\
 RETURN\n\
 "; //, lineNum,returnNum
 
@@ -486,18 +573,19 @@ CALL _%s\n\
  * @brief defines new var on last unconditioned line (always performed)
  * 
  * @param dString ptr of ptr to string to save in
- * @param token variable token
+ * @param varName Name of variable to be defined
  * @param lastUnconditionedLine 
- * Index in dString, where definition of variable should be generated
+ * Index in dString, where definition of variable should be generated.
+ * -1 = code will be appended
  * @return int 
  */
-int CODEdefVar(DynamicString **dStringPtr, Token token, int lastUnconditionedLine){
+int CODEdefVar(DynamicString **dStringPtr, char *varName, int lastUnconditionedLine){
     char *code = NULL;
     char *codeFormat = "\
 #CODEdefVar\n\
 DEFVAR LF@%s\n\
-";
-    formatString2string(code, codeFormat,DS_string(token.attribute.dString));
+"; //, varName
+    formatString2string(code, codeFormat, varName);
     if(lastUnconditionedLine == -1){
         DS_appendString(*dStringPtr, code);
     }else{
@@ -545,6 +633,7 @@ JUMPIFNEQ _varInitOk%d TF@%sType string@\n\
 WRITE string@Variable\\032%s\\032is\\032undefined\\032on\\032line\\032%d!\\010\n\
 EXIT int@5\n\
 LABEL _varInitOk%d\n\
+CREATEFRAME\n\
 "; //, labelCount,varName,varName,lineNum,labelCount
     formatString2string(code, codeFormat, labelCount,varName,varName,lineNum,labelCount);
     DS_appendString(dString, code);

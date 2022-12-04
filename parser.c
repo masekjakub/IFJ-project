@@ -395,7 +395,7 @@ ErrorType ruleStat()
                 getCodeStruct(isGlobal)->lastUnconditionedLine = getCode(isGlobal)->numOfChars;
             }
             //Generate code for if start
-            CODEifStart(getCode(isGlobal), curIfCount);
+            CODEifStart(getCodePtr(isGlobal), curIfCount, getCodeStruct(isGlobal)->lastUnconditionedLine);
 
             // {
             if (token.type != TYPE_LBRACES)
@@ -477,7 +477,7 @@ ErrorType ruleStat()
             if(outerIf) getCodeStruct(isGlobal)->lastUnconditionedLine = -1;
 
             //Generate code for if end
-            CODEendIf(getCode(isGlobal), curIfCount);
+            CODEifEnd(getCode(isGlobal), curIfCount);
 
             break;
 
@@ -493,8 +493,23 @@ ErrorType ruleStat()
                 break;
             }
 
+            static int whileCount = 0;
+            whileCount++;
+            int curWhileCount = whileCount;   //Fixes 'while' within another 'while'
+            bool outerWhile = false;   //Whether current 'if' is not contained in another 'if' or 'while'
+            //Set last unconditioned line
+            if(getCodeStruct(isGlobal)->lastUnconditionedLine == -1){
+                outerWhile = true;
+                getCodeStruct(isGlobal)->lastUnconditionedLine = getCode(isGlobal)->numOfChars;
+            }
+            //Generate code for while start
+            CODEwhileStart(getCodePtr(isGlobal), curWhileCount, getCodeStruct(isGlobal)->lastUnconditionedLine);
+
             // (<expr>)
             err = exprAnal(&varType, 0);
+
+            //Generate code for while condition
+            CODEwhileCond(getCode(isGlobal), curWhileCount);
 
             // {
             if (token.type != TYPE_LBRACES)
@@ -522,6 +537,13 @@ ErrorType ruleStat()
                 break;
             }
             token = newToken(0);
+
+            //Unset last unconditioned line, if current 'while' ends conditioned code block 
+            if(outerWhile) getCodeStruct(isGlobal)->lastUnconditionedLine = -1;
+
+            //Generate code for while end
+            CODEwhileEnd(getCode(isGlobal), curWhileCount);
+
             break;
 
         case KEYWORD_FUNCTION:
@@ -761,7 +783,7 @@ ErrorType ruleAssign()
                 STItemData STdata;
                 STdata.varData.VarType = varType;
                 ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
-                CODEdefVar(getCodePtr(isGlobal), prevToken, getCodeStruct(isGlobal)->lastUnconditionedLine);
+                CODEdefVar(getCodePtr(isGlobal), DS_string(prevToken.attribute.dString), getCodeStruct(isGlobal)->lastUnconditionedLine);
             }
             CODEassign(getCode(isGlobal), prevToken);
 
