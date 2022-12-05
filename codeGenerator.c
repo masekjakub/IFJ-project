@@ -531,6 +531,9 @@ EXIT int@6\n\n\
  * @return int 
  */
 int CODEcallWrite(DynamicString *dString, int argCount){
+    //Check if write was called with no args
+    if(!argCount) return 0;
+    
     char *code = "\
 #CODEcallWrite\n\
 CREATEFRAME\n\

@@ -1239,7 +1239,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         if (item == NULL)
         {
             token = endToken;
-            fprintf(stderr, "Usage of not initialized variable \"%s\" on line %d!\n", DS_string(tokenArr[0].attribute.dString), token.rowNumber);
+            fprintf(stderr, "Usage of uninitialized variable \"%s\" on line %d!\n", DS_string(tokenArr[0].attribute.dString), token.rowNumber);
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
@@ -2016,13 +2016,18 @@ int parser(Token *tokenArrIN)      // sim
 
     builtInFuncFillST(globalST);
 
+    //Generate code for built-in functions and label _main
     CODEbuiltInFunc(getCode(false));
     CODEmain(getCode(true));
+    
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     ruleProg();
 
-    // Check if all functions are defined
+    // Check if all functions called from other functions are defined
     checkIfDefined(notDefinedCalls);
+
+    //Generate code for main exit 0
+    DS_appendString(getCode(true),"\nEXIT int@0\n");
 
 #ifdef scanner
     if (firstError == 0)
@@ -2031,6 +2036,7 @@ int parser(Token *tokenArrIN)      // sim
         printf("%s", DS_string(getCode(true)));
     }
 #endif
+
     DS_dispose(functionsCode.string);
     DS_dispose(progCode.string);
     DS_dispose(functionTypes);
