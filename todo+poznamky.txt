@@ -4,6 +4,7 @@ TODO
 dokumentace
 generování výrazů
 builtin funkce
+empty expr v if, while
 
 
 NAVOD NA SPOUSTENI MAIN:

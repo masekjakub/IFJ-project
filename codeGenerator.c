@@ -554,11 +554,12 @@ int CODEcallWrite(DynamicString *dString, int argCount){
 #CODEcallWrite\n\
 CREATEFRAME\n\
 DEFVAR TF@tmpwrite\n\
+DEFVAR TF@writetype\n\
 POPS TF@tmpwrite\n\
 PUSHFRAME\n";
     DS_appendString(dString, code);
     argCount--;
-    if (argCount)
+    if (argCount > 0)
         CODEcallWrite(dString, argCount);
     code = "CALL _write\n";
     DS_appendString(dString, code);
@@ -965,7 +966,16 @@ JUMP _main\n\n";
     code = "\
 ######WRITE######\n\
 LABEL _write\n\
+TYPE LF@writetype LF@tmpwrite\n\
+JUMPIFEQ _writeempty LF@writetype string@nil\n\
 WRITE LF@tmpwrite\n\
+PUSHS nil@nil\n\
+POPFRAME\n\
+CREATEFRAME\n\
+RETURN\n\
+#EMPTY#\n\
+LABEL _writeempty\n\
+WRITE string@\n\
 PUSHS nil@nil\n\
 POPFRAME\n\
 CREATEFRAME\n\

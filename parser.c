@@ -364,7 +364,7 @@ ErrorType ruleStat()
 {
     ErrorType err = 0;
     ErrorType errTmp = 0;
-    char varType;
+    int isEmpty;
 
     if (token.type == TYPE_KEYWORD)
     {
@@ -383,7 +383,7 @@ ErrorType ruleStat()
             }
 
             // (<expr>)
-            err = exprAnal(&varType, 0);
+            err = exprAnal(&isEmpty, 0);
 
             static int ifCount = 0;
             ifCount++;
@@ -509,7 +509,7 @@ ErrorType ruleStat()
             CODEwhileStart(getCodePtr(isGlobal), curWhileCount, getCodeStruct(isGlobal)->lastUnconditionedLine);
 
             // (<expr>)
-            err = exprAnal(&varType, 0);
+            err = exprAnal(&isEmpty, 0);
 
             // Generate code for while condition
             CODEwhileCond(getCode(isGlobal), curWhileCount);
@@ -759,12 +759,17 @@ ErrorType ruleFuncdef()
 ErrorType ruleAssign()
 {
     ErrorType err = 0;
-    char varType;
+    int isEmpty;
 
     // <assign> => <expr> ;
     if (token.type != TYPE_ID)
     {
-        err = exprAnal(&varType, 0);
+        err = exprAnal(&isEmpty, 0);
+        if (isEmpty) {
+            fprintf(stderr, "Expected expression on line %d!\n", token.rowNumber);
+            makeError(ERR_SYN);
+            return ERR_SYN;
+        }
         if (token.type != TYPE_SEMICOLON)
         {
             fprintf(stderr, "Expected \";\" on line %d!\n", token.rowNumber);
@@ -784,11 +789,15 @@ ErrorType ruleAssign()
         {
             STItemData data;
             token = newToken(0);
-            err = exprAnal(&varType, 0);
+            err = exprAnal(&isEmpty, 0);
+            if (isEmpty) {
+                fprintf(stderr, "Expected expression in assignment on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+            }
             if (item == NULL)
             {
                 STItemData STdata;
-                STdata.varData.VarType = varType;
+                STdata.varData.VarType = isEmpty;
                 ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
                 CODEdefVar(getCodePtr(isGlobal), DS_string(prevToken.attribute.dString), getCodeStruct(isGlobal)->lastUnconditionedLine);
             }
@@ -810,7 +819,7 @@ ErrorType ruleAssign()
         }
         else
         {
-            err = exprAnal(&varType, 1);
+            err = exprAnal(&isEmpty, 1);
             if (token.type != TYPE_SEMICOLON)
             {
                 fprintf(stderr, "Expected \";\" on line %d!\n", prevToken.rowNumber);
@@ -1184,7 +1193,7 @@ ErrorType functionCallCheckAndProcess()
     token = newToken(0);
     while (token.type != TYPE_RBRACKET)
     {
-        if (isValueType(token.type))
+        if (isValueType(token.type) || isBracket(token.type))
         {
             argCount++;
             if (argCount > paramCount && paramCount != -1 && item->data.funData.defined == 1)
@@ -1268,7 +1277,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
 
 
 /**
- * @brief process expression0
+ * @brief process expression
  *
  * @param isEmpty pointer, stores 1 if expression is empty
  * @param usePrevToken use - 1, dont use - 0
