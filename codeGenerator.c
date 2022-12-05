@@ -1024,8 +1024,8 @@ RETURN\n\
 \n";
     DS_appendString(dString, code);
 
-    // readf
-    code = "\
+//reads
+code = "\
 ######READS######\n\
 LABEL _reads\n\
 CREATEFRAME\n\
@@ -1044,19 +1044,60 @@ RETURN\n\
 \n";
     DS_appendString(dString, code);
 
-    code = "\
-LABEL _float2int\n\
+//floatval
+code = "\
+######FLOATVAL######\n\
+LABEL _floatval\n\
 CREATEFRAME\n\
-DEFVAR LF@retval\n\
+PUSHFRAME\n\
+DEFVAR LF@floatval\n\
+POPS LF@floatval\n\
+";
+DS_appendString(dString, code);
+CODEconvert2Type(dString,"LF@floatval",'f'); // conversion to float
+code = "\
+PUSHS LF@floatval\n\
+POPFRAME\n\
 RETURN\n\
 \n";
-    DS_appendString(dString, code);
+DS_appendString(dString, code);
 
-    code = "\
-LABEL float2int$righttype\n\
+//intval
+code = "\
+######INTVAL######\n\
+LABEL _intval\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@intval\n\
+POPS LF@intval\n\
+";
+DS_appendString(dString, code);
+CODEconvert2Type(dString,"LF@intval",'i'); // conversion to int
+code = "\
+PUSHS LF@intval\n\
 POPFRAME\n\
 RETURN\n\
 \n";
     DS_appendString(dString, code);
+
+//strval
+code = "\
+######STRVAL######\n\
+LABEL _strval\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@strval\n\
+POPS LF@strval\n\
+";
+DS_appendString(dString, code);
+CODEconvert2Type(dString,"LF@strval",'s'); // conversion to string
+code = "\
+PUSHS LF@strval\n\
+POPFRAME\n\
+RETURN\n\
+\n";
+DS_appendString(dString, code);
+
+
     return 0;
 }
