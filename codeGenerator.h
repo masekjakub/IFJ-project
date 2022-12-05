@@ -6,6 +6,7 @@
 #include <string.h>
 
 void CODEmain(DynamicString *);
+void arithmetic(int ruleUsed, Token *tokenArr, Token endToken);
 int CODEbuiltInFunc(DynamicString *);
 int callFunc();
 int CODEfuncDef(DynamicString *, char *);

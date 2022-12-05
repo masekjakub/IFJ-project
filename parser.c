@@ -131,21 +131,21 @@ Symtable *getTable(int global)
 
 DynamicString *getCode(int global)
 {
-    if(global)
+    if (global)
         return progCode.string;
     return functionsCode.string;
 }
 
 DynamicString **getCodePtr(int global)
 {
-    if(global)
+    if (global)
         return &(progCode.string);
     return &(functionsCode.string);
 }
 
 Code *getCodeStruct(int global)
 {
-    if(global)
+    if (global)
         return &progCode;
     return &functionsCode;
 }
@@ -387,14 +387,15 @@ ErrorType ruleStat()
 
             static int ifCount = 0;
             ifCount++;
-            int curIfCount = ifCount;   //Fixes 'if' within another 'if'
-            bool outerIf = false;   //Whether current 'if' is not contained in another 'if' or 'while'
-            //Set last unconditioned line
-            if(getCodeStruct(isGlobal)->lastUnconditionedLine == -1){
+            int curIfCount = ifCount; // Fixes 'if' within another 'if'
+            bool outerIf = false;     // Whether current 'if' is not contained in another 'if' or 'while'
+            // Set last unconditioned line
+            if (getCodeStruct(isGlobal)->lastUnconditionedLine == -1)
+            {
                 outerIf = true;
                 getCodeStruct(isGlobal)->lastUnconditionedLine = getCode(isGlobal)->numOfChars;
             }
-            //Generate code for if start
+            // Generate code for if start
             CODEifStart(getCodePtr(isGlobal), curIfCount, getCodeStruct(isGlobal)->lastUnconditionedLine);
 
             // {
@@ -443,7 +444,7 @@ ErrorType ruleStat()
             }
             token = newToken(0);
 
-            //Generate code for else
+            // Generate code for else
             CODEelse(getCode(isGlobal), curIfCount);
 
             // {
@@ -473,10 +474,11 @@ ErrorType ruleStat()
             }
             token = newToken(0);
 
-            //Unset last unconditioned line, if current 'if' ends conditioned code block 
-            if(outerIf) getCodeStruct(isGlobal)->lastUnconditionedLine = -1;
+            // Unset last unconditioned line, if current 'if' ends conditioned code block
+            if (outerIf)
+                getCodeStruct(isGlobal)->lastUnconditionedLine = -1;
 
-            //Generate code for if end
+            // Generate code for if end
             CODEifEnd(getCode(isGlobal), curIfCount);
 
             break;
@@ -495,20 +497,21 @@ ErrorType ruleStat()
 
             static int whileCount = 0;
             whileCount++;
-            int curWhileCount = whileCount;   //Fixes 'while' within another 'while'
-            bool outerWhile = false;   //Whether current 'if' is not contained in another 'if' or 'while'
-            //Set last unconditioned line
-            if(getCodeStruct(isGlobal)->lastUnconditionedLine == -1){
+            int curWhileCount = whileCount; // Fixes 'while' within another 'while'
+            bool outerWhile = false;        // Whether current 'if' is not contained in another 'if' or 'while'
+            // Set last unconditioned line
+            if (getCodeStruct(isGlobal)->lastUnconditionedLine == -1)
+            {
                 outerWhile = true;
                 getCodeStruct(isGlobal)->lastUnconditionedLine = getCode(isGlobal)->numOfChars;
             }
-            //Generate code for while start
+            // Generate code for while start
             CODEwhileStart(getCodePtr(isGlobal), curWhileCount, getCodeStruct(isGlobal)->lastUnconditionedLine);
 
             // (<expr>)
             err = exprAnal(&varType, 0);
 
-            //Generate code for while condition
+            // Generate code for while condition
             CODEwhileCond(getCode(isGlobal), curWhileCount);
 
             // {
@@ -538,10 +541,11 @@ ErrorType ruleStat()
             }
             token = newToken(0);
 
-            //Unset last unconditioned line, if current 'while' ends conditioned code block 
-            if(outerWhile) getCodeStruct(isGlobal)->lastUnconditionedLine = -1;
+            // Unset last unconditioned line, if current 'while' ends conditioned code block
+            if (outerWhile)
+                getCodeStruct(isGlobal)->lastUnconditionedLine = -1;
 
-            //Generate code for while end
+            // Generate code for while end
             CODEwhileEnd(getCode(isGlobal), curWhileCount);
 
             break;
@@ -585,7 +589,7 @@ ErrorType ruleStat()
             DS_appendString(funId, token.attribute.dString->string);
             token = newToken(0);
 
-            //Generate code for function start
+            // Generate code for function start
             CODEfuncDef(getCode(0), funId->string);
 
             // (
@@ -632,10 +636,13 @@ ErrorType ruleStat()
             newFunData.funData.funTypes = functionTypes->string;
             ST_insertItem(getTable(1), funId->string, ST_ITEM_TYPE_FUNCTION, newFunData);
 
-            //Generate code for function end
-            if(isLower(functionTypes->string[0])){
+            // Generate code for function end
+            if (isLower(functionTypes->string[0]))
+            {
                 CODEfuncDefEnd(getCode(false), funId->string, false);
-            }else{
+            }
+            else
+            {
                 CODEfuncDefEnd(getCode(false), funId->string, true);
             }
 
@@ -824,7 +831,7 @@ ErrorType ruleAssign()
  */
 ErrorType ruleParams()
 {
-    //Stack of param IDs for POPping param value in code
+    // Stack of param IDs for POPping param value in code
     Stack *paramStack = STACK_init();
     STACK_popAll(paramStack);
 
@@ -845,8 +852,9 @@ ErrorType ruleParams()
         err = tmpErr;
 
     // Generate code for POPping param value in code
-    while(!STACK_isEmpty(paramStack)){
-        CODEpopValue(getCode(false),STACK_top(paramStack)->attribute.dString->string,false);
+    while (!STACK_isEmpty(paramStack))
+    {
+        CODEpopValue(getCode(false), STACK_top(paramStack)->attribute.dString->string, false);
         STACK_pop(paramStack);
     }
     STACK_dispose(paramStack);
@@ -1003,12 +1011,15 @@ ErrorType ruleReturn()
             return (ERR_EXPRES);
         }
 
-        //Generate code for returning a value
-        if(isGlobal){
+        // Generate code for returning a value
+        if (isGlobal)
+        {
             code = "EXIT int@0\n";
-            DS_appendString(getCode(true),code);
-        }else{
-            CODEfuncReturn(getCode(false),functionTypes->string[0], token.rowNumber);
+            DS_appendString(getCode(true), code);
+        }
+        else
+        {
+            CODEfuncReturn(getCode(false), functionTypes->string[0], token.rowNumber);
         }
 
         token = newToken(0);
@@ -1022,13 +1033,16 @@ ErrorType ruleReturn()
     }
     token = newToken(0);
 
-    //Generate code for return without a value
-    if(isGlobal){
+    // Generate code for return without a value
+    if (isGlobal)
+    {
         code = "EXIT int@0\n";
-        DS_appendString(getCode(true),code);
-    }else{
+        DS_appendString(getCode(true), code);
+    }
+    else
+    {
         code = "POPFRAME\nRETURN\n";
-        DS_appendString(getCode(false),code);
+        DS_appendString(getCode(false), code);
     }
 
     return err;
@@ -1187,7 +1201,8 @@ ErrorType functionCallCheckAndProcess()
             makeError(ERR_SYN);
         }
 
-        if(token.type == TYPE_COMMA){
+        if (token.type == TYPE_COMMA)
+        {
             token = newToken(0);
             if (token.type == TYPE_RBRACKET)
             {
@@ -1231,7 +1246,7 @@ ErrorType functionCallCheckAndProcess()
  * @param endToken last legit token
  * @return ErrorType
  */
-ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
+/*ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
 {
     if (ruleUsed == 0)
     {
@@ -1239,7 +1254,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         if (item == NULL)
         {
             token = endToken;
-            fprintf(stderr, "Usage of uninitialized variable \"%s\" on line %d!\n", DS_string(tokenArr[0].attribute.dString), token.rowNumber);
+            fprintf(stderr, "Usage of not initialized variable \"%s\" on line %d!\n", DS_string(tokenArr[0].attribute.dString), token.rowNumber);
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
@@ -1248,526 +1263,56 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
         DS_appendString(getCode(isGlobal), "PUSHS LF@");
         DS_appendString(getCode(isGlobal), tokenArr[0].attribute.dString->string);
         DS_appendString(getCode(isGlobal), "\n");
-    }
+    }*/
 
-    if (ruleUsed == 1)
+int reType(Token *tokenArr)
+{
+    if (tokenArr[0].type == TYPE_FLOAT)
     {
-        // E => INT
-        DS_appendString(getCode(isGlobal), "PUSHS int@");
-        char *int_string;
-        formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-        free(int_string);
-    }
-
-    if (ruleUsed == 2)
-    {
-        // E => FLOAT
         DS_appendString(getCode(isGlobal), "PUSHS float@");
         char *float_string;
         formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
         DS_appendString(getCode(isGlobal), float_string);
-        DS_appendString(getCode(isGlobal), "\n");
         free(float_string);
-    }
-
-    if (ruleUsed == 3)
-    {
-        // E => STRING
-        DS_appendString(getCode(isGlobal), "PUSHS string@");
-        DS_appendString(getCode(isGlobal), tokenArr[0].attribute.dString->string);
         DS_appendString(getCode(isGlobal), "\n");
     }
-
-    if (ruleUsed == 4)
+    else if (tokenArr[0].type == TYPE_INT)
     {
-        // E => FUNID
-    }
-
-    if (ruleUsed == 5)
-    {
-        // E => NULL
-        DS_appendString(getCode(isGlobal), "PUSHS nil@nil\n");
-    }
-
-    if (ruleUsed == 6)
-    {
-        // E => E + E
-        static int counter = 0;
-        counter++;
-
-        DS_appendString(getCode(isGlobal), "#E => E + E\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-        if (tokenArr[0].type == TYPE_FLOAT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS float@");
-            char *float_string;
-            formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-            DS_appendString(getCode(isGlobal), float_string);
-            free(float_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-        else if (tokenArr[0].type == TYPE_INT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS int@");
-            char *int_string;
-            formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-            DS_appendString(getCode(isGlobal), int_string);
-            free(int_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-
-        if (tokenArr[2].type == TYPE_FLOAT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS float@");
-            char *float_string;
-            formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
-            DS_appendString(getCode(isGlobal), float_string);
-            free(float_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-        else if (tokenArr[2].type == TYPE_INT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS int@");
-            char *int_string;
-            formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
-            DS_appendString(getCode(isGlobal), int_string);
-            free(int_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-
+        DS_appendString(getCode(isGlobal), "PUSHS int@");
         char *int_string;
-
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _afloatadd");
-        formatString2string(int_string, "%d", counter);
+        formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
         DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@float\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _aintadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _afloatadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
+        free(int_string);
         DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _canadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bintadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _bintadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMP _canadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _aintadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _canadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bfloatadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _bfloatadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _canadd");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "ADDS\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
-
-    if (ruleUsed == 7)
+    if (tokenArr[2].type == TYPE_FLOAT)
     {
-        // E => E - E
-        static int counter = 0;
-        counter++;
-
-        DS_appendString(getCode(isGlobal), "#E => E - E\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-        if (tokenArr[0].type == TYPE_FLOAT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS float@");
-            char *float_string;
-            formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-            DS_appendString(getCode(isGlobal), float_string);
-            free(float_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-        else if (tokenArr[0].type == TYPE_INT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS int@");
-            char *int_string;
-            formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-            DS_appendString(getCode(isGlobal), int_string);
-            free(int_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-
-        if (tokenArr[2].type == TYPE_FLOAT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS float@");
-            char *float_string;
-            formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
-            DS_appendString(getCode(isGlobal), float_string);
-            free(float_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-        else if (tokenArr[2].type == TYPE_INT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS int@");
-            char *int_string;
-            formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
-            DS_appendString(getCode(isGlobal), int_string);
-            free(int_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-
-        char *int_string;
-
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _afloatsub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@float\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _aintsub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _afloatsub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "PUSHS float@");
+        char *float_string;
+        formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
+        DS_appendString(getCode(isGlobal), float_string);
+        free(float_string);
         DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cansub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bintsub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _bintsub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMP _cansub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _aintsub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cansub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bfloatsub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _bfloatsub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _cansub");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "SUBS\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
-    
-    if (ruleUsed == 8)
+    else if (tokenArr[2].type == TYPE_INT)
     {
-        // E => E * E
-        static int counter = 0;
-        counter++;
-
-        DS_appendString(getCode(isGlobal), "#E => E * E\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-        if (tokenArr[0].type == TYPE_FLOAT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS float@");
-            char *float_string;
-            formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-            DS_appendString(getCode(isGlobal), float_string);
-            free(float_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-        else if (tokenArr[0].type == TYPE_INT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS int@");
-            char *int_string;
-            formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-            DS_appendString(getCode(isGlobal), int_string);
-            free(int_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-
-        if (tokenArr[2].type == TYPE_FLOAT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS float@");
-            char *float_string;
-            formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
-            DS_appendString(getCode(isGlobal), float_string);
-            free(float_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-        else if (tokenArr[2].type == TYPE_INT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS int@");
-            char *int_string;
-            formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
-            DS_appendString(getCode(isGlobal), int_string);
-            free(int_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-
+        DS_appendString(getCode(isGlobal), "PUSHS int@");
         char *int_string;
-
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _afloatmul");
-        formatString2string(int_string, "%d", counter);
+        formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
         DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@float\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _aintmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _afloatmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
+        free(int_string);
         DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _canmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bintmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _bintmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMP _canmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _aintmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _canmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-        
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bfloatmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _bfloatmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _canmul");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "MULS\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
-    
-    if (ruleUsed == 9)
-    {
-        // E => E / E
-        static int counter = 0;
-        counter++;
-
-        DS_appendString(getCode(isGlobal), "#E => E / E\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-        if (tokenArr[0].type == TYPE_FLOAT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS float@");
-            char *float_string;
-            formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-            DS_appendString(getCode(isGlobal), float_string);
-            free(float_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-        else if (tokenArr[0].type == TYPE_INT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS int@");
-            char *int_string;
-            formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-            DS_appendString(getCode(isGlobal), int_string);
-            free(int_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-
-        if (tokenArr[2].type == TYPE_FLOAT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS float@");
-            char *float_string;
-            formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
-            DS_appendString(getCode(isGlobal), float_string);
-            free(float_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-        else if (tokenArr[2].type == TYPE_INT)
-        {
-            DS_appendString(getCode(isGlobal), "PUSHS int@");
-            char *int_string;
-            formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
-            DS_appendString(getCode(isGlobal), int_string);
-            free(int_string);
-            DS_appendString(getCode(isGlobal), "\n");
-        }
-
-        char *int_string;
-
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFNEQ _afloatdiv");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
-
-        DS_appendString(getCode(isGlobal), " POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), " INT2FLOATS\n");
-        DS_appendString(getCode(isGlobal), " PUSHS TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _afloatdiv");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFNEQ _candiv");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        DS_appendString(getCode(isGlobal), "LABEL _candiv");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "DIVS\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-    }
-
     return 0;
 }
+
+arithmetic(int ruleUsed, Token *tokenArr, Token endToken);
+
+/*ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
+{
+   //arithmetic(int ruleUsed, Token *tokenArr, Token endToken)
+    return 0;
+}*/
 
 /**
  * @brief process expression0
