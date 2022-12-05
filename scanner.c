@@ -85,6 +85,14 @@ bool isKeyword(DynamicString *dynamicString, Token *token){
     return false;
 }
 
+//char* octNumber (char* dynamicString){
+//
+//}
+//
+//char* hexNumber (){
+//
+//} 
+
 // TODO pri vraceni erroru dispose string!!!
 
 /**
@@ -357,12 +365,64 @@ Token getToken(){
                 // If string is not empty:
                 while (1){
                     // Checks if c is \, if it is, store it and store next char in case, that c = "
-                    if (c == '\\'){
-                        DS_append(dynamicString, c);
-                        c = getc(source);
+                    if (isspace(c) || c == '\\'){
+                        if (c == 32){
+                            DS_appendString(dynamicString, "\\032");
+                        }
+                        //else if (c == 11){
+                        //    DS_appendString(dynamicString, "\\011");
+                        //}
+                        else if (c == '\\'){
+                            c = getc(source);
+                            switch (c){
+                                case 34:
+                                    DS_appendString(dynamicString, "\\034");        // "
+                                break;
+                                case 48 ... 57:
+                                    printf("%d",c);
+                                    break;
+                                case 92:
+                                    DS_appendString(dynamicString, "\\092");        // /
+                                break;
+                                case 110:
+                                    DS_appendString(dynamicString, "\\010");        // \n
+                                break;
+                                case 116:
+                                    DS_appendString(dynamicString, "\\116");        // \t
+                                break;
+                                default:
+                                break;
+                            }
+                            //if (c == '\\'){
+                            //    DS_appendString(dynamicString, "\\092");
+                            //} 
+                            //else{
+                            //    fprintf(stderr, "Wrong usesage of \"\\\" on line %d!\nExpected: \"\\\\\" or \"\\n\", ...");
+                            //    token.type = TYPE_LEXERR;
+                            //    return token;
+                            //}
+
+                        }
+                        // switch (c){
+                        //    case 32:
+                        //    break;
+                        //    case 11:
+                        //        printf("%d\n", c);
+                        //        printf ("aaaaaaa\n%s\naaaaaaa", DS_string(dynamicString));
+                        //    break;
+                        //    default:
+                        //        printf("nenene\n");
+                        //    break;
+                        //}
                     }
-                    DS_append(dynamicString, c);
+                    else {
+                        DS_append(dynamicString, c);
+                    }
                     c = getc(source);
+                            //if (c == '\\'){
+                            //    DS_append(dynamicString, c);
+                            //    c = getc(source);
+                            //}
                     // Then repeat it until end of string "
                     if (c == '"'){
                         token.type = TYPE_STRING;
@@ -526,7 +586,7 @@ Token getToken(){
                         }
                         c = getc(source);
                         if (c == '-' || c == '+'){
-                            ungetc(c, source);
+                            //ungetc(c, source); TODO smazat pokud to nebude delat bordel
                             break;
                         }
                         continue;
