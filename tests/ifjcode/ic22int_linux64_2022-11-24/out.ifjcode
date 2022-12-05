@@ -1,0 +1,169 @@
+.IFJcode22
+JUMP _main
+
+######WRITE######
+LABEL _write
+TYPE LF@writetype LF@tmpwrite
+JUMPIFEQ _writeempty LF@writetype string@nil
+WRITE LF@tmpwrite
+PUSHS nil@nil
+POPFRAME
+CREATEFRAME
+RETURN
+#EMPTY#
+LABEL _writeempty
+WRITE string@
+PUSHS nil@nil
+POPFRAME
+CREATEFRAME
+RETURN
+
+######READI######
+LABEL _readi
+CREATEFRAME
+DEFVAR TF@input
+DEFVAR TF@input$type
+READ TF@input int
+TYPE TF@input$type TF@input
+JUMPIFEQ _readiOk TF@input$type string@int
+PUSHS nil@nil
+CREATEFRAME
+RETURN
+LABEL _readiOk
+PUSHS TF@input
+CREATEFRAME
+RETURN
+
+######READF######
+LABEL _readf
+CREATEFRAME
+DEFVAR TF@input
+DEFVAR TF@input$type
+READ TF@input float
+TYPE TF@input$type TF@input
+JUMPIFEQ _readfOk TF@input$type string@float
+PUSHS nil@nil
+CREATEFRAME
+RETURN
+LABEL _readfOk
+PUSHS TF@input
+CREATEFRAME
+RETURN
+
+######READS######
+LABEL _reads
+CREATEFRAME
+DEFVAR TF@input
+DEFVAR TF@input$type
+READ TF@input string
+TYPE TF@input$type TF@input
+JUMPIFEQ _readsOk TF@input$type string@string
+PUSHS nil@nil
+CREATEFRAME
+RETURN
+LABEL _readsOk
+PUSHS TF@input
+CREATEFRAME
+RETURN
+
+LABEL _float2int
+CREATEFRAME
+DEFVAR LF@retval
+RETURN
+
+LABEL float2int$righttype
+POPFRAME
+RETURN
+
+######a######
+#CODEfuncDef
+LABEL _a
+CREATEFRAME
+PUSHFRAME
+PUSHS string@A
+#CODEcallWrite
+CREATEFRAME
+DEFVAR TF@tmpwrite
+DEFVAR TF@writetype
+POPS TF@tmpwrite
+PUSHFRAME
+CALL _write
+POPS GF@void
+PUSHS string@C
+#CODEreturn
+CREATEFRAME
+DEFVAR TF@retVal
+POPS TF@retVal
+DEFVAR TF@retValType
+TYPE TF@retValType TF@retVal
+JUMPIFEQ _rightReturnType1 TF@retValType string@string
+WRITE string@Wrong\032return\032type\032on\032line\0328\033\010
+EXIT int@6
+LABEL _rightReturnType1
+PUSHS TF@retVal
+POPFRAME
+CREATEFRAME
+RETURN
+#CODEfuncDefEnd
+WRITE string@No\032return\032in\032non-void\032function\032"a"!\010
+EXIT int@6
+
+######b######
+#CODEfuncDef
+LABEL _b
+CREATEFRAME
+PUSHFRAME
+PUSHS string@B
+#CODEcallWrite
+CREATEFRAME
+DEFVAR TF@tmpwrite
+DEFVAR TF@writetype
+POPS TF@tmpwrite
+PUSHFRAME
+CALL _write
+POPS GF@void
+PUSHS string@D
+#CODEreturn
+CREATEFRAME
+DEFVAR TF@retVal
+POPS TF@retVal
+DEFVAR TF@retValType
+TYPE TF@retValType TF@retVal
+JUMPIFEQ _rightReturnType2 TF@retValType string@string
+WRITE string@Wrong\032return\032type\032on\032line\03212\033\010
+EXIT int@6
+LABEL _rightReturnType2
+PUSHS TF@retVal
+POPFRAME
+CREATEFRAME
+RETURN
+#CODEfuncDefEnd
+WRITE string@No\032return\032in\032non-void\032function\032"b"!\010
+EXIT int@6
+
+######MAIN######
+LABEL _main
+DEFVAR GF@void
+CREATEFRAME
+PUSHFRAME
+#CODEfuncCall
+CALL _a
+#CODEfuncCall
+CALL _b
+#CODEcallWrite
+CREATEFRAME
+DEFVAR TF@tmpwrite
+DEFVAR TF@writetype
+POPS TF@tmpwrite
+PUSHFRAME
+#CODEcallWrite
+CREATEFRAME
+DEFVAR TF@tmpwrite
+DEFVAR TF@writetype
+POPS TF@tmpwrite
+PUSHFRAME
+CALL _write
+CALL _write
+POPS GF@void
+
+EXIT int@0

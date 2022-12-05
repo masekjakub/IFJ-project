@@ -25,6 +25,7 @@ void CODEmain(DynamicString *dString)
 {
     DS_appendString(dString, "######MAIN######\n");
     DS_appendString(dString, "LABEL _main\n");
+    DS_appendString(dString, "DEFVAR GF@void\n");
     DS_appendString(dString, "CREATEFRAME\n");
     DS_appendString(dString, "PUSHFRAME\n");
 }

@@ -765,6 +765,7 @@ ErrorType ruleAssign()
     if (token.type != TYPE_ID)
     {
         err = exprAnal(&isEmpty, 0);
+        DS_appendString(getCode(isGlobal),"POPS GF@void\n");
         if (isEmpty) {
             fprintf(stderr, "Expected expression on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
@@ -790,6 +791,7 @@ ErrorType ruleAssign()
             STItemData data;
             token = newToken(0);
             err = exprAnal(&isEmpty, 0);
+            DS_appendString(getCode(isGlobal),"POPS GF@void\n");
             if (isEmpty) {
                 fprintf(stderr, "Expected expression in assignment on line %d!\n", token.rowNumber);
                 makeError(ERR_SYN);
