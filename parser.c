@@ -1276,8 +1276,6 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
 
 
 
-
-
 /**
  * @brief process expression
  *

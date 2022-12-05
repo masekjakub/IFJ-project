@@ -550,7 +550,8 @@ EXIT int@6\n\n\
  * @param argCount count of arguments
  * @return int
  */
-int CODEcallWrite(DynamicString *dString, int argCount){
+int CODEcallWrite(DynamicString *dString, int argCount)
+{
     char *code = "\
 #CODEcallWrite\n\
 CREATEFRAME\n\
@@ -673,7 +674,6 @@ CREATEFRAME\n\
 
     return 0;
 }
-
 
 int reType(Token *tokenArr, int isGlobal)
 {
@@ -951,6 +951,263 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
         DS_appendString(getCode(isGlobal), "\n");
 
         DS_appendString(getCode(isGlobal), "DIVS\n");
+        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
+    }
+
+    if (ruleUsed == 12)
+    {
+        // E => E === E
+        static int counter = 0;
+        counter++;
+        char *int_string;
+
+        DS_appendString(getCode(isGlobal), "\n# E === E\n");
+        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
+
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@clear\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
+        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
+        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
+        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
+        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _aint");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _afloat");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@float\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _abool");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@bool\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _astring");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@string\n");
+        
+        DS_appendString(getCode(isGlobal), "LABEL _aint");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
+
+        DS_appendString(getCode(isGlobal), "JUMP _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _afloat");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
+
+        DS_appendString(getCode(isGlobal), "JUMP _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _abool");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@bool\n");
+
+        DS_appendString(getCode(isGlobal), "JUMP _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _astring");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@string\n");
+
+        DS_appendString(getCode(isGlobal), "JUMP _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "EQS\n");
+        DS_appendString(getCode(isGlobal), "JUMP _end");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "POPS TF@clear\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@clear\n");
+        DS_appendString(getCode(isGlobal), "PUSHS bool@false\n");
+        DS_appendString(getCode(isGlobal), "LABEL _end");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
+    }
+
+    if (ruleUsed == 13)
+    {
+        // E => E !== E
+        static int counter = 0;
+        counter--;
+        char *int_string;
+
+        DS_appendString(getCode(isGlobal), "\n# E === E\n");
+        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
+
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@clear\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
+        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
+        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
+        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
+        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _aint");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _afloat");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@float\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _abool");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@bool\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _astring");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@atype string@string\n");
+        
+        DS_appendString(getCode(isGlobal), "LABEL _aint");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
+
+        DS_appendString(getCode(isGlobal), "JUMP _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _afloat");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
+
+        DS_appendString(getCode(isGlobal), "JUMP _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _abool");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@bool\n");
+
+        DS_appendString(getCode(isGlobal), "JUMP _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _astring");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "JUMPIFEQ _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), " TF@btype string@string\n");
+
+        DS_appendString(getCode(isGlobal), "JUMP _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _cancmp");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "EQS\n");
+        DS_appendString(getCode(isGlobal), "JUMP _end");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "LABEL _clear");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+
+        DS_appendString(getCode(isGlobal), "POPS TF@clear\n");
+        DS_appendString(getCode(isGlobal), "POPS TF@clear\n");
+        DS_appendString(getCode(isGlobal), "PUSHS bool@false\n");
+        DS_appendString(getCode(isGlobal), "LABEL _end");
+        formatString2string(int_string, "%d", counter);
+        DS_appendString(getCode(isGlobal), int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+        DS_appendString(getCode(isGlobal), "NOTS\n");
+
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
 }
