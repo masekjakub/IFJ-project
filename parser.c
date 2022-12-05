@@ -381,10 +381,26 @@ ErrorType ruleStat()
                 return ERR_SYN;
                 break;
             }
+            token = newToken(0);
 
             // (<expr>)
             err = exprAnal(&isEmpty, 0);
 
+            // )
+            if (token.type != TYPE_RBRACKET)
+            {
+                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+            }
+            token = newToken(0);
+
+            if (isEmpty)
+            {
+                fprintf(stderr, "Expected expression in if statement on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+            }
             static int ifCount = 0;
             ifCount++;
             int curIfCount = ifCount; // Fixes 'if' within another 'if'
@@ -494,6 +510,7 @@ ErrorType ruleStat()
                 return ERR_SYN;
                 break;
             }
+            token = newToken(0);
 
             static int whileCount = 0;
             whileCount++;
@@ -510,6 +527,22 @@ ErrorType ruleStat()
 
             // (<expr>)
             err = exprAnal(&isEmpty, 0);
+
+            // )
+            if (token.type != TYPE_RBRACKET)
+            {
+                fprintf(stderr, "Expected \")\" on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+            }
+            token = newToken(0);
+
+            if (isEmpty)
+            {
+                fprintf(stderr, "Expected expression in while statement on line %d!\n", token.rowNumber);
+                makeError(ERR_SYN);
+                return ERR_SYN;
+            }
 
             // Generate code for while condition
             CODEwhileCond(getCode(isGlobal), curWhileCount);
@@ -769,7 +802,6 @@ ErrorType ruleAssign()
         if (isEmpty) {
             fprintf(stderr, "Expected expression on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
-            return ERR_SYN;
         }
         if (token.type != TYPE_SEMICOLON)
         {
@@ -791,7 +823,6 @@ ErrorType ruleAssign()
             STItemData data;
             token = newToken(0);
             err = exprAnal(&isEmpty, 0);
-            DS_appendString(getCode(isGlobal),"POPS GF@void\n");
             if (isEmpty) {
                 fprintf(stderr, "Expected expression in assignment on line %d!\n", token.rowNumber);
                 makeError(ERR_SYN);
@@ -822,6 +853,7 @@ ErrorType ruleAssign()
         else
         {
             err = exprAnal(&isEmpty, 1);
+            DS_appendString(getCode(isGlobal),"POPS GF@void\n");
             if (token.type != TYPE_SEMICOLON)
             {
                 fprintf(stderr, "Expected \";\" on line %d!\n", prevToken.rowNumber);
@@ -1477,8 +1509,8 @@ ErrorType checkIfDefined(Stack *notDefinedCalls)
         if (item->data.funData.defined == 0)
         {
             fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(funID.attribute.dString), funID.rowNumber);
-            makeError(ERR_UNDEF);
-            return ERR_UNDEF;
+            makeError(ERR_FUNDEF);
+            return ERR_FUNDEF;
         }
         // check counts of arguments and paramaters
         argCount = strlen(item->data.funData.funTypes) - 1;

@@ -11,4 +11,4 @@ function b():string {
 	write("B");
 	return "D";
 }
-write(a(),b());
+write(a(),b(),"\n");

@@ -150,6 +150,7 @@ PUSHFRAME
 CALL _a
 #CODEfuncCall
 CALL _b
+PUSHS string@\010
 #CODEcallWrite
 CREATEFRAME
 DEFVAR TF@tmpwrite
@@ -162,6 +163,13 @@ DEFVAR TF@tmpwrite
 DEFVAR TF@writetype
 POPS TF@tmpwrite
 PUSHFRAME
+#CODEcallWrite
+CREATEFRAME
+DEFVAR TF@tmpwrite
+DEFVAR TF@writetype
+POPS TF@tmpwrite
+PUSHFRAME
+CALL _write
 CALL _write
 CALL _write
 POPS GF@void
