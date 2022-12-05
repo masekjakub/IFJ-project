@@ -1246,7 +1246,7 @@ ErrorType functionCallCheckAndProcess()
  * @param endToken last legit token
  * @return ErrorType
  */
-/*ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
+ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
 {
     if (ruleUsed == 0)
     {
@@ -1258,61 +1258,14 @@ ErrorType functionCallCheckAndProcess()
             makeError(ERR_UNDEF);
             return ERR_UNDEF;
         }
-        // E => ID
-        CODEcheckInitVar(getCode(isGlobal), tokenArr[0].attribute.dString->string, false, tokenArr[0].rowNumber);
-        DS_appendString(getCode(isGlobal), "PUSHS LF@");
-        DS_appendString(getCode(isGlobal), tokenArr[0].attribute.dString->string);
-        DS_appendString(getCode(isGlobal), "\n");
-    }*/
-
-int reType(Token *tokenArr)
-{
-    if (tokenArr[0].type == TYPE_FLOAT)
-    {
-        DS_appendString(getCode(isGlobal), "PUSHS float@");
-        char *float_string;
-        formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-        DS_appendString(getCode(isGlobal), float_string);
-        free(float_string);
-        DS_appendString(getCode(isGlobal), "\n");
     }
-    else if (tokenArr[0].type == TYPE_INT)
-    {
-        DS_appendString(getCode(isGlobal), "PUSHS int@");
-        char *int_string;
-        formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-        DS_appendString(getCode(isGlobal), int_string);
-        free(int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-    }
-    if (tokenArr[2].type == TYPE_FLOAT)
-    {
-        DS_appendString(getCode(isGlobal), "PUSHS float@");
-        char *float_string;
-        formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
-        DS_appendString(getCode(isGlobal), float_string);
-        free(float_string);
-        DS_appendString(getCode(isGlobal), "\n");
-    }
-    else if (tokenArr[2].type == TYPE_INT)
-    {
-        DS_appendString(getCode(isGlobal), "PUSHS int@");
-        char *int_string;
-        formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
-        DS_appendString(getCode(isGlobal), int_string);
-        free(int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-    }
+    CODEarithmetic(ruleUsed, tokenArr, endToken, isGlobal);
     return 0;
 }
 
-CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken);
 
-/*ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
-{
-   //arithmetic(int ruleUsed, Token *tokenArr, Token endToken)
-    return 0;
-}*/
+
+
 
 /**
  * @brief process expression0
@@ -1561,18 +1514,18 @@ int parser(Token *tokenArrIN)      // sim
 
     builtInFuncFillST(globalST);
 
-    //Generate code for built-in functions and label _main
+    // Generate code for built-in functions and label _main
     CODEbuiltInFunc(getCode(false));
     CODEmain(getCode(true));
-    
+
     //  <prog> => BEGIN DECLARE_ST <stat_list>
     ruleProg();
 
     // Check if all functions called from other functions are defined
     checkIfDefined(notDefinedCalls);
 
-    //Generate code for main exit 0
-    DS_appendString(getCode(true),"\nEXIT int@0\n");
+    // Generate code for main exit 0
+    DS_appendString(getCode(true), "\nEXIT int@0\n");
 
 #ifdef scanner
     if (firstError == 0)

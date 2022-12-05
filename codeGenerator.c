@@ -550,9 +550,6 @@ EXIT int@6\n\n\
  * @return int
  */
 int CODEcallWrite(DynamicString *dString, int argCount){
-    //Check if write was called with no args
-    if(!argCount) return 0;
-    
     char *code = "\
 #CODEcallWrite\n\
 CREATEFRAME\n\
@@ -675,18 +672,52 @@ CREATEFRAME\n\
     return 0;
 }
 
-void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken)
+
+int reType(Token *tokenArr, int isGlobal)
+{
+    if (tokenArr[0].type == TYPE_FLOAT)
+    {
+        DS_appendString(getCode(isGlobal), "PUSHS float@");
+        char *float_string;
+        formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
+        DS_appendString(getCode(isGlobal), float_string);
+        free(float_string);
+        DS_appendString(getCode(isGlobal), "\n");
+    }
+    else if (tokenArr[0].type == TYPE_INT)
+    {
+        DS_appendString(getCode(isGlobal), "PUSHS int@");
+        char *int_string;
+        formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
+        DS_appendString(getCode(isGlobal), int_string);
+        free(int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+    }
+    if (tokenArr[2].type == TYPE_FLOAT)
+    {
+        DS_appendString(getCode(isGlobal), "PUSHS float@");
+        char *float_string;
+        formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
+        DS_appendString(getCode(isGlobal), float_string);
+        free(float_string);
+        DS_appendString(getCode(isGlobal), "\n");
+    }
+    else if (tokenArr[2].type == TYPE_INT)
+    {
+        DS_appendString(getCode(isGlobal), "PUSHS int@");
+        char *int_string;
+        formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
+        DS_appendString(getCode(isGlobal), int_string);
+        free(int_string);
+        DS_appendString(getCode(isGlobal), "\n");
+    }
+    return 0;
+}
+
+void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
 {
     if (ruleUsed == 0)
     {
-        STItem *item = ST_searchTable(getTable(isGlobal), DS_string(tokenArr[0].attribute.dString));
-        if (item == NULL)
-        {
-            token = endToken;
-            fprintf(stderr, "Usage of not initialized variable \"%s\" on line %d!\n", DS_string(tokenArr[0].attribute.dString), token.rowNumber);
-            makeError(ERR_UNDEF);
-            return ERR_UNDEF;
-        }
         // E => ID
         CODEcheckInitVar(getCode(isGlobal), tokenArr[0].attribute.dString->string, false, tokenArr[0].rowNumber);
         DS_appendString(getCode(isGlobal), "PUSHS LF@");
@@ -766,12 +797,12 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken)
         DS_appendString(getCode(isGlobal), "\n");
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
 
-        reType(tokenArr);
+        reType(tokenArr, isGlobal);
 
         char *int_string;
 
         DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
+        /*DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
         DS_appendString(getCode(isGlobal), "POPS TF@b\n");
         DS_appendString(getCode(isGlobal), "POPS TF@a\n");
         DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
@@ -865,7 +896,7 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken)
         DS_appendString(getCode(isGlobal), "\n");
 
         DS_appendString(getCode(isGlobal), *instruction);
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
+        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");*/
     }
 
     if (ruleUsed == 9)
@@ -877,7 +908,7 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken)
         DS_appendString(getCode(isGlobal), "\n#div\n");
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
 
-        reType(tokenArr);
+        reType(tokenArr, isGlobal);
 
         char *int_string;
 

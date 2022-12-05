@@ -3,10 +3,10 @@
 #define _IFJ_CG
 
 #include "stack.h"
+#include "parser.h"
 #include <string.h>
 
 void CODEmain(DynamicString *);
-void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken);
 int CODEbuiltInFunc(DynamicString *);
 int callFunc();
 int CODEfuncDef(DynamicString *, char *);
@@ -27,4 +27,5 @@ int CODEwhileStart(DynamicString **, int, int);
 int CODEwhileCond(DynamicString *, int);
 int CODEwhileEnd(DynamicString *, int);
 int CODEconvert2Type(DynamicString *, char *, char);
+void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal);
 #endif
