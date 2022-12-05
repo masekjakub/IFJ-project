@@ -802,7 +802,7 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
         char *int_string;
 
         DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-        /*DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
+        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
         DS_appendString(getCode(isGlobal), "POPS TF@b\n");
         DS_appendString(getCode(isGlobal), "POPS TF@a\n");
         DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
@@ -896,7 +896,7 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
         DS_appendString(getCode(isGlobal), "\n");
 
         DS_appendString(getCode(isGlobal), *instruction);
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");*/
+        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
 
     if (ruleUsed == 9)
