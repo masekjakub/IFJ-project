@@ -1,41 +1,42 @@
 ALL_C_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c codeGenerator.c main.c getTokenSim.c
 FLAGS := -std=c99 -Wall -Wextra
+LIBS := -lm
 
 all: $(ALL_C_FILES)
-	@gcc $(FLAGS) $(ALL_C_FILES) -o translator
+	@gcc $(FLAGS) $(ALL_C_FILES) -o translator $(LIBS)
 
 debug: $(ALL_C_FILES)
-	@gcc $(FLAGS) -g $(ALL_C_FILES) -o translator
+	@gcc $(FLAGS) -g $(ALL_C_FILES) -o translator $(LIBS)
 
 parser: $(ALL_C_FILES)
-	@gcc $(FLAGS) -g tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test
+	@gcc $(FLAGS) -g tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test $(LIBS)
 
 scanner: $(ALL_C_FILES)
-	@gcc $(FLAGS) main.c scanner.c dynamicString.c -o main
+	@gcc $(FLAGS) main.c scanner.c dynamicString.c -o main $(LIBS)
 	@./main text.php
 	@rm main
 
 test-scanner: 
-	@gcc $(FLAGS) tests/scanner-test.c scanner.c dynamicString.c -o scanner-test
+	@gcc $(FLAGS) tests/scanner-test.c scanner.c dynamicString.c -o scanner-test $(LIBS)
 	@./scanner-test text.php
 	@rm scanner-test
 
 test-symtable:
-	@gcc $(FLAGS) -g tests/symtable-test.c symtable.c -o symtable-test
+	@gcc $(FLAGS) -g tests/symtable-test.c symtable.c -o symtable-test $(LIBS)
 	@./symtable-test
 	@rm symtable-test
 
 test-ds:
-	@gcc $(FLAGS) tests/dynamicString-test.c dynamicString.c -o dynamicString-test
+	@gcc $(FLAGS) tests/dynamicString-test.c dynamicString.c -o dynamicString-test $(LIBS)
 	@./dynamicString-test
 
 test-parser:
-	@gcc $(FLAGS) tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test
+	@gcc $(FLAGS) tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test $(LIBS)
 	@./parser-test
 	@rm parser-test
 	
 test-stack:
-	@gcc $(FLAGS) tests/stack-test.c stack.c -o stack-test
+	@gcc $(FLAGS) tests/stack-test.c stack.c -o stack-test $(LIBS)
 	@./stack-test
 
 clean:
