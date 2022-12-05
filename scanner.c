@@ -100,11 +100,10 @@ DynamicString *octNumber(DynamicString *dynamicString){
     double decNumber = 0;
     char *tmpString = DS_string(dynamicString);
     DynamicString *tmpDynamicString = DS_init();
-    DS_append(tmpDynamicString, '\\');
     DS_appendString(tmpDynamicString, DS_string(dynamicString));  
     // Octal number to decimal
-    for (int i = 2; i >= 0 ; i--){
-        decNumber = decNumber + (pow(8 , (2 - i)) * atoi(&dynamicString->string[i]));
+    for (int i = 3; i >= 1 ; i--){
+        decNumber = decNumber + (pow(8 , (3 - i)) * atoi(&dynamicString->string[i]));
         DS_deleteChar(dynamicString);
     }
     // Checks right interval <1, 255>
@@ -112,21 +111,38 @@ DynamicString *octNumber(DynamicString *dynamicString){
         return tmpDynamicString;
     }
     // Checks if number has 3 chars and if yes dont add zero before number
-    if (decNumber >= 100){
-        DS_appendString(dynamicString, "\\");
-    }
-    else{
-        DS_appendString(dynamicString, "\\0");
+    if (decNumber < 100){
+        DS_appendString(dynamicString, "0");
     }
     formatString2string(tmpString, "%d", (int)decNumber)
     DS_appendString(dynamicString, tmpString);
     DS_dispose(tmpDynamicString);
     return dynamicString;
 }
-//
-//char* hexNumber (){
-//
-//} 
+
+DynamicString *hexNumber(DynamicString *dynamicString){
+    int decNumber = 0;
+    char *tmpString = DS_string(dynamicString);
+    DynamicString *tmpDynamicString = DS_init();
+    DS_appendString(tmpDynamicString, DS_string(dynamicString));  
+    // Hexadecimal number to decimal
+    for (int i = 2; i >= 1 ; i--){
+        decNumber = decNumber + (pow(16 , (2 - i)) * (int)strtol(&dynamicString->string[i], NULL, 16));
+        DS_deleteChar(dynamicString);
+    }
+    // Checks right interval <1, 255>
+    if (decNumber > 255 || decNumber < 1){
+        return tmpDynamicString;
+    }
+    // Checks if number has 3 chars and if yes dont add zero before number
+    if (decNumber < 100){
+        DS_appendString(dynamicString, "0");
+    }
+    formatString2string(tmpString, "%d", (int)decNumber)
+    DS_appendString(dynamicString, tmpString);
+    DS_dispose(tmpDynamicString);
+    return dynamicString;
+}
 
 // TODO pri vraceni erroru dispose string!!!
 
@@ -406,6 +422,7 @@ Token getToken(){
                             DS_appendString(dynamicString, "\\032");
                         }
                         else if (c == '\\'){
+                            int tmp = c;
                             c = getc(source);
                             switch (c){
                                 case 34:
@@ -413,11 +430,11 @@ Token getToken(){
                                 break;
                                 // TODO make tests for it
                                 case 36:
-                                    DS_appendString(dynamicString, "\\036");
+                                    DS_appendString(dynamicString, "\\036");        // $
                                 break;
                                 // Checks octal number and converts it to decimal number
                                 case 48 ... 57:
-                                    // TODO kdyz za tim bude cislo \32 tak 
+                                    DS_append(tmpDynamicString, tmp);
                                     DS_append(tmpDynamicString, c);
                                     if (isdigit(c = getc(source))){
                                         DS_append(tmpDynamicString, c);
@@ -426,10 +443,18 @@ Token getToken(){
                                             DS_appendString(dynamicString, DS_string(octNumber(tmpDynamicString)));
                                             DS_dispose(tmpDynamicString);
                                         }
+                                        // For invalid input like /45
                                         else{
+                                            DS_appendString(dynamicString, DS_string(tmpDynamicString));
+                                            DS_dispose(tmpDynamicString);
                                             continue;
                                         }
                                     } 
+                                    else{
+                                        DS_appendString(dynamicString, DS_string(tmpDynamicString));
+                                        DS_dispose(tmpDynamicString);
+                                        continue;
+                                    }
                                 break;
                                 case 92:
                                     DS_appendString(dynamicString, "\\092");        // /
@@ -438,46 +463,52 @@ Token getToken(){
                                     DS_appendString(dynamicString, "\\010");        // \n
                                 break;
                                 case 116:
-                                    DS_appendString(dynamicString, "\\116");        // \t
+                                    DS_appendString(dynamicString, "\\009");        // \t
                                 break;
                                 // Checks hexadecimal number and convetrs it to decimal number
                                 case 120: 
-
+                                    DS_append(tmpDynamicString, tmp);
+                                    int tmpForX = c;
+                                    c = getc(source);
+                                    if ((c > 96 && c < 103) || (c > 64 && c < 71) || (c > 47 && c < 58)){
+                                        int tmpAfterX = c;
+                                        DS_append(tmpDynamicString, c);
+                                        c = getc(source);
+                                        if ((c > 96 && c < 103) || (c > 64 && c < 71) || (c > 47 && c < 58)){
+                                            DS_append(tmpDynamicString, c);
+                                            DS_appendString(dynamicString, DS_string(hexNumber(tmpDynamicString)));
+                                            DS_dispose(tmpDynamicString);
+                                        }
+                                        else{
+                                            DS_deleteChar(tmpDynamicString);
+                                            DS_append(tmpDynamicString, tmpForX);
+                                            DS_append(tmpDynamicString, tmpAfterX);
+                                            DS_appendString(dynamicString, DS_string(tmpDynamicString));
+                                            DS_dispose(tmpDynamicString);
+                                            continue;
+                                        }
+                                    }
+                                    else{
+                                        DS_append(tmpDynamicString, tmpForX);
+                                        DS_appendString(dynamicString, DS_string(tmpDynamicString));
+                                        DS_dispose(tmpDynamicString);
+                                        continue;
+                                    }
                                 break;
                                 default:
                                 break;
                             }
-                            //if (c == '\\'){
-                            //    DS_appendString(dynamicString, "\\092");
-                            //} 
-                            //else{
-                            //    fprintf(stderr, "Wrong usesage of \"\\\" on line %d!\nExpected: \"\\\\\" or \"\\n\", ...");
-                            //    token.type = TYPE_LEXERR;
-                            //    return token;
-                            //}
-
                         }
-                        // switch (c){
-                        //    case 32:
-                        //    break;
-                        //    case 11:
-                        //        printf("%d\n", c);
-                        //        printf ("aaaaaaa\n%s\naaaaaaa", DS_string(dynamicString));
-                        //    break;
-                        //    default:
-                        //        printf("nenene\n");
-                        //    break;
-                        //}
                     }
-                    else {
+                    else if (c != 34){
                         DS_append(dynamicString, c);
                     }
-                    c = getc(source);
-                            //if (c == '\\'){
-                            //    DS_append(dynamicString, c);
-                            //    c = getc(source);
-                            //}
+                    // Condition due to space
+                    if (c != 34){
+                        c = getc(source);
+                    }
                     // Then repeat it until end of string "
+                        //printf("%s", DS_string(dynamicString));
                     if (c == '"'){
                         token.type = TYPE_STRING;
                         token.attribute.dString = dynamicString;

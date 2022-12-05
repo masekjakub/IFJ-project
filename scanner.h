@@ -117,6 +117,7 @@ typedef enum
 void setSourceFile(FILE *);
 bool isKeyword(DynamicString *, Token*);
 DynamicString *octNumber(DynamicString*);
+DynamicString *hexNumber(DynamicString*);
 Token getToken();
 
 
