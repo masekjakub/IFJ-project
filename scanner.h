@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 #include "error.h"
 #include "dynamicString.h"
 
@@ -115,6 +116,7 @@ typedef enum
 
 void setSourceFile(FILE *);
 bool isKeyword(DynamicString *, Token*);
+DynamicString *octNumber(DynamicString*);
 Token getToken();
 
 

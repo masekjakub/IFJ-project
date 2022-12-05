@@ -10,6 +10,11 @@
  */
 
 #include "scanner.h"
+#define formatString2string(DEST, FORMAT, FORMAT_ARGS...)                       \
+    DEST = malloc((snprintf(NULL, 0, FORMAT, FORMAT_ARGS) + 1) * sizeof(char)); \
+    if (DEST == NULL)                                                           \
+        exit(ERR_INTERN);                                                       \
+    sprintf(DEST, FORMAT, FORMAT_ARGS);
 
 FILE *source;
 
@@ -85,9 +90,39 @@ bool isKeyword(DynamicString *dynamicString, Token *token){
     return false;
 }
 
-//char* octNumber (char* dynamicString){
-//
-//}
+/**
+ * @brief Function for converting octal number to decimal number
+ * 
+ * @param dynamicString 
+ * @return DynamicString* 
+ */
+DynamicString *octNumber(DynamicString *dynamicString){
+    double decNumber = 0;
+    char *tmpString = DS_string(dynamicString);
+    DynamicString *tmpDynamicString = DS_init();
+    DS_append(tmpDynamicString, '\\');
+    DS_appendString(tmpDynamicString, DS_string(dynamicString));  
+    // Octal number to decimal
+    for (int i = 2; i >= 0 ; i--){
+        decNumber = decNumber + (pow(8 , (2 - i)) * atoi(&dynamicString->string[i]));
+        DS_deleteChar(dynamicString);
+    }
+    // Checks right interval <1, 255>
+    if (decNumber > 255 || decNumber < 1){
+        return tmpDynamicString;
+    }
+    // Checks if number has 3 chars and if yes dont add zero before number
+    if (decNumber >= 100){
+        DS_appendString(dynamicString, "\\");
+    }
+    else{
+        DS_appendString(dynamicString, "\\0");
+    }
+    formatString2string(tmpString, "%d", (int)decNumber)
+    DS_appendString(dynamicString, tmpString);
+    DS_dispose(tmpDynamicString);
+    return dynamicString;
+}
 //
 //char* hexNumber (){
 //
@@ -107,6 +142,7 @@ Token getToken(){
     static bool wasProlog = false;
     State state = STATE_START;
     DynamicString *dynamicString = DS_init();
+    DynamicString *tmpDynamicString = DS_init();
     while (1){
         Token token;
         c = getc(source);
@@ -369,18 +405,32 @@ Token getToken(){
                         if (c == 32){
                             DS_appendString(dynamicString, "\\032");
                         }
-                        //else if (c == 11){
-                        //    DS_appendString(dynamicString, "\\011");
-                        //}
                         else if (c == '\\'){
                             c = getc(source);
                             switch (c){
                                 case 34:
                                     DS_appendString(dynamicString, "\\034");        // "
                                 break;
+                                // TODO make tests for it
+                                case 36:
+                                    DS_appendString(dynamicString, "\\036");
+                                break;
+                                // Checks octal number and converts it to decimal number
                                 case 48 ... 57:
-                                    printf("%d",c);
-                                    break;
+                                    // TODO kdyz za tim bude cislo \32 tak 
+                                    DS_append(tmpDynamicString, c);
+                                    if (isdigit(c = getc(source))){
+                                        DS_append(tmpDynamicString, c);
+                                        if (isdigit(c = getc(source))){
+                                            DS_append(tmpDynamicString, c);
+                                            DS_appendString(dynamicString, DS_string(octNumber(tmpDynamicString)));
+                                            DS_dispose(tmpDynamicString);
+                                        }
+                                        else{
+                                            continue;
+                                        }
+                                    } 
+                                break;
                                 case 92:
                                     DS_appendString(dynamicString, "\\092");        // /
                                 break;
@@ -389,6 +439,10 @@ Token getToken(){
                                 break;
                                 case 116:
                                     DS_appendString(dynamicString, "\\116");        // \t
+                                break;
+                                // Checks hexadecimal number and convetrs it to decimal number
+                                case 120: 
+
                                 break;
                                 default:
                                 break;
