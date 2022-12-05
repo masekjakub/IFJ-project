@@ -1306,7 +1306,7 @@ int reType(Token *tokenArr)
     return 0;
 }
 
-arithmetic(int ruleUsed, Token *tokenArr, Token endToken);
+CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken);
 
 /*ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
 {

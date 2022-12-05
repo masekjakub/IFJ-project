@@ -675,7 +675,7 @@ CREATEFRAME\n\
     return 0;
 }
 
-void arithmetic(int ruleUsed, Token *tokenArr, Token endToken)
+void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken)
 {
     if (ruleUsed == 0)
     {
