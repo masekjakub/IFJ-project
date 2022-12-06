@@ -503,14 +503,21 @@ TYPE TF@retValType TF@retVal\n\
 ";
     DS_appendString(dString, code);
 
+    char *codeFormat = NULL;
     // Convert returnType to lower case
     if (!isLower(returnType))
-    {
+    {// If function can return null(nil)
+        codeFormat = "\
+JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
+";    //, returnNum
+        code = NULL;
+        formatString2string(code, codeFormat, returnNum);
+        DS_appendString(dString, code);
+        free(code);
         returnType += 32; // To lower case
     }
 
     // Type control
-    char *codeFormat = NULL;
     switch (returnType)
     {
     case 'i':
@@ -538,17 +545,6 @@ JUMPIFEQ _rightReturnType%d TF@retValType string@string\n\
     formatString2string(code, codeFormat, returnNum);
     DS_appendString(dString, code);
     free(code);
-
-    if (!isLower(returnType))
-    { // If function can return null(nil)
-        codeFormat = "\
-JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
-";    //, returnNum
-        code = NULL;
-        formatString2string(code, codeFormat, returnNum);
-        DS_appendString(dString, code);
-        free(code);
-    }
 
     codeFormat = "\
 DPRINT string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
@@ -831,15 +827,10 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
         DS_appendString(getCode(isGlobal), "PUSHS nil@nil\n");
     }
 
-    if (ruleUsed > 5 && ruleUsed < 9)
+    if (ruleUsed > 5 && ruleUsed < 10)
     {
-        // E => E + E
-        static int counter = 0;
-        counter++;
-        char *type[3];
-        char *instruction[5];
-
         DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
+        DS_appendString(getCode(isGlobal), "CALL _isValue\n");
         switch (ruleUsed)
         {
         case 6:
@@ -851,93 +842,62 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
         case 8:
             DS_appendString(getCode(isGlobal), "MULS\n");
             break;
+        case 9:
+            DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
+            DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
+            DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
+            DS_appendString(getCode(isGlobal), "POPS TF@b\n");
+            DS_appendString(getCode(isGlobal), "POPS TF@a\n");
+            DS_appendString(getCode(isGlobal), "PUSHFRAME\n");
+            CODEconvert2Type(getCode(isGlobal),"LF@a",'f');
+            CODEconvert2Type(getCode(isGlobal),"LF@b",'f');
+            DS_appendString(getCode(isGlobal), "PUSHS LF@a\n");
+            DS_appendString(getCode(isGlobal), "PUSHS LF@b\n");
+            DS_appendString(getCode(isGlobal), "DIVS\n");
+            DS_appendString(getCode(isGlobal), "POPFRAME\n");
+            break;
         default:
             break;
         }
 
     }
 
-    if (ruleUsed == 9)
-    {
-        // E => E / E
-        static int counter = 0;
-        counter++;
-
-        DS_appendString(getCode(isGlobal), "\n#div\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-
-        reType(tokenArr, isGlobal);
-
-        char *int_string;
-
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFNEQ _afloatdiv");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
-
-        DS_appendString(getCode(isGlobal), " POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), " INT2FLOATS\n");
-        DS_appendString(getCode(isGlobal), " PUSHS TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _afloatdiv");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFNEQ _candiv");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        DS_appendString(getCode(isGlobal), "LABEL _candiv");
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "DIVS\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-    }
-
     if (ruleUsed == 10)
     {
-        char *code ="\
-CALL _convert2BiggestType\n\
+    char *code ="\
 CREATEFRAME\n\
 DEFVAR TF@a\n\
 DEFVAR TF@b\n\
-DEFVAR TF@res\n\
-POPS TF@a\n\
 POPS TF@b\n\
-CONCAT TF@res TF@b TF@a\n\
+POPS TF@a\n\
+PUSHFRAME\n";
+    DS_appendString(getCode(isGlobal), code);
+    CODEconvert2Type(getCode(isGlobal),"LF@a",'s');
+    CODEconvert2Type(getCode(isGlobal),"LF@b",'s');
+    code ="\
+PUSHS LF@a\n\
+PUSHS LF@b\n\
+CALL _isString\n\
+POPFRAME\n\
+DEFVAR TF@res\n\
+CONCAT TF@res TF@a TF@b\n\
 PUSHS TF@res\n\
         ";
-        DS_appendString(getCode(isGlobal), code);
+    DS_appendString(getCode(isGlobal), code);
     }
 
     if (ruleUsed == 12)
     {
         // E => E === E
 
-        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
+        DS_appendString(getCode(isGlobal), "CALL _isSameType\n");
         DS_appendString(getCode(isGlobal), "EQS\n");
     }
 
     if (ruleUsed == 13)
     {
         // E => E !== E
-        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
+        DS_appendString(getCode(isGlobal), "CALL _isSameType\n");
         DS_appendString(getCode(isGlobal), "EQS\n");
         DS_appendString(getCode(isGlobal), "NOTS\n");
     }
@@ -1318,5 +1278,69 @@ CREATEFRAME\n\
 RETURN\n";
 DS_appendString(dString, code);
 
+//isString
+code = "\
+######isStringe######\n\
+LABEL _isString\n\
+CREATEFRAME\n\
+DEFVAR TF@a\n\
+DEFVAR TF@aType\n\
+POPS TF@a\n\
+TYPE TF@aType TF@a\n\
+JUMPIFNEQ _isStringRetFalse TF@aType string@string\n\
+PUSHS TF@a\n\
+CREATEFRAME\n\
+RETURN\n\
+LABEL _isStringRetFalse\n\
+DPRINT string@Operand\\032has\\032to\\032be\\032a\\032string!\\010\n\
+EXIT int@7\n\
+CREATEFRAME\n\
+RETURN\n";
+DS_appendString(dString, code);
+
+//isValue
+code = "\
+######isValue######\n\
+LABEL _isValue\n\
+CREATEFRAME\n\
+DEFVAR TF@a\n\
+DEFVAR TF@aType\n\
+POPS TF@a\n\
+TYPE TF@aType TF@a\n\
+JUMPIFEQ _isValueRetFalse TF@aType string@string\n\
+PUSHS TF@a\n\
+CREATEFRAME\n\
+RETURN\n\
+LABEL _isValueRetFalse\n\
+DPRINT string@Operand\\032has\\032to\\032be\\032a\\032value!\\010\n\
+EXIT int@7\n\
+CREATEFRAME\n\
+RETURN\n";
+DS_appendString(dString, code);
+
+//isSameType
+code = "\
+######isSameType######\n\
+LABEL _isSameType\n\
+CREATEFRAME\n\
+DEFVAR TF@a\n\
+DEFVAR TF@b\n\
+DEFVAR TF@aType\n\
+DEFVAR TF@bType\n\
+POPS TF@a\n\
+POPS TF@b\n\
+TYPE TF@aType TF@a\n\
+TYPE TF@bType TF@b\n\
+JUMPIFNEQ _isNotSameType TF@aType TF@bType\n\
+PUSHS TF@b\n\
+PUSHS TF@a\n\
+CREATEFRAME\n\
+RETURN\n\
+LABEL _isNotSameType\n\
+PUSHS bool@true\n\
+PUSHS bool@false\n\
+CREATEFRAME\n\
+RETURN\n";
+DS_appendString(dString, code);
     return 0;
 }
