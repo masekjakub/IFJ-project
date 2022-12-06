@@ -114,12 +114,18 @@ DynamicString *octNumber(DynamicString *dynamicString){
     if (decNumber < 100){
         DS_appendString(dynamicString, "0");
     }
-    formatString2string(tmpString, "%d", (int)decNumber)
+    formatString2string(tmpString, "%d", (int)decNumber);
     DS_appendString(dynamicString, tmpString);
     DS_dispose(tmpDynamicString);
     return dynamicString;
 }
 
+/** 
+ * @brief Function for converting hexadecimal number to decimal number
+ * 
+ * @param dynamicString 
+ * @return DynamicString* 
+ */
 DynamicString *hexNumber(DynamicString *dynamicString){
     int decNumber = 0;
     char *tmpString = DS_string(dynamicString);
@@ -138,7 +144,7 @@ DynamicString *hexNumber(DynamicString *dynamicString){
     if (decNumber < 100){
         DS_appendString(dynamicString, "0");
     }
-    formatString2string(tmpString, "%d", (int)decNumber)
+    formatString2string(tmpString, "%d", decNumber);
     DS_appendString(dynamicString, tmpString);
     DS_dispose(tmpDynamicString);
     return dynamicString;
@@ -498,6 +504,8 @@ Token getToken(){
                                 default:
                                 break;
                             }
+                            c = getc(source);
+                            continue;
                         }
                     }
                     else if (c != 34){
@@ -508,8 +516,8 @@ Token getToken(){
                         c = getc(source);
                     }
                     // Then repeat it until end of string "
-                        //printf("%s", DS_string(dynamicString));
                     if (c == '"'){
+                        //printf("\n%s\n", DS_string(dynamicString));
                         token.type = TYPE_STRING;
                         token.attribute.dString = dynamicString;
                         return token;
