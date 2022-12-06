@@ -561,7 +561,10 @@ PUSHFRAME\n";
         CODEcallWrite(dString, argCount);
     code = "CALL write\n";
     DS_appendString(dString, code);
-    return 0;
+    if(argCount == 0){
+        DS_appendString(dString, "PUSHS nil@nil\n");
+        return 0;
+    }
 }
 
 /**
@@ -921,14 +924,12 @@ LABEL write\n\
 TYPE LF@writetype LF@tmpwrite\n\
 JUMPIFEQ _writeempty LF@writetype string@nil\n\
 WRITE LF@tmpwrite\n\
-PUSHS nil@nil\n\
 POPFRAME\n\
 CREATEFRAME\n\
 RETURN\n\
 #EMPTY#\n\
 LABEL _writeempty\n\
 WRITE string@\n\
-PUSHS nil@nil\n\
 POPFRAME\n\
 CREATEFRAME\n\
 RETURN\n\
