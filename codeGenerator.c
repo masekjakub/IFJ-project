@@ -1105,6 +1105,111 @@ RETURN\n\
 \n";
 DS_appendString(dString, code);
 
+//strlen
+code = "\
+######STRLEN######\n\
+LABEL _strlen\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@string\n\
+POPS LF@string\n\
+DEFVAR LF@strlen\n\
+STRLEN LF@strlen LF@string\n\
+PUSHS LF@strlen\n\
+POPFRAME\n\
+RETURN\n\
+\n";
+    DS_appendString(dString, code);
+
+//substring
+code = "\
+######SUBSTRING######\n\
+LABEL _substring\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@j\n\
+POPS LF@j\n\
+DEFVAR LF@i\n\
+POPS LF@i\n\
+DEFVAR LF@string\n\
+POPS LF@string\n\
+DEFVAR LF@done\n\
+\
+#Check NULL return\n\
+LT LF@done LF@i int@0\n\
+JUMPIFEQ _substringIsNull LF@done bool@true\n\
+LT LF@done LF@j int@0\n\
+JUMPIFEQ _substringIsNull LF@done bool@true\n\
+GT LF@done LF@i LF@j\n\
+JUMPIFEQ _substringIsNull LF@done bool@true\n\
+DEFVAR LF@stringlen\n\
+STRLEN LF@stringlen LF@string\n\
+LT LF@done LF@i LF@stringlen\n\
+JUMPIFNEQ _substringIsNull LF@done bool@true #NOT i < strlen\n\
+GT LF@done LF@j LF@stringlen\n\
+JUMPIFEQ _substringIsNull LF@done bool@true\n\
+JUMP _substringNotNull\n\
+\
+LABEL _substringIsNull\n\
+PUSHS nil@nil\n\
+POPFRAME\n\
+RETURN\n\
+LABEL _substringNotNull\n\
+\
+#Create substring\n\
+DEFVAR LF@retString\n\
+MOVE LF@retString string@\n\
+DEFVAR LF@curChar\n\
+LABEL _substringNextChar #While i < j\n\
+LT LF@done LF@i LF@j\n\
+JUMPIFNEQ _substringEnd LF@done bool@true # NOT i < j\n\
+GETCHAR LF@curChar LF@string LF@i\n\
+CONCAT LF@retString LF@retString LF@curChar\n\
+ADD LF@i LF@i int@1\n\
+JUMP _substringNextChar\n\
+LABEL _substringEnd\n\
+\
+PUSHS LF@retString\n\
+POPFRAME\n\
+RETURN\n\
+\n";
+    DS_appendString(dString, code);
+
+//ord
+code = "\
+######ORD######\n\
+LABEL _ord\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@ordV\n\
+POPS LF@ordV\n\
+JUMPIFNEQ _%%ordRetChar LF@ordV string@\n\
+PUSHS int@0\n\
+RETURN\n\
+LABEL _%%ordRetChar\n\
+STRI2INT LF@ordV LF@ordV int@0\n\
+PUSHS LF@ordV\n\
+POPFRAME\n\
+RETURN\n\
+\n";
+    DS_appendString(dString, code);
+
+//chr
+code = "\
+######CHR######\n\
+LABEL _chr\n\
+CREATEFRAME\n\
+PUSHFRAME\n\
+DEFVAR LF@chrV\n\
+POPS LF@chrV\n\
+INT2CHAR LF@chrV LF@chrV\n\
+PUSHS LF@chrV\n\
+POPFRAME\n\
+RETURN\n\
+\n";
+    DS_appendString(dString, code);
+
+//convert2BiggestType
 code = "\
 ######convert2BiggestType######\n\
 LABEL _convert2BiggestType\n\
