@@ -1104,6 +1104,13 @@ CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@strval\n\
 POPS LF@strval\n\
+DEFVAR LF@strvalType\n\
+TYPE LF@strvalType LF@strval\n\
+JUMPIFEQ _strvalTypeOk LF@strvalType string@string\n\
+JUMPIFEQ _strvalTypeOk LF@strvalType string@nil\n\
+DPRINT string@Only\\032arguments\\032of\\032type\\032null\\032or\\032string\\032are\\032supported\\032by\\032strval!\n\
+EXIT int@4\n\
+LABEL _strvalTypeOk\n\
 ";
 DS_appendString(dString, code);
 CODEconvert2Type(dString,"LF@strval",'s'); // conversion to string
@@ -1120,10 +1127,17 @@ code = "\
 LABEL strlen\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
-DEFVAR LF@string\n\
-POPS LF@string\n\
+DEFVAR LF@s\n\
+POPS LF@s\n\
+DEFVAR LF@stringType\n\
+TYPE LF@stringType LF@s\n\
+JUMPIFEQ _strlenTypeOk LF@stringType string@string\n\
+DPRINT string@Strlen\\032argument\\032is\\032not\\032of\\032type\\032string!\n\
+EXIT int@4\n\
+LABEL _strlenTypeOk\n\
+\
 DEFVAR LF@strlen\n\
-STRLEN LF@strlen LF@string\n\
+STRLEN LF@strlen LF@s\n\
 PUSHS LF@strlen\n\
 POPFRAME\n\
 RETURN\n\
@@ -1140,9 +1154,27 @@ DEFVAR LF@j\n\
 POPS LF@j\n\
 DEFVAR LF@i\n\
 POPS LF@i\n\
-DEFVAR LF@string\n\
-POPS LF@string\n\
+DEFVAR LF@s\n\
+POPS LF@s\n\
 DEFVAR LF@done\n\
+\
+#Check param types\n\
+DEFVAR LF@paramType\n\
+TYPE LF@paramType LF@s\n\
+JUMPIFEQ _substringStringTypeOk LF@paramType string@string\n\
+DPRINT string@Substring\\032argument\\032$s\\032is\\032not\\032of\\032type\\032string!\n\
+EXIT int@4\n\
+LABEL _substringStringTypeOk\n\
+TYPE LF@paramType LF@i\n\
+JUMPIFEQ _substringIndexITypeOk LF@paramType string@int\n\
+DPRINT string@Substring\\032argument\\032$i\\032is\\032not\\032of\\032type\\032int!\n\
+EXIT int@4\n\
+LABEL _substringIndexITypeOk\n\
+TYPE LF@paramType LF@j\n\
+JUMPIFEQ _substringIndexJTypeOk LF@paramType string@int\n\
+DPRINT string@Substring\\032argument\\032$j\\032is\\032not\\032of\\032type\\032int!\n\
+EXIT int@4\n\
+LABEL _substringIndexJTypeOk\n\
 \
 #Check NULL return\n\
 LT LF@done LF@i int@0\n\
@@ -1152,7 +1184,7 @@ JUMPIFEQ _substringIsNull LF@done bool@true\n\
 GT LF@done LF@i LF@j\n\
 JUMPIFEQ _substringIsNull LF@done bool@true\n\
 DEFVAR LF@stringlen\n\
-STRLEN LF@stringlen LF@string\n\
+STRLEN LF@stringlen LF@s\n\
 LT LF@done LF@i LF@stringlen\n\
 JUMPIFNEQ _substringIsNull LF@done bool@true #NOT i < strlen\n\
 GT LF@done LF@j LF@stringlen\n\
@@ -1172,7 +1204,7 @@ DEFVAR LF@curChar\n\
 LABEL _substringNextChar #While i < j\n\
 LT LF@done LF@i LF@j\n\
 JUMPIFNEQ _substringEnd LF@done bool@true # NOT i < j\n\
-GETCHAR LF@curChar LF@string LF@i\n\
+GETCHAR LF@curChar LF@s LF@i\n\
 CONCAT LF@retString LF@retString LF@curChar\n\
 ADD LF@i LF@i int@1\n\
 JUMP _substringNextChar\n\
@@ -1190,15 +1222,21 @@ code = "\
 LABEL ord\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
-DEFVAR LF@ordV\n\
-POPS LF@ordV\n\
-JUMPIFNEQ _%%ordRetChar LF@ordV string@\n\
+DEFVAR LF@c\n\
+POPS LF@c\n\
+DEFVAR LF@cType\n\
+TYPE LF@cType LF@c\n\
+JUMPIFEQ _ordCTypeOk LF@cType string@string\n\
+DPRINT string@Ord\\032argument\\032is\\032not\\032of\\032type\\032string!\n\
+EXIT int@4\n\
+LABEL _ordCTypeOk\n\
+JUMPIFNEQ _%%ordRetChar LF@c string@\n\
 PUSHS int@0\n\
 POPFRAME\n\
 RETURN\n\
 LABEL _%%ordRetChar\n\
-STRI2INT LF@ordV LF@ordV int@0\n\
-PUSHS LF@ordV\n\
+STRI2INT LF@c LF@c int@0\n\
+PUSHS LF@c\n\
 POPFRAME\n\
 RETURN\n\
 \n";
@@ -1210,10 +1248,16 @@ code = "\
 LABEL chr\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
-DEFVAR LF@chrV\n\
-POPS LF@chrV\n\
-INT2CHAR LF@chrV LF@chrV\n\
-PUSHS LF@chrV\n\
+DEFVAR LF@i\n\
+POPS LF@i\n\
+DEFVAR LF@iType\n\
+TYPE LF@iType LF@i\n\
+JUMPIFEQ _chrITypeOk LF@iType string@int\n\
+DPRINT string@Chr\\032argument\\032is\\032not\\032of\\032type\\032int!\n\
+EXIT int@4\n\
+LABEL _chrITypeOk\n\
+INT2CHAR LF@i LF@i\n\
+PUSHS LF@i\n\
 POPFRAME\n\
 RETURN\n\
 \n";

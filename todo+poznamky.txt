@@ -3,7 +3,6 @@ python3 test.py ../IFJ-project/translator ../IFJ-project/tests/ifjcode/ic22int_l
 TODO
 dokumentace
 generování výrazů
-builtin funkce
 empty expr v if, while
 concat null null
 
