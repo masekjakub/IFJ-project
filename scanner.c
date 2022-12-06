@@ -358,7 +358,7 @@ Token getToken(){
                         for (int i = 0; i < 3; i++){
                             DS_append(dynamicString, c = getc(source));
                         }
-                        if (!strcmp(DS_string(dynamicString), "php") && isspace((c = getc(source)))){
+                        if (!strcmp(DS_string(dynamicString), "php") && (isspace((c = getc(source))) || c == '/')){
                             ungetc(c, source);
                             wasProlog = true;
                             token.type = TYPE_BEGIN;
