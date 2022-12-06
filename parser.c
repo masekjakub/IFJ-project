@@ -1546,7 +1546,7 @@ int parser(Token *tokenArrIN)      // sim
 
     firstError = 0;
     globalST = ST_initTable(16);
-    localST = NULL;
+    localST = NULL; //Inits in function definition
     isGlobal = 1;
     notDefinedCalls = STACK_init();
     functionTypes = DS_init();
