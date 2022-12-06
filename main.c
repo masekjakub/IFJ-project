@@ -3,9 +3,8 @@
 #include "parser.h"
 
 //  Pro ucely testovani
-int main(int argc, char** argv){
+int main(){
     FILE *f;
-    Token token;
     ErrorType error = 0;
 
    /* if ((f = fopen(stdin, "r")) == NULL){

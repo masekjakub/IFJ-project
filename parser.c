@@ -820,7 +820,6 @@ ErrorType ruleAssign()
 
         if (token.type == TYPE_ASSIGN) // <assign> => ID = <expr> ;
         {
-            STItemData data;
             token = newToken(0);
             err = exprAnal(&isEmpty, 0);
             if (isEmpty) {
@@ -831,7 +830,7 @@ ErrorType ruleAssign()
             {
                 STItemData STdata;
                 STdata.varData.VarType = isEmpty;
-                ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, data);
+                ST_insertItem(getTable(isGlobal), DS_string(prevToken.attribute.dString), ST_ITEM_TYPE_VARIABLE, STdata);
                 CODEdefVar(getCodePtr(isGlobal), DS_string(prevToken.attribute.dString), getCodeStruct(isGlobal)->lastUnconditionedLine);
             }
             CODEassign(getCode(isGlobal), prevToken);
@@ -1304,7 +1303,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
             return ERR_UNDEF;
         }
     }
-    CODEarithmetic(ruleUsed, tokenArr, endToken, isGlobal);
+    CODEarithmetic(getCode(isGlobal), ruleUsed, tokenArr);
     return 0;
 }
 

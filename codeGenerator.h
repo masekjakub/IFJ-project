@@ -7,26 +7,26 @@
 #include <string.h>
 
 void CODEmain(DynamicString *);
-int CODEbuiltInFunc(DynamicString *);
-int callFunc();
-int CODEfuncDef(DynamicString *, char *);
-int CODEparam(DynamicString *, char *);
-int CODEpopParam(DynamicString *, char *, char);
-int CODEfuncReturn(DynamicString *, char, int);
-int CODEfuncDefEnd(DynamicString *, char *, bool);
-int CODEfuncCall(DynamicString *,Token,int);
-int CODEcallWrite(DynamicString *, int);
-int CODEassign(DynamicString *, Token);
-int CODEcheckInitVar(DynamicString *, char *, bool, int);
-int CODEdefVar(DynamicString **, char *, int);
-int CODEpopValue(DynamicString *, char *, bool);
-int CODEpushValue(DynamicString *, Token);
-int CODEifStart(DynamicString **, int, int);
-int CODEelse(DynamicString *, int);
-int CODEifEnd(DynamicString *, int);
-int CODEwhileStart(DynamicString **, int, int);
-int CODEwhileCond(DynamicString *, int);
-int CODEwhileEnd(DynamicString *, int);
-int CODEconvert2Type(DynamicString *, char *, char);
-void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal);
+void CODEbuiltInFunc(DynamicString *);
+void callFunc();
+void CODEfuncDef(DynamicString *, char *);
+void CODEparam(DynamicString *, char *);
+void CODEpopParam(DynamicString *, char *, char);
+void CODEfuncReturn(DynamicString *, char, int);
+void CODEfuncDefEnd(DynamicString *, char *, bool);
+void CODEfuncCall(DynamicString *,Token,int);
+void CODEcallWrite(DynamicString *, int);
+void CODEassign(DynamicString *, Token);
+void CODEcheckInitVar(DynamicString *, char *, bool, int);
+void CODEdefVar(DynamicString **, char *, int);
+void CODEpopValue(DynamicString *, char *, bool);
+void CODEpushValue(DynamicString *, Token);
+void CODEifStart(DynamicString **, int, int);
+void CODEelse(DynamicString *, int);
+void CODEifEnd(DynamicString *, int);
+void CODEwhileStart(DynamicString **, int, int);
+void CODEwhileCond(DynamicString *, int);
+void CODEwhileEnd(DynamicString *, int);
+void CODEconvert2Type(DynamicString *, char *, char);
+void CODEarithmetic(DynamicString *, int, Token *);
 #endif

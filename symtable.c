@@ -130,7 +130,7 @@ void ST_expand(Symtable *table){
     }
     unsigned int oldSize = table->size;
     table->size = newSize;
-    for(int i = oldSize; i < newSize; i++) table->items[i] = NULL;
+    for(unsigned int i = oldSize; i < newSize; i++) table->items[i] = NULL;
 
     //REHASHING
     STItem *rehashItem = NULL;  //Item being rehashed

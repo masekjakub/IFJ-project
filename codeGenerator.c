@@ -1,5 +1,21 @@
+/**
+ * @file codeGenerator.c
+ * @authors Martin Zelenák, Jakub Mašek, Vojta Kuchař
+ * @brief Functions for generating large chunks of IFJcode22 code
+ * @version 1.0
+ * @date 2022-12-06
+ */
+
 #include "codeGenerator.h"
 
+/**
+ * @brief Converts given format string into string.
+ * Resulting string is malloced and its ptr saved into DEST.
+ * DEST should be freed, when not needed.
+ * @param DEST Variable name of type char *, where the resulting string should be stored
+ * @param FORMAT Format string to be converted
+ * @param FORMAT_ARGS Format string arguments (0...n)
+ */
 #define formatString2string(DEST, FORMAT, FORMAT_ARGS...)                       \
     DEST = malloc((snprintf(NULL, 0, FORMAT, FORMAT_ARGS) + 1) * sizeof(char)); \
     if (DEST == NULL)                                                           \
@@ -8,9 +24,9 @@
 #define isLower(CHAR) ('a' <= CHAR && CHAR <= 'z')
 
 /**
- * @brief generate start of main
+ * @brief Generates code for start of main
  *
- * @param dString
+ * @param dString Dynamic string to append the code to
  */
 void CODEmain(DynamicString *dString)
 {
@@ -24,13 +40,13 @@ void CODEmain(DynamicString *dString)
 /**
  * @brief Checks the type of given variable and
  * converts it ot given type indicated by char type.
- * @param varName Name of varible to convert
+ * @param varName Name of varible to convert (name includes LF@/GF@)
+ * Creates its new TF -> can't convert TF@* variables
  * @param dString Dynamic string to append the code to
  * @param type Char representing the type to convert to:
  * 'i'=int ,'b'=bool, 'f'=float, 's'=string, 'n'=nil
- * @return int
  */
-int CODEconvert2Type(DynamicString *dString, char *varName, char type)
+void CODEconvert2Type(DynamicString *dString, char *varName, char type)
 {
     static int varNameNum = 0;
     varNameNum++;
@@ -47,6 +63,7 @@ TYPE TF@%%convType%d %s\n\
     DS_appendString(dString, code);
     free(code);
 
+    //Conversion to given type
     switch (type)
     {
     case 'i':
@@ -163,6 +180,7 @@ MOVE %s nil@nil\n\
         break;
     }
 
+    //End label
     codeFormat = "\
 LABEL _noConv%d\n\n\
 "; //, varNameNum
@@ -171,21 +189,18 @@ LABEL _noConv%d\n\n\
     formatString2string(code, codeFormat, varNameNum);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
 /**
  * @brief Generates code for if statement header
  * Expects the condition value on stack
  * @param dStringPtr Ptr to ptr to dynamic string to append the code to
- * @param ifCount Number used for unique label
+ * @param ifCount Number used for unique labels
  * @param lastUnconditionedLine Index of last line in dString outside
  * any 'if' or 'while' code block.
  * -1 = not inside conditioned code block
- * @return int
  */
-int CODEifStart(DynamicString **dStringPtr, int ifCount, int lastUnconditionedLine)
+void CODEifStart(DynamicString **dStringPtr, int ifCount, int lastUnconditionedLine)
 {
     DynamicString *dString = *dStringPtr;
     char *code = NULL;
@@ -223,18 +238,15 @@ JUMPIFEQ _else%d LF@%%if_cond%d bool@false\n\
     formatString2string(code, codeFormat, ifCount, ifCount);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
 /**
  * @brief Generates code for if statement else header
- * Expects the condition value on stack
+ * 
  * @param dString Dynamic string to append the code to
- * @param ifCount Number used for unique label
- * @return int
+ * @param ifCount Number used for unique labels
  */
-int CODEelse(DynamicString *dString, int ifCount)
+void CODEelse(DynamicString *dString, int ifCount)
 {
     char *codeFormat = "\
 #CODEelse\n\
@@ -245,18 +257,15 @@ LABEL _else%d\n\
     formatString2string(code, codeFormat, ifCount, ifCount);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
 /**
  * @brief Generates code for if statement end
- * Expects the condition value on stack
- * @param dStringPtr Ptr to ptr to dynamic string to append the code to
- * @param ifCount Number used for unique label
- * @return int
+ * 
+ * @param dStringPtr Dynamic string to append the code to
+ * @param ifCount Number used for unique labels
  */
-int CODEifEnd(DynamicString *dString, int ifCount)
+void CODEifEnd(DynamicString *dString, int ifCount)
 {
     char *codeFormat = "\
 #CODEifEnd\n\
@@ -266,11 +275,18 @@ LABEL _endif%d\n\
     formatString2string(code, codeFormat, ifCount);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
-int CODEwhileStart(DynamicString **dStringPtr, int whileCount, int lastUnconditionedLine)
+/**
+ * @brief Generates code for while statement header
+ * 
+ * @param dStringPtr Ptr to ptr to dynamic string to append the code to
+ * @param whileCount Number used for unique labels
+ * @param lastUnconditionedLine Index of last line in dString outside
+ * any 'if' or 'while' code block.
+ * -1 = not inside conditioned code block
+ */
+void CODEwhileStart(DynamicString **dStringPtr, int whileCount, int lastUnconditionedLine)
 {
     DynamicString *dString = *dStringPtr;
     char *code = NULL;
@@ -293,11 +309,15 @@ LABEL _whileStart%d\n\
     formatString2string(code, codeFormat, whileCount);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
-int CODEwhileCond(DynamicString *dString, int whileCount)
+/**
+ * @brief Generates code for while statement conditioned start.
+ * Expects the condition value on stack.
+ * @param dString Dynamic string to append the code to
+ * @param whileCount Number used for unique labels
+ */
+void CODEwhileCond(DynamicString *dString, int whileCount)
 {
     char *code = NULL;
     char *codeFormat = "\
@@ -324,10 +344,16 @@ JUMPIFEQ _whileEnd%d LF@%%while_cond%d bool@false\n\
     DS_appendString(dString, code);
     free(code);
 
-    return 0;
+    
 }
 
-int CODEwhileEnd(DynamicString *dString, int whileCount)
+/**
+ * @brief Generates code for while statement end
+ * 
+ * @param dString Dynamic string to append the code to
+ * @param whileCount Number used for unique labels
+ */
+void CODEwhileEnd(DynamicString *dString, int whileCount)
 {
     char *code = NULL;
     char *codeFormat = "\
@@ -338,63 +364,15 @@ LABEL _whileEnd%d\n\
     formatString2string(code, codeFormat, whileCount, whileCount);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
-int CODEpushValue(DynamicString *dString, Token token)
-{
-    char *code = NULL;
-    char *codeFormat;
-
-    switch (token.type)
-    {
-    case TYPE_FLOAT:
-
-        codeFormat = "\
-#CODEpushValue\n\
-PUSHS float@%a\n\
-";
-        formatString2string(code, codeFormat, token.attribute.doubleV);
-        DS_appendString(dString, code);
-        free(code);
-        break;
-
-    default:
-        break;
-    }
-    return 0;
-}
-
-//udelat: unused?
-int CODEpopValue(DynamicString *dString, char *varName, bool isGlobalFrame)
-{
-    char *codeFormat;
-
-    if (isGlobalFrame)
-    {
-        codeFormat = "\
-#CODEpopValue\n\
-POPS GF@%s\n\
-"; //, varName
-    }
-    else
-    {
-        codeFormat = "\
-#CODEpopValue\n\
-POPS LF@%s\n\
-";
-    }
-
-    char *code = NULL;
-    formatString2string(code, codeFormat, varName);
-    DS_appendString(dString, code);
-    free(code);
-
-    return 0;
-}
-
-int CODEparam(DynamicString *dString, char *paramName)
+/**
+ * @brief Generates code for definition of function parametr
+ * 
+ * @param dString Dynamic string to append the code to
+ * @param paramName Name of parametr to be defined
+ */
+void CODEparam(DynamicString *dString, char *paramName)
 {
     char *codeFormat = "\
 #CODEparam\n\
@@ -405,11 +383,16 @@ DEFVAR LF@%s\n\
     formatString2string(code, codeFormat, paramName);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
-int CODEpopParam(DynamicString *dString, char *paramName, char paramType)
+/**
+ * @brief Generates code for popping value of 
+ * function parametr from stack and checking its type.
+ * @param dString Dynamic string to append the code to
+ * @param paramName Name of parametr to assign the value to
+ * @param paramType Which type should the parametr value have
+ */
+void CODEpopParam(DynamicString *dString, char *paramName, char paramType)
 {
     static int popValueCount = 0;
     popValueCount++;
@@ -429,6 +412,7 @@ TYPE TF@paramType LF@%s\n\
     DS_appendString(dString, code);
     free(code);
 
+    // Check parametr value type
     if(!isLower(paramType)){
         codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@nil\n"; //, popValueCount
         formatString2string(code, codeFormat, popValueCount);
@@ -437,7 +421,6 @@ TYPE TF@paramType LF@%s\n\
 
         paramType += 32; //Convert to lowercase
     }
-
     switch (paramType)
     {
     case 'i':
@@ -467,11 +450,15 @@ LABEL _popParamRightType%d\n\
     formatString2string(code, codeFormat, paramName,popValueCount);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
-int CODEfuncDef(DynamicString *dString, char *functionName)
+/**
+ * @brief Generates code for function definition header
+ * 
+ * @param dString Dynamic string to append the code to
+ * @param functionName Name of defined function
+ */
+void CODEfuncDef(DynamicString *dString, char *functionName)
 {
     char *codeFormat = "\
 ######%s######\n\
@@ -485,14 +472,22 @@ PUSHFRAME\n\
     formatString2string(code, codeFormat, functionName, functionName);
     DS_appendString(dString, code);
     free(code);
-    return 0;
 }
 
-int CODEfuncReturn(DynamicString *dString, char returnType, int lineNum)
+/**
+ * @brief Generates code for function return.
+ * Checks return value based on given returnType.
+ * @param dString Dynamic string to append the code to
+ * @param returnType 1st char of type name the function should return.
+ * ('i','f','s')
+ * @param lineNum 
+ */
+void CODEfuncReturn(DynamicString *dString, char returnType, int lineNum)
 {
     static int returnNum = 0;
     returnNum++;
 
+    char *codeFormat = NULL;
     char *code = "\
 #CODEreturn\n\
 CREATEFRAME\n\
@@ -503,10 +498,9 @@ TYPE TF@retValType TF@retVal\n\
 ";
     DS_appendString(dString, code);
 
-    char *codeFormat = NULL;
-    // Convert returnType to lower case
+    // Check if function can return null(nil)
     if (!isLower(returnType))
-    {// If function can return null(nil)
+    {
         codeFormat = "\
 JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
 ";    //, returnNum
@@ -559,12 +553,17 @@ RETURN\n\
     code = NULL;
     formatString2string(code, codeFormat, lineNum, returnNum);
     DS_appendString(dString, code);
-    free(code);
-
-    return 0;
+    free(code);    
 }
 
-int CODEfuncDefEnd(DynamicString *dString, char *funId, bool isVoid)
+/**
+ * @brief Generates code for function definition end
+ * based on given isVoid.
+ * @param dString Dynamic string to append the code to
+ * @param funId Function name
+ * @param isVoid If function can return null(nil)
+ */
+void CODEfuncDefEnd(DynamicString *dString, char *funId, bool isVoid)
 {
     char *code = NULL;
     if (isVoid)
@@ -588,23 +587,19 @@ EXIT int@4\n\n\
         DS_appendString(dString, code);
         free(code);
     }
-
-    return 0;
 }
 
 /**
- * @brief call write function with arguments in right order
- *
- * @param dString string to save in
- * @param token functionID token
- * @param argCount count of arguments
- * @return int
+ * @brief Generates code for calling write function 
+ * with arguments in the right order.
+ * @param dString Dynamic string to append the code to
+ * @param argCount Number of arguments
  */
-int CODEcallWrite(DynamicString *dString, int argCount)
+void CODEcallWrite(DynamicString *dString, int argCount)
 {
     if(argCount == 0){
         DS_appendString(dString, "PUSHS nil@nil\n");
-        return 0;
+        return;
     }
 
     char *code = "\
@@ -622,24 +617,23 @@ PUSHFRAME\n";
     DS_appendString(dString, code);
     if(argCount == 0){
         DS_appendString(dString, "PUSHS nil@nil\n");
-        return 0;
+        return;
     }
-    return 0;
 }
 
 /**
- * @brief generates func call
+ * @brief Generates code for function call
  *
- * @param dString string to save in
+ * @param dString Dynamic string to append the code to
  * @param token functionID token
- * @param argCount count of arguments
- * @return int
+ * @param argCount Number of arguments
  */
-int CODEfuncCall(DynamicString *dString, Token token, int argCount)
+void CODEfuncCall(DynamicString *dString, Token token, int argCount)
 {
     if (!strcmp(DS_string(token.attribute.dString), "write"))
     {
-        return CODEcallWrite(dString, argCount);
+        CODEcallWrite(dString, argCount);
+        return;
     }
     char *code = NULL;
     char *codeFormat = "\
@@ -649,7 +643,6 @@ CALL %s\n\
     formatString2string(code, codeFormat, DS_string(token.attribute.dString));
     DS_appendString(dString, code);
     free(code);
-    return 0;
 }
 
 /**
@@ -660,9 +653,8 @@ CALL %s\n\
  * @param lastUnconditionedLine
  * Index in dString, where definition of variable should be generated.
  * -1 = code will be appended
- * @return int
  */
-int CODEdefVar(DynamicString **dStringPtr, char *varName, int lastUnconditionedLine)
+void CODEdefVar(DynamicString **dStringPtr, char *varName, int lastUnconditionedLine)
 {
     char *code = NULL;
     char *codeFormat = "\
@@ -670,6 +662,7 @@ int CODEdefVar(DynamicString **dStringPtr, char *varName, int lastUnconditionedL
 DEFVAR LF@%s\n\
 "; //, varName
     formatString2string(code, codeFormat, varName);
+    // Check where should the definition be generated
     if (lastUnconditionedLine == -1)
     {
         DS_appendString(*dStringPtr, code);
@@ -679,10 +672,15 @@ DEFVAR LF@%s\n\
         DS_insertString(dStringPtr, code, lastUnconditionedLine);
     }
     free(code);
-    return 0;
 }
 
-int CODEassign(DynamicString *dString, Token token)
+/**
+ * @brief Generates code for assigning a value 
+ * from stack to a given local variable
+ * @param dString Dynamic string to append the code to
+ * @param token Token of variable to assign the value to
+ */
+void CODEassign(DynamicString *dString, Token token)
 {
     char *code = NULL;
     char *codeFormat = "\
@@ -691,10 +689,17 @@ POPS LF@%s\n";
     formatString2string(code, codeFormat, DS_string(token.attribute.dString));
     DS_appendString(dString, code);
     free(code);
-    return 0;
 }
 
-int CODEcheckInitVar(DynamicString *dString, char *varName, bool isGlobalFrame, int lineNum)
+/**
+ * @brief Generates code for checking initialization of variable.
+ * 
+ * @param dString Dynamic string to append the code to
+ * @param varName Name of variable
+ * @param isGlobalFrame Determines if var is global or local
+ * @param lineNum Current line number (used for error message)
+ */
+void CODEcheckInitVar(DynamicString *dString, char *varName, bool isGlobalFrame, int lineNum)
 {
     static int labelCount = 0;
     labelCount++;
@@ -708,6 +713,7 @@ DEFVAR TF@%sType\n\
     DS_appendString(dString, code);
     free(code);
 
+    // Get type of given variable (if uninit -> type="")
     if (isGlobalFrame)
     {
         codeFormat = "TYPE TF@%sType GF@%s\n"; //, varName,varName
@@ -720,6 +726,7 @@ DEFVAR TF@%sType\n\
     DS_appendString(dString, code);
     free(code);
 
+    // Check initialization
     codeFormat = "\
 JUMPIFNEQ _varInitOk%d TF@%sType string@\n\
 DPRINT string@Variable\\032%s\\032is\\032undefined\\032on\\032line\\032%d!\\010\n\
@@ -730,90 +737,56 @@ CREATEFRAME\n\
     formatString2string(code, codeFormat, labelCount, varName, varName, lineNum, labelCount);
     DS_appendString(dString, code);
     free(code);
-
-    return 0;
 }
 
-int reType(Token *tokenArr, int isGlobal)
-{
-    if (tokenArr[0].type == TYPE_FLOAT)
-    {
-        DS_appendString(getCode(isGlobal), "PUSHS float@");
-        char *float_string;
-        formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-        DS_appendString(getCode(isGlobal), float_string);
-        free(float_string);
-        DS_appendString(getCode(isGlobal), "\n");
-    }
-    else if (tokenArr[0].type == TYPE_INT)
-    {
-        DS_appendString(getCode(isGlobal), "PUSHS int@");
-        char *int_string;
-        formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-        DS_appendString(getCode(isGlobal), int_string);
-        free(int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-    }
-    if (tokenArr[2].type == TYPE_FLOAT)
-    {
-        DS_appendString(getCode(isGlobal), "PUSHS float@");
-        char *float_string;
-        formatString2string(float_string, "%a", tokenArr[2].attribute.doubleV);
-        DS_appendString(getCode(isGlobal), float_string);
-        free(float_string);
-        DS_appendString(getCode(isGlobal), "\n");
-    }
-    else if (tokenArr[2].type == TYPE_INT)
-    {
-        DS_appendString(getCode(isGlobal), "PUSHS int@");
-        char *int_string;
-        formatString2string(int_string, "%d", tokenArr[2].attribute.intV);
-        DS_appendString(getCode(isGlobal), int_string);
-        free(int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-    }
-    return 0;
-}
 
-void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
+/**
+ * @brief Generates code for operators in expressions
+ * 
+ * @param ruleUsed Expression rule used in expression (represents operator)
+ * @param tokenArr Array of 3 tokens used in operation (operand, operator, operand)
+ * @param isGlobal Determines what code string to append to
+ */
+//udelat: předělat isGlobal na DynamicString *dString
+void CODEarithmetic(DynamicString *dString, int ruleUsed, Token *tokenArr)
 {
     if (ruleUsed == 0)
     {
         // E => ID
-        CODEcheckInitVar(getCode(isGlobal), tokenArr[0].attribute.dString->string, false, tokenArr[0].rowNumber);
-        DS_appendString(getCode(isGlobal), "PUSHS LF@");
-        DS_appendString(getCode(isGlobal), tokenArr[0].attribute.dString->string);
-        DS_appendString(getCode(isGlobal), "\n");
+        CODEcheckInitVar(dString, tokenArr[0].attribute.dString->string, false, tokenArr[0].rowNumber);
+        DS_appendString(dString, "PUSHS LF@");
+        DS_appendString(dString, tokenArr[0].attribute.dString->string);
+        DS_appendString(dString, "\n");
     }
 
     if (ruleUsed == 1)
     {
         // E => INT
-        DS_appendString(getCode(isGlobal), "PUSHS int@");
+        DS_appendString(dString, "PUSHS int@");
         char *int_string;
         formatString2string(int_string, "%d", tokenArr[0].attribute.intV);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
+        DS_appendString(dString, int_string);
+        DS_appendString(dString, "\n");
         free(int_string);
     }
 
     if (ruleUsed == 2)
     {
         // E => FLOAT
-        DS_appendString(getCode(isGlobal), "PUSHS float@");
+        DS_appendString(dString, "PUSHS float@");
         char *float_string;
         formatString2string(float_string, "%a", tokenArr[0].attribute.doubleV);
-        DS_appendString(getCode(isGlobal), float_string);
-        DS_appendString(getCode(isGlobal), "\n");
+        DS_appendString(dString, float_string);
+        DS_appendString(dString, "\n");
         free(float_string);
     }
 
     if (ruleUsed == 3)
     {
         // E => STRING
-        DS_appendString(getCode(isGlobal), "PUSHS string@");
-        DS_appendString(getCode(isGlobal), tokenArr[0].attribute.dString->string);
-        DS_appendString(getCode(isGlobal), "\n");
+        DS_appendString(dString, "PUSHS string@");
+        DS_appendString(dString, tokenArr[0].attribute.dString->string);
+        DS_appendString(dString, "\n");
     }
 
     if (ruleUsed == 4)
@@ -824,42 +797,41 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
     if (ruleUsed == 5)
     {
         // E => NULL
-        DS_appendString(getCode(isGlobal), "PUSHS nil@nil\n");
+        DS_appendString(dString, "PUSHS nil@nil\n");
     }
 
     if (ruleUsed > 5 && ruleUsed < 10)
     {
-        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
-        DS_appendString(getCode(isGlobal), "CALL _isValue\n");
+        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "CALL _isValue\n");
         switch (ruleUsed)
         {
         case 6:
-            DS_appendString(getCode(isGlobal), "ADDS\n");
+            DS_appendString(dString, "ADDS\n");
             break;
         case 7:
-            DS_appendString(getCode(isGlobal), "SUBS\n");
+            DS_appendString(dString, "SUBS\n");
             break;
         case 8:
-            DS_appendString(getCode(isGlobal), "MULS\n");
+            DS_appendString(dString, "MULS\n");
             break;
         case 9:
-            DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-            DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-            DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
-            DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-            DS_appendString(getCode(isGlobal), "POPS TF@a\n");
-            DS_appendString(getCode(isGlobal), "PUSHFRAME\n");
-            CODEconvert2Type(getCode(isGlobal),"LF@a",'f');
-            CODEconvert2Type(getCode(isGlobal),"LF@b",'f');
-            DS_appendString(getCode(isGlobal), "PUSHS LF@a\n");
-            DS_appendString(getCode(isGlobal), "PUSHS LF@b\n");
-            DS_appendString(getCode(isGlobal), "DIVS\n");
-            DS_appendString(getCode(isGlobal), "POPFRAME\n");
+            DS_appendString(dString, "CREATEFRAME\n");
+            DS_appendString(dString, "DEFVAR TF@a\n");
+            DS_appendString(dString, "DEFVAR TF@b\n");
+            DS_appendString(dString, "POPS TF@b\n");
+            DS_appendString(dString, "POPS TF@a\n");
+            DS_appendString(dString, "PUSHFRAME\n");
+            CODEconvert2Type(dString,"LF@a",'f');
+            CODEconvert2Type(dString,"LF@b",'f');
+            DS_appendString(dString, "PUSHS LF@a\n");
+            DS_appendString(dString, "PUSHS LF@b\n");
+            DS_appendString(dString, "DIVS\n");
+            DS_appendString(dString, "POPFRAME\n");
             break;
         default:
             break;
         }
-
     }
 
     if (ruleUsed == 10)
@@ -871,9 +843,9 @@ DEFVAR TF@b\n\
 POPS TF@b\n\
 POPS TF@a\n\
 PUSHFRAME\n";
-    DS_appendString(getCode(isGlobal), code);
-    CODEconvert2Type(getCode(isGlobal),"LF@a",'s');
-    CODEconvert2Type(getCode(isGlobal),"LF@b",'s');
+    DS_appendString(dString, code);
+    CODEconvert2Type(dString,"LF@a",'s');
+    CODEconvert2Type(dString,"LF@b",'s');
     code ="\
 PUSHS LF@a\n\
 PUSHS LF@b\n\
@@ -881,60 +853,63 @@ CALL _isString\n\
 POPFRAME\n\
 DEFVAR TF@res\n\
 CONCAT TF@res TF@a TF@b\n\
-PUSHS TF@res\n\
-        ";
-    DS_appendString(getCode(isGlobal), code);
+PUSHS TF@res\n";
+    DS_appendString(dString, code);
     }
 
     if (ruleUsed == 12)
     {
         // E => E === E
-
-        DS_appendString(getCode(isGlobal), "CALL _isSameType\n");
-        DS_appendString(getCode(isGlobal), "EQS\n");
+        DS_appendString(dString, "CALL _isSameType\n");
+        DS_appendString(dString, "EQS\n");
     }
 
     if (ruleUsed == 13)
     {
         // E => E !== E
-        DS_appendString(getCode(isGlobal), "CALL _isSameType\n");
-        DS_appendString(getCode(isGlobal), "EQS\n");
-        DS_appendString(getCode(isGlobal), "NOTS\n");
+        DS_appendString(dString, "CALL _isSameType\n");
+        DS_appendString(dString, "EQS\n");
+        DS_appendString(dString, "NOTS\n");
     }
 
     if (ruleUsed == 14)
     {
         // E => E < E
-        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
-        DS_appendString(getCode(isGlobal), "LTS\n");
+        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "LTS\n");
     }
 
     if (ruleUsed == 15)
     {
         // E => E > E
-        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
-        DS_appendString(getCode(isGlobal), "GTS\n");
+        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "GTS\n");
     }
 
     if (ruleUsed == 16)
     {
         // E => E <= E
-        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
-        DS_appendString(getCode(isGlobal), "GTS\n");
-        DS_appendString(getCode(isGlobal), "NOTS\n");
+        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "GTS\n");
+        DS_appendString(dString, "NOTS\n");
     }
 
     if (ruleUsed == 17)
     {
         // E => E >=  E
-        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
-        DS_appendString(getCode(isGlobal), "LTS\n");
-        DS_appendString(getCode(isGlobal), "NOTS\n");
+        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "LTS\n");
+        DS_appendString(dString, "NOTS\n");
     }
 }
 
-// read, write + zadani str. 10, udelat: ulozit do symtable, generovat kod
-int CODEbuiltInFunc(DynamicString *dString)
+/**
+ * @brief Generates code for built-in functions and utility functions. \n
+ * Built-in: write, readi, readf, reads, floatval, intval, strval, strlen, substring, ord, chr
+ * Utility: _convert2BiggestType, _isString, _isValue, _isSameType
+ * @param dString Dynamic string to append the code to
+ */
+void CODEbuiltInFunc(DynamicString *dString)
 {
     char *code = "\
 .IFJcode22\n\
@@ -1223,7 +1198,7 @@ RETURN\n\
 \n";
     DS_appendString(dString, code);
 
-//convert2BiggestType
+//_convert2BiggestType
 code = "\
 ######convert2BiggestType######\n\
 LABEL _convert2BiggestType\n\
@@ -1276,11 +1251,11 @@ PUSHS TF@a\n\
 PUSHS TF@b\n\
 CREATEFRAME\n\
 RETURN\n";
-DS_appendString(dString, code);
+    DS_appendString(dString, code);
 
-//isString
+//_isString
 code = "\
-######isStringe######\n\
+######isString######\n\
 LABEL _isString\n\
 CREATEFRAME\n\
 DEFVAR TF@a\n\
@@ -1296,9 +1271,9 @@ DPRINT string@Operand\\032has\\032to\\032be\\032a\\032string!\\010\n\
 EXIT int@7\n\
 CREATEFRAME\n\
 RETURN\n";
-DS_appendString(dString, code);
+    DS_appendString(dString, code);
 
-//isValue
+//_isValue
 code = "\
 ######isValue######\n\
 LABEL _isValue\n\
@@ -1316,9 +1291,9 @@ DPRINT string@Operand\\032has\\032to\\032be\\032a\\032value!\\010\n\
 EXIT int@7\n\
 CREATEFRAME\n\
 RETURN\n";
-DS_appendString(dString, code);
+    DS_appendString(dString, code);
 
-//isSameType
+//_isSameType
 code = "\
 ######isSameType######\n\
 LABEL _isSameType\n\
@@ -1341,6 +1316,5 @@ PUSHS bool@true\n\
 PUSHS bool@false\n\
 CREATEFRAME\n\
 RETURN\n";
-DS_appendString(dString, code);
-    return 0;
+    DS_appendString(dString, code);
 }
