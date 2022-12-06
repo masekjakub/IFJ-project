@@ -489,7 +489,7 @@ JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
 
     codeFormat = "\
 WRITE string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
-EXIT int@6\n\
+EXIT int@4\n\
 LABEL _rightReturnType%d\n\
 PUSHS TF@retVal\n\
 POPFRAME\n\
@@ -523,7 +523,7 @@ RETURN\n\n\
         char *codeFormat = "\
 #CODEfuncDefEnd\n\
 WRITE string@No\\032return\\032in\\032non-void\\032function\\032\"%s\"!\\010\n\
-EXIT int@6\n\n\
+EXIT int@4\n\n\
 "; //, funId
         formatString2string(code, codeFormat, funId);
         DS_appendString(dString, code);

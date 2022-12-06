@@ -1084,7 +1084,7 @@ ErrorType ruleReturn()
     }
     else
     {
-        code = "POPFRAME\nRETURN\n";
+        code = "PUSHS nil@nil\nPOPFRAME\nRETURN\n";
         DS_appendString(getCode(false), code);
     }
 
