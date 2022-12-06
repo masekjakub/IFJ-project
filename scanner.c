@@ -424,6 +424,7 @@ Token getToken(){
                 while (1){
                     // Checks if c is \, if it is, store it and store next char in case, that c = "
                     if (isspace(c) || c == '\\'){
+                        // " "
                         if (c == 32){
                             DS_appendString(dynamicString, "\\032");
                         }
@@ -508,6 +509,13 @@ Token getToken(){
                             continue;
                         }
                     }
+                    // "$"
+                    else if(c == 36){
+                        fprintf(stderr, "Wrong string on line %d!\nExpected: \"\\$\"!\n", token.rowNumber);
+                        token.type = TYPE_LEXERR;
+                        DS_dispose(dynamicString);
+                        return token;
+                    } 
                     else if (c != 34){
                         DS_append(dynamicString, c);
                     }
