@@ -11,6 +11,7 @@ int CODEbuiltInFunc(DynamicString *);
 int callFunc();
 int CODEfuncDef(DynamicString *, char *);
 int CODEparam(DynamicString *, char *);
+int CODEpopParam(DynamicString *, char *, char);
 int CODEfuncReturn(DynamicString *, char, int);
 int CODEfuncDefEnd(DynamicString *, char *, bool);
 int CODEfuncCall(DynamicString *,Token,int);

@@ -366,6 +366,7 @@ PUSHS float@%a\n\
     return 0;
 }
 
+//udelat: unused?
 int CODEpopValue(DynamicString *dString, char *varName, bool isGlobalFrame)
 {
     char *codeFormat;
@@ -393,6 +394,83 @@ POPS LF@%s\n\
     return 0;
 }
 
+int CODEparam(DynamicString *dString, char *paramName)
+{
+    char *codeFormat = "\
+#CODEparam\n\
+DEFVAR LF@%s\n\
+"; //, paramName
+
+    char *code = NULL;
+    formatString2string(code, codeFormat, paramName);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
+int CODEpopParam(DynamicString *dString, char *paramName, char paramType)
+{
+    static int popValueCount = 0;
+    popValueCount++;
+
+    char *codeFormat;
+    char *code = NULL;
+
+    codeFormat = "\
+#CODEpopParam\n\
+POPS LF@%s\n\
+CREATEFRAME\n\
+DEFVAR TF@paramType\n\
+TYPE TF@paramType LF@%s\n\
+"; //, paramName,paramName
+
+    formatString2string(code, codeFormat, paramName,paramName);
+    DS_appendString(dString, code);
+    free(code);
+
+    if(!isLower(paramType)){
+        codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@nil\n"; //, popValueCount
+        formatString2string(code, codeFormat, popValueCount);
+        DS_appendString(dString, code);
+        free(code);
+
+        paramType += 32; //Convert to lowercase
+    }
+
+    switch (paramType)
+    {
+    case 'i':
+        codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@int\n"; //, popValueCount
+        break;
+    case 'f':
+        codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@float\n"; //, popValueCount
+        break;
+    case 's':
+        codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@string\n"; //, popValueCount
+        break;
+    default:
+        fprintf(stderr,"Error calling CODEpopParam!\n");
+        exit(ERR_INTERN);
+        break;
+    }
+    formatString2string(code, codeFormat, popValueCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    codeFormat = "\
+DPRINT string@Wrong\\032type\\032of\\032argument\\032%s\\032in\\032function\\032call!\n\
+EXIT int@4\n\
+LABEL _popParamRightType%d\n\
+"; //, paramName,popValueCount
+
+    formatString2string(code, codeFormat, paramName,popValueCount);
+    DS_appendString(dString, code);
+    free(code);
+
+    return 0;
+}
+
 int CODEfuncDef(DynamicString *dString, char *functionName)
 {
     char *codeFormat = "\
@@ -407,21 +485,6 @@ PUSHFRAME\n\
     formatString2string(code, codeFormat, functionName, functionName);
     DS_appendString(dString, code);
     free(code);
-    return 0;
-}
-
-int CODEparam(DynamicString *dString, char *paramName)
-{
-    char *codeFormat = "\
-#CODEparam\n\
-DEFVAR LF@%s\n\
-"; //, paramName
-
-    char *code = NULL;
-    formatString2string(code, codeFormat, paramName);
-    DS_appendString(dString, code);
-    free(code);
-
     return 0;
 }
 
@@ -565,6 +628,7 @@ PUSHFRAME\n";
         DS_appendString(dString, "PUSHS nil@nil\n");
         return 0;
     }
+    return 0;
 }
 
 /**
