@@ -3,7 +3,7 @@
  * @authors Martin Zelenák, Jakub Mašek, Vojta Kuchař
  * @brief Functions for generating large chunks of IFJcode22 code
  * @version 1.0
- * @date 2022-12-06
+ * @date 2022-11-06
  */
 
 #include "codeGenerator.h"

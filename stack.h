@@ -1,12 +1,9 @@
 /**
  * @file stack.h
  * @author Vojtěch Kuchař
- * @brief Stack header file
+ * @brief Header file for stack.c
  * @version 1.0
  * @date 2022-10-28
- *
- * @copyright Copyright (c) 2022
- *
  */
 #ifndef _IFJ_STACK
 #define _IFJ_STACK
@@ -17,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+//Structure representing stack
 typedef struct
 {
     Token *tokenArray;

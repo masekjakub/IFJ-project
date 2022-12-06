@@ -123,7 +123,7 @@ void ST_freeTable(Symtable *table){
  */
 void ST_expand(Symtable *table){
     //EXPANDING
-    unsigned int newSize = table->size * 2; //TODO Expand size to the next prime number
+    unsigned int newSize = table->size * 2;
     table->items = (STItem **)realloc(table->items, newSize * sizeof(STItem *));
     if(table->items == NULL){
         exit(ERR_INTERN);

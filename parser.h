@@ -1,12 +1,9 @@
 /**
  * @file parser.h
- * @author Jakub Mašek
+ * @author Jakub Mašek, Martin Zelenák
  * @brief parser header file
  * @version 0.1
- * @date 27-10-2022
- *
- * @copyright Copyright (c) 2022
- *
+ * @date 2022-10-16
  */
 //////////////////////////
 #define scanner // use scanner
@@ -32,6 +29,8 @@ typedef enum
     N  // none
 } precTableSymbols;
 
+
+//Struct type representing final string of generated code
 typedef struct
 {
     //String of generated code
@@ -44,7 +43,7 @@ typedef struct
 } Code;
 
 
-// rules funcs
+// Functions representing LL-Grammar rules
 ErrorType exprAnal();
 ErrorType ruleProg();
 ErrorType ruleStatList(bool);
@@ -60,7 +59,7 @@ ErrorType ruleArgs2();
 ErrorType ruleReturn();
 ErrorType functionCallCheckAndProcess();
 
-// to use in rule functions
+// Utility functions
 Token newToken(int);
 DynamicString *getCode(int);
 DynamicString **getCodePtr(int);
@@ -68,7 +67,7 @@ Code *getCodeStruct(int);
 Symtable *getTable(int);
 void makeError();
 
-// other
+// Main parser function
 #ifndef scanner
 int parser(Token *);
 #else

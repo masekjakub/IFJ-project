@@ -4,9 +4,6 @@
  * @brief Implementation of stack
  * @version 1.0
  * @date 2022-10-28
- *
- * @copyright Copyright (c) 2022
- *
  */
 
 #include "stack.h"
@@ -14,7 +11,7 @@
 /**
  * @brief Initializes empty stack of tokens.
  *
- * @return Stack*
+ * @return Ptr to initialized stack
  */
 Stack *STACK_init()
 {
@@ -27,9 +24,8 @@ Stack *STACK_init()
 /**
  * @brief Inserts one Token at the of stack.
  *
- * @param stack
- * @param token
- * @return Stack*
+ * @param stack Stack to push to
+ * @param token Token to push
  */
 void STACK_push(Stack *stack, Token token)
 {
@@ -55,7 +51,7 @@ void STACK_push(Stack *stack, Token token)
 /**
  * @brief Pops stack (from the top).
  *
- * @param stack
+ * @param stack Statck to pop from
  */
 void STACK_pop(Stack *stack)
 {
@@ -69,7 +65,7 @@ void STACK_pop(Stack *stack)
 /**
  * @brief Pops all tokens in stack.
  *
- * @param stack
+ * @param stack Stack to pop from
  */
 void STACK_popAll(Stack *stack)
 {
@@ -83,7 +79,7 @@ void STACK_popAll(Stack *stack)
 /**
  * @brief Disposes the stack and frees memory used by stack.
  *
- * @param stack
+ * @param stack Stack to dispose
  */
 void STACK_dispose(Stack *stack)
 {
@@ -95,7 +91,7 @@ void STACK_dispose(Stack *stack)
 /**
  * @brief Returns 1 if stack is empty and 0 if not.
  *
- * @param stack
+ * @param stack Stack to check
  */
 int STACK_isEmpty(Stack *stack)
 {
@@ -110,8 +106,8 @@ int STACK_isEmpty(Stack *stack)
  * @brief Returns pointer of token on top od the stack.
  * In case of empty stack function returns NULL.
  *
- * @param stack
- * @return Token*
+ * @param stack Stack to get top token from
+ * @return Ptr to the token on top of stack
  */
 Token *STACK_top(Stack *stack)
 {
@@ -126,8 +122,8 @@ Token *STACK_top(Stack *stack)
  * @brief Returns pointer of token from the bottom od the stack.
  * In case of empty stack function returns NULL.
  *
- * @param stack
- * @return Token*
+ * @param stack Stack to get bottom token from
+ * @return Ptr to the token on bottom of stack
  */
 Token *STACK_bottom(Stack *stack)
 {
@@ -141,7 +137,7 @@ Token *STACK_bottom(Stack *stack)
 /**
  * @brief Pops stack from bottom.
  *
- * @param stack
+ * @param stack Stack to pop from
  */
 void STACK_popBottom(Stack *stack)
 {

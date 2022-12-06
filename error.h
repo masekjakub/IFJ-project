@@ -1,3 +1,11 @@
+/**
+ * @file error.h
+ * @author Vojta Kuchař
+ * @brief Contains all defined error return codes
+ * @version 1.0
+ * @date 2022-10-06
+ */
+
 #ifndef _IFJ_ERROR
 #define _IFJ_ERROR
 

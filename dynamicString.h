@@ -1,9 +1,9 @@
 /**
  * @file dynamicString.h
- * @author Vojtěch Kuchař, Martin Zelenák(DS_insertString)
+ * @author Vojtěch Kuchař, Martin Zelenák
  * @brief Dynamic string header file
  * @version 1.0
- * @date 2022-10-28
+ * @date 2022-10-15
  *
  * @copyright Copyright (c) 2022
  *

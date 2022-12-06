@@ -1,6 +1,6 @@
 /**
  * @file dynamicString.c
- * @author Vojtěch Kuchař, Martin Zelenák(DS_insertString)
+ * @author Vojtěch Kuchař, Martin Zelenák
  * @brief Functions operating dynamic string
  * @version 1.0
  * @date 2022-10-15

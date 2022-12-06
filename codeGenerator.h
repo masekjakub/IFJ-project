@@ -1,8 +1,14 @@
+/**
+ * @file codeGenerator.h
+ * @authors Martin Zelenák, Jakub Mašek, Vojta Kuchař
+ * @brief Header file for codeGenerator.c
+ * @version 1.0
+ * @date 2022-11-06
+ */
 
 #ifndef _IFJ_CG
 #define _IFJ_CG
 
-#include "stack.h"
 #include "parser.h"
 #include <string.h>
 

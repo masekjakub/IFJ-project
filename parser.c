@@ -1,12 +1,9 @@
 /**
  * @file parser.c
  * @authors Jakub Mašek, Martin Zelenák
- * @brief parser for IFJ22 translator
- * @version 0.1
- * @date 16-10-2022
- *
- * @copyright Copyright (c) 2022
- *
+ * @brief Parser for IFJ22 translator
+ * @version 1.0
+ * @date 2022-10-16
  */
 #include "parser.h"
 #define isKeyword(TOKEN, KEYWORD) TOKEN.attribute.keyword == KEYWORD
@@ -699,19 +696,6 @@ ErrorType ruleStat()
     return err;
 }
 
-/**
- * @brief identificator rule
- *
- * @return ErrorType
- */
-/* udelat: kontrola inicializace
- */
-ErrorType ruleId()
-{
-    ErrorType err = 0;
-
-    return err;
-}
 
 /**
  * @brief function definition rule
