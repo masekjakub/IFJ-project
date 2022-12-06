@@ -433,8 +433,6 @@ Token getToken(){
                             switch (c){
                                 case 34:
                                     DS_appendString(dynamicString, "\\034");        // "
-                                    c = getc(source);
-                                    continue;
                                 break;
                                 // TODO make tests for it
                                 case 36:
@@ -506,6 +504,8 @@ Token getToken(){
                                 default:
                                 break;
                             }
+                            c = getc(source);
+                            continue;
                         }
                     }
                     else if (c != 34){
@@ -517,7 +517,7 @@ Token getToken(){
                     }
                     // Then repeat it until end of string "
                     if (c == '"'){
-                        printf("\n%s\n", DS_string(dynamicString));
+                        //printf("\n%s\n", DS_string(dynamicString));
                         token.type = TYPE_STRING;
                         token.attribute.dString = dynamicString;
                         return token;
