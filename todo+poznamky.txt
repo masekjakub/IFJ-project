@@ -5,7 +5,7 @@ dokumentace
 generování výrazů
 builtin funkce
 empty expr v if, while
-
+concat null null
 
 NAVOD NA SPOUSTENI MAIN:
 parser.h:

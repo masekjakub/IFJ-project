@@ -1194,6 +1194,7 @@ DEFVAR LF@ordV\n\
 POPS LF@ordV\n\
 JUMPIFNEQ _%%ordRetChar LF@ordV string@\n\
 PUSHS int@0\n\
+POPFRAME\n\
 RETURN\n\
 LABEL _%%ordRetChar\n\
 STRI2INT LF@ordV LF@ordV int@0\n\

@@ -1,3 +1,5 @@
+
+a
 .IFJcode22
 JUMP _main
 
@@ -6,14 +8,12 @@ LABEL write
 TYPE LF@writetype LF@tmpwrite
 JUMPIFEQ _writeempty LF@writetype string@nil
 WRITE LF@tmpwrite
-PUSHS nil@nil
 POPFRAME
 CREATEFRAME
 RETURN
 #EMPTY#
 LABEL _writeempty
 WRITE string@
-PUSHS nil@nil
 POPFRAME
 CREATEFRAME
 RETURN
@@ -140,6 +140,91 @@ PUSHS LF@strval
 POPFRAME
 RETURN
 
+######STRLEN######
+LABEL strlen
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@string
+POPS LF@string
+DEFVAR LF@strlen
+STRLEN LF@strlen LF@string
+PUSHS LF@strlen
+POPFRAME
+RETURN
+
+######SUBSTRING######
+LABEL substring
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@j
+POPS LF@j
+DEFVAR LF@i
+POPS LF@i
+DEFVAR LF@string
+POPS LF@string
+DEFVAR LF@done
+#Check NULL return
+LT LF@done LF@i int@0
+JUMPIFEQ _substringIsNull LF@done bool@true
+LT LF@done LF@j int@0
+JUMPIFEQ _substringIsNull LF@done bool@true
+GT LF@done LF@i LF@j
+JUMPIFEQ _substringIsNull LF@done bool@true
+DEFVAR LF@stringlen
+STRLEN LF@stringlen LF@string
+LT LF@done LF@i LF@stringlen
+JUMPIFNEQ _substringIsNull LF@done bool@true #NOT i < strlen
+GT LF@done LF@j LF@stringlen
+JUMPIFEQ _substringIsNull LF@done bool@true
+JUMP _substringNotNull
+LABEL _substringIsNull
+PUSHS nil@nil
+POPFRAME
+RETURN
+LABEL _substringNotNull
+#Create substring
+DEFVAR LF@retString
+MOVE LF@retString string@
+DEFVAR LF@curChar
+LABEL _substringNextChar #While i < j
+LT LF@done LF@i LF@j
+JUMPIFNEQ _substringEnd LF@done bool@true # NOT i < j
+GETCHAR LF@curChar LF@string LF@i
+CONCAT LF@retString LF@retString LF@curChar
+ADD LF@i LF@i int@1
+JUMP _substringNextChar
+LABEL _substringEnd
+PUSHS LF@retString
+POPFRAME
+RETURN
+
+######ORD######
+LABEL ord
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@ordV
+POPS LF@ordV
+JUMPIFNEQ _%%ordRetChar LF@ordV string@
+PUSHS int@0
+POPFRAME
+RETURN
+LABEL _%%ordRetChar
+STRI2INT LF@ordV LF@ordV int@0
+PUSHS LF@ordV
+POPFRAME
+RETURN
+
+######CHR######
+LABEL chr
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@chrV
+POPS LF@chrV
+INT2CHAR LF@chrV LF@chrV
+PUSHS LF@chrV
+POPFRAME
+RETURN
+
 ######convert2BiggestType######
 LABEL _convert2BiggestType
 CREATEFRAME
@@ -150,13 +235,20 @@ POPS TF@a
 DEFVAR TF@atype
 DEFVAR TF@btype
 TYPE TF@atype TF@a
+TYPE TF@btype TF@b
 JUMPIFNEQ _aNotNil TF@atype string@nil
 MOVE TF@a int@0
+TYPE TF@atype TF@a
+JUMPIFNEQ _aNotNil TF@btype string@string
+MOVE TF@a string@
 TYPE TF@atype TF@a
 LABEL _aNotNil
 TYPE TF@btype TF@b
 JUMPIFNEQ _bNotNil TF@btype string@nil
 MOVE TF@b int@0
+TYPE TF@btype TF@b
+JUMPIFNEQ _bNotNil TF@atype string@string
+MOVE TF@b string@
 TYPE TF@btype TF@b
 LABEL _bNotNil
 JUMPIFEQ _sameType TF@atype TF@btype
@@ -165,7 +257,7 @@ JUMPIFEQ _convToString TF@btype string@string
 JUMPIFEQ _bConvToFloat TF@atype string@float
 JUMPIFEQ _aConvToFloat TF@btype string@float
 LABEL _convToString
-WRITE string@Implicit\032convesion\032to\032string\032not\032supported!\010
+DPRINT string@Implicit\032convesion\032to\032string\032not\032supported!\010
 EXIT int@7
 JUMP _sameType
 LABEL _aConvToFloat
@@ -179,116 +271,80 @@ PUSHS TF@a
 PUSHS TF@b
 CREATEFRAME
 RETURN
-######f######
-#CODEfuncDef
-LABEL f
-CREATEFRAME
-PUSHFRAME
-#CODEparam
-DEFVAR LF@$v
-#CODEpopValue
-POPS LF@$v
-PUSHS float@0x1p+0
-PUSHS string@as
-CALL _convert2BiggestType
-EQS
-NOTS
-#CODEdefVar
-DEFVAR LF@%if_cond1
-#CODEifStart
-POPS LF@%if_cond1
-#CODEconvert2Type
-CREATEFRAME
-DEFVAR TF@%convType4
-TYPE TF@%convType4 LF@%if_cond1
-JUMPIFEQ _convInt2Bool4 TF@%convType4 string@int
-JUMPIFEQ _convFloat2Bool4 TF@%convType4 string@float
-JUMPIFEQ _convString2Bool4 TF@%convType4 string@string
-JUMPIFEQ _convNil2Bool4 TF@%convType4 string@nil
-JUMP _noConv4
-
-LABEL _convInt2Bool4
-JUMPIFNEQ _convInt2Bool4_true LF@%if_cond1 int@0
-MOVE LF@%if_cond1 bool@false
-JUMP _noConv4
-LABEL _convInt2Bool4_true
-MOVE LF@%if_cond1 bool@true
-JUMP _noConv4
-
-LABEL _convFloat2Bool4
-JUMPIFNEQ _convFloat2Bool4_true LF@%if_cond1 float@0x0p+0
-MOVE LF@%if_cond1 bool@false
-JUMP _noConv4
-LABEL _convFloat2Bool4_true
-MOVE LF@%if_cond1 bool@true
-JUMP _noConv4
-
-LABEL _convString2Bool4
-JUMPIFEQ _convString2Bool4_false LF@%if_cond1 string@
-JUMPIFEQ _convString2Bool4_false LF@%if_cond1 string@0
-MOVE LF@%if_cond1 bool@true
-JUMP _noConv4
-LABEL _convString2Bool4_false
-MOVE LF@%if_cond1 bool@false
-JUMP _noConv4
-
-LABEL _convNil2Bool4
-MOVE LF@%if_cond1 bool@false
-LABEL _noConv4
-
-JUMPIFEQ _else1 LF@%if_cond1 bool@false
-PUSHS string@(null)\010
-#CODEcallWrite
-CREATEFRAME
-DEFVAR TF@tmpwrite
-DEFVAR TF@writetype
-POPS TF@tmpwrite
-PUSHFRAME
-CALL write
-POPS GF@void
-#CODEelse
-JUMP _endif1
-LABEL _else1
-CREATEFRAME
-DEFVAR TF@$vType
-TYPE TF@$vType LF@$v
-JUMPIFNEQ _varInitOk1 TF@$vType string@
-WRITE string@Variable\032$v\032is\032undefined\032on\032line\0328!\010
-EXIT int@5
-LABEL _varInitOk1
-CREATEFRAME
-PUSHS LF@$v
-PUSHS string@!\010
-#CODEcallWrite
-CREATEFRAME
-DEFVAR TF@tmpwrite
-DEFVAR TF@writetype
-POPS TF@tmpwrite
-PUSHFRAME
-#CODEcallWrite
-CREATEFRAME
-DEFVAR TF@tmpwrite
-DEFVAR TF@writetype
-POPS TF@tmpwrite
-PUSHFRAME
-CALL write
-CALL write
-POPS GF@void
-#CODEifEnd
-LABEL _endif1
-#CODEfuncDefEnd
-PUSHS nil@nil
-POPFRAME
-RETURN
-
 ######MAIN######
 LABEL _main
 DEFVAR GF@void
 CREATEFRAME
 PUSHFRAME
-PUSHS nil@nil
+PUSHS string@a
+#CODEdefVar
+DEFVAR LF@$x
+#CODEassign
+POPS LF@$x
+CREATEFRAME
+DEFVAR TF@$xType
+TYPE TF@$xType LF@$x
+JUMPIFNEQ _varInitOk1 TF@$xType string@
+DPRINT string@Variable\032$x\032is\032undefined\032on\032line\0324!\010
+EXIT int@5
+LABEL _varInitOk1
+CREATEFRAME
+PUSHS LF@$x
 #CODEfuncCall
-CALL f
+CALL ord
+#CODEassign
+POPS LF@$x
+PUSHS string@
+#CODEdefVar
+DEFVAR LF@$y
+#CODEassign
+POPS LF@$y
+CREATEFRAME
+DEFVAR TF@$yType
+TYPE TF@$yType LF@$y
+JUMPIFNEQ _varInitOk2 TF@$yType string@
+DPRINT string@Variable\032$y\032is\032undefined\032on\032line\0326!\010
+EXIT int@5
+LABEL _varInitOk2
+CREATEFRAME
+PUSHS LF@$y
+#CODEfuncCall
+CALL ord
+#CODEassign
+POPS LF@$y
+CREATEFRAME
+DEFVAR TF@$xType
+TYPE TF@$xType LF@$x
+JUMPIFNEQ _varInitOk3 TF@$xType string@
+DPRINT string@Variable\032$x\032is\032undefined\032on\032line\0327!\010
+EXIT int@5
+LABEL _varInitOk3
+CREATEFRAME
+PUSHS LF@$x
+CREATEFRAME
+DEFVAR TF@$yType
+TYPE TF@$yType LF@$y
+JUMPIFNEQ _varInitOk4 TF@$yType string@
+DPRINT string@Variable\032$y\032is\032undefined\032on\032line\0327!\010
+EXIT int@5
+LABEL _varInitOk4
+CREATEFRAME
+PUSHS LF@$y
+#CODEcallWrite
+CREATEFRAME
+DEFVAR TF@tmpwrite
+DEFVAR TF@writetype
+POPS TF@tmpwrite
+PUSHFRAME
+#CODEcallWrite
+CREATEFRAME
+DEFVAR TF@tmpwrite
+DEFVAR TF@writetype
+POPS TF@tmpwrite
+PUSHFRAME
+CALL write
+PUSHS nil@nil
+CALL write
 POPS GF@void
 
 EXIT int@0
