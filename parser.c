@@ -32,15 +32,15 @@ Code functionsCode;           // Function def. program code
 Stack *notDefinedCalls;       // Stack of not defined function calls
 
 const int precTable[8][8] = {
-    {R, L, L, R, L, L, L, R},  // +
-    {R, R, L, R, L, L, L, R},  // *
+    {R, L, L, R, L, R, R, R},  // +
+    {R, R, L, R, L, R, R, R},  // *
     {L, L, L, E, L, L, L, N},  // (
     {R, R, N, R, N, R, R, R},  // )
     {R, R, N, R, N, R, R, R},  // id
     {L, L, L, R, L, N, R, R},  // comparison1 (< > <= >=)
     {L, L, L, R, L, L, N, R},  // comparison2 (=== !==)
     {L, L, L, N, L, L, L, N}}; // $
-                               // +  *  (  )  id c1 c2 $
+  // +  *  (  )  id c1 c2 $
 
 Token token, prevToken;
 

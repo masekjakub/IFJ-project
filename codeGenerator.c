@@ -488,7 +488,7 @@ JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
     }
 
     codeFormat = "\
-WRITE string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
+DPRINT string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
 EXIT int@4\n\
 LABEL _rightReturnType%d\n\
 PUSHS TF@retVal\n\
@@ -522,7 +522,7 @@ RETURN\n\n\
     {
         char *codeFormat = "\
 #CODEfuncDefEnd\n\
-WRITE string@No\\032return\\032in\\032non-void\\032function\\032\"%s\"!\\010\n\
+DPRINT string@No\\032return\\032in\\032non-void\\032function\\032\"%s\"!\\010\n\
 EXIT int@4\n\n\
 "; //, funId
         formatString2string(code, codeFormat, funId);
@@ -543,6 +543,11 @@ EXIT int@4\n\n\
  */
 int CODEcallWrite(DynamicString *dString, int argCount)
 {
+    if(argCount == 0){
+        DS_appendString(dString, "PUSHS nil@nil\n");
+        return 0;
+    }
+
     char *code = "\
 #CODEcallWrite\n\
 CREATEFRAME\n\
@@ -654,7 +659,7 @@ DEFVAR TF@%sType\n\
 
     codeFormat = "\
 JUMPIFNEQ _varInitOk%d TF@%sType string@\n\
-WRITE string@Variable\\032%s\\032is\\032undefined\\032on\\032line\\032%d!\\010\n\
+DPRINT string@Variable\\032%s\\032is\\032undefined\\032on\\032line\\032%d!\\010\n\
 EXIT int@5\n\
 LABEL _varInitOk%d\n\
 CREATEFRAME\n\
@@ -767,129 +772,22 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
         char *type[3];
         char *instruction[5];
 
+        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
         switch (ruleUsed)
         {
         case 6:
-            *type = "add";
-            *instruction = "ADDS\n";
+            DS_appendString(getCode(isGlobal), "ADDS\n");
             break;
         case 7:
-            *type = "sub";
-            *instruction = "SUBS\n";
+            DS_appendString(getCode(isGlobal), "SUBS\n");
             break;
         case 8:
-            *type = "mul";
-            *instruction = "MULS\n";
+            DS_appendString(getCode(isGlobal), "MULS\n");
             break;
         default:
             break;
         }
 
-        DS_appendString(getCode(isGlobal), "\n#");
-        DS_appendString(getCode(isGlobal), *type);
-        DS_appendString(getCode(isGlobal), "\n");
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
-
-        reType(tokenArr, isGlobal);
-
-        char *int_string;
-
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@a\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "POPS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@a\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@atype\n");
-        DS_appendString(getCode(isGlobal), "DEFVAR TF@btype\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@atype TF@a\n");
-        DS_appendString(getCode(isGlobal), "TYPE TF@btype TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _afloat");
-        DS_appendString(getCode(isGlobal), *type);
-
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _aint");
-        DS_appendString(getCode(isGlobal), *type);
-
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@atype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _afloat");
-        DS_appendString(getCode(isGlobal), *type);
-
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _can");
-        DS_appendString(getCode(isGlobal), *type);
-
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bint");
-        DS_appendString(getCode(isGlobal), *type);
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _bint");
-        DS_appendString(getCode(isGlobal), *type);
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-
-        DS_appendString(getCode(isGlobal), "JUMP _can");
-        DS_appendString(getCode(isGlobal), *type);
-
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _aint");
-        DS_appendString(getCode(isGlobal), *type);
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _can");
-        DS_appendString(getCode(isGlobal), *type);
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@int\n");
-
-        DS_appendString(getCode(isGlobal), "JUMPIFEQ _bfloat");
-        DS_appendString(getCode(isGlobal), *type);
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), " TF@btype string@float\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _bfloat");
-        DS_appendString(getCode(isGlobal), *type);
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), "POPS TF@b\n");
-        DS_appendString(getCode(isGlobal), "INT2FLOATS\n");
-        DS_appendString(getCode(isGlobal), "PUSHS TF@b\n");
-
-        DS_appendString(getCode(isGlobal), "LABEL _can");
-        DS_appendString(getCode(isGlobal), *type);
-        formatString2string(int_string, "%d", counter);
-        DS_appendString(getCode(isGlobal), int_string);
-        DS_appendString(getCode(isGlobal), "\n");
-
-        DS_appendString(getCode(isGlobal), *instruction);
-        DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
 
     if (ruleUsed == 9)
@@ -945,6 +843,22 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
         DS_appendString(getCode(isGlobal), "CREATEFRAME\n");
     }
 
+    if (ruleUsed == 10)
+    {
+        char *code ="\
+CALL _convert2BiggestType\n\
+CREATEFRAME\n\
+DEFVAR TF@a\n\
+DEFVAR TF@b\n\
+DEFVAR TF@res\n\
+POPS TF@a\n\
+POPS TF@b\n\
+CONCAT TF@res TF@b TF@a\n\
+PUSHS TF@res\n\
+        ";
+        DS_appendString(getCode(isGlobal), code);
+    }
+
     if (ruleUsed == 12)
     {
         // E => E === E
@@ -958,6 +872,36 @@ void CODEarithmetic(int ruleUsed, Token *tokenArr, Token endToken, int isGlobal)
         // E => E !== E
         DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
         DS_appendString(getCode(isGlobal), "EQS\n");
+        DS_appendString(getCode(isGlobal), "NOTS\n");
+    }
+
+    if (ruleUsed == 14)
+    {
+        // E => E < E
+        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
+        DS_appendString(getCode(isGlobal), "LTS\n");
+    }
+
+    if (ruleUsed == 15)
+    {
+        // E => E > E
+        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
+        DS_appendString(getCode(isGlobal), "GTS\n");
+    }
+
+    if (ruleUsed == 16)
+    {
+        // E => E <= E
+        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
+        DS_appendString(getCode(isGlobal), "GTS\n");
+        DS_appendString(getCode(isGlobal), "NOTS\n");
+    }
+
+    if (ruleUsed == 17)
+    {
+        // E => E >=  E
+        DS_appendString(getCode(isGlobal), "CALL _convert2BiggestType\n");
+        DS_appendString(getCode(isGlobal), "LTS\n");
         DS_appendString(getCode(isGlobal), "NOTS\n");
     }
 }
@@ -1108,7 +1052,7 @@ DS_appendString(dString, code);
 //strlen
 code = "\
 ######STRLEN######\n\
-LABEL _strlen\n\
+LABEL strlen\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@string\n\
@@ -1124,7 +1068,7 @@ RETURN\n\
 //substring
 code = "\
 ######SUBSTRING######\n\
-LABEL _substring\n\
+LABEL substring\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@j\n\
@@ -1178,7 +1122,7 @@ RETURN\n\
 //ord
 code = "\
 ######ORD######\n\
-LABEL _ord\n\
+LABEL ord\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@ordV\n\
@@ -1197,7 +1141,7 @@ RETURN\n\
 //chr
 code = "\
 ######CHR######\n\
-LABEL _chr\n\
+LABEL chr\n\
 CREATEFRAME\n\
 PUSHFRAME\n\
 DEFVAR LF@chrV\n\
@@ -1220,23 +1164,33 @@ POPS TF@b\n\
 POPS TF@a\n\
 DEFVAR TF@atype\n\
 DEFVAR TF@btype\n\
+\
 TYPE TF@atype TF@a\n\
+TYPE TF@btype TF@b\n\
 JUMPIFNEQ _aNotNil TF@atype string@nil\n\
 MOVE TF@a int@0\n\
 TYPE TF@atype TF@a\n\
+JUMPIFNEQ _aNotNil TF@btype string@string\n\
+MOVE TF@a string@\n\
+TYPE TF@atype TF@a\n\
 LABEL _aNotNil\n\
+\
 TYPE TF@btype TF@b\n\
 JUMPIFNEQ _bNotNil TF@btype string@nil\n\
 MOVE TF@b int@0\n\
 TYPE TF@btype TF@b\n\
+JUMPIFNEQ _bNotNil TF@atype string@string\n\
+MOVE TF@b string@\n\
+TYPE TF@btype TF@b\n\
 LABEL _bNotNil\n\
+\
 JUMPIFEQ _sameType TF@atype TF@btype\n\
 JUMPIFEQ _convToString TF@atype string@string\n\
 JUMPIFEQ _convToString TF@btype string@string\n\
 JUMPIFEQ _bConvToFloat TF@atype string@float\n\
 JUMPIFEQ _aConvToFloat TF@btype string@float\n\
 LABEL _convToString\n\
-WRITE string@Implicit\\032convesion\\032to\\032string\\032not\\032supported!\\010\n\
+DPRINT string@Implicit\\032convesion\\032to\\032string\\032not\\032supported!\\010\n\
 EXIT int@7\n\
 JUMP _sameType\n\
 LABEL _aConvToFloat\n\
