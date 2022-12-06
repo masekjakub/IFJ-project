@@ -895,10 +895,12 @@ ErrorType ruleParams()
         err = tmpErr;
 
     // Generate code for POPping param value in code
+    int paramTypeIndex = functionTypes->numOfChars-1; //Index of last param type (popping form behind)
     while (!STACK_isEmpty(paramStack))
     {
-        CODEpopValue(getCode(false), STACK_top(paramStack)->attribute.dString->string, false);
+        CODEpopParam(getCode(false), STACK_top(paramStack)->attribute.dString->string, functionTypes->string[paramTypeIndex]);
         STACK_pop(paramStack);
+        paramTypeIndex--;
     }
     STACK_dispose(paramStack);
 
