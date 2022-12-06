@@ -510,12 +510,16 @@ Token getToken(){
                         }
                     }
                     // "$"
-                    else if(c == 36){
+                    else if (c == 36){
                         fprintf(stderr, "Wrong string on line %d!\nExpected: \"\\$\"!\n", token.rowNumber);
                         token.type = TYPE_LEXERR;
                         DS_dispose(dynamicString);
                         return token;
                     } 
+                    // "#"
+                    else if (c == 35){
+                        DS_appendString(dynamicString, "\\035");
+                    }
                     else if (c != 34){
                         DS_append(dynamicString, c);
                     }
@@ -575,6 +579,34 @@ Token getToken(){
                                     if (isspace(c)){
                                         c = getc(source);
                                         continue;
+                                    }
+                                    // Skiping block commentary in declare strict types
+                                    if (c == '/'){
+                                        if ((c = getc(source)) == '*'){
+                                            while (1){
+                                                c = getc(source);
+                                                if (c == '\n'){
+                                                    rowNumber++;
+                                                    token.rowNumber = rowNumber;
+                                                }
+                                                else if (c == '*'){
+                                                    if ((c = getc(source)) == '/'){
+                                                        c = getc(source);
+                                                        break;
+                                                    }
+                                                    else if (c == EOF){
+                                                        fprintf(stderr, "Expected end of comment: \"*/\"!\n");
+                                                        token.type = TYPE_LEXERR;
+                                                        return token;
+                                                    }
+                                                    ungetc(c, source);
+                                                }
+                                            }
+                                            continue;
+                                        }
+                                        fprintf(stderr, "Unknown define of strict types on line %d!\nExpected: \"declare(strict_types=1)\"\n", token.rowNumber);
+                                        token.type = TYPE_LEXERR;
+                                        return token;
                                     }
                                     if (c == ')'){
                                         if (!strcmp(DS_string(dynamicString), "strict_types=1")){
