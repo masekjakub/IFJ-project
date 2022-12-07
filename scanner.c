@@ -488,19 +488,21 @@ Token getToken(){
                                             DS_appendString(dynamicString, DS_string(octNumber(tmpDynamicString)));
                                             DS_dispose(tmpDynamicString);
                                         }
+                                        // Wrong octal number => no conversion
                                         else{
                                             DS_appendString(dynamicString, DS_string(tmpDynamicString));
                                             DS_dispose(tmpDynamicString);
                                             continue;
                                         }
                                     } 
+                                    // Wrong octal number => no conversion
                                     else{
                                         DS_appendString(dynamicString, DS_string(tmpDynamicString));
                                         DS_dispose(tmpDynamicString);
                                         continue;
                                     }
                                 break;
-                                // back slash
+                                // Back slash
                                 case 92:
                                     DS_appendString(dynamicString, "\\092");       
                                 break;
@@ -527,6 +529,7 @@ Token getToken(){
                                             DS_appendString(dynamicString, DS_string(hexNumber(tmpDynamicString)));
                                             DS_dispose(tmpDynamicString);
                                         }
+                                        // Wrong hexadecimal number => no conversion
                                         else{
                                             DS_deleteChar(tmpDynamicString);
                                             DS_append(tmpDynamicString, tmpForX);
@@ -536,6 +539,7 @@ Token getToken(){
                                             continue;
                                         }
                                     }
+                                    // Wrong hexadecimal number => no conversion
                                     else{
                                         DS_append(tmpDynamicString, tmpForX);
                                         DS_appendString(dynamicString, DS_string(tmpDynamicString));
@@ -543,8 +547,9 @@ Token getToken(){
                                         continue;
                                     }
                                 break;
+                                // Lonely back slash
                                 default:
-                                    DS_append(dynamicString, '\\');
+                                    DS_appendString(dynamicString, "\\092");
                                     continue;
                                 break;
                             }
@@ -563,10 +568,11 @@ Token getToken(){
                     else if (c == 35){
                         DS_appendString(dynamicString, "\\035");
                     }
+                    // Dont save ", witch has no back slash before it, into string
                     else if (c != 34){
                         DS_append(dynamicString, c);
                     }
-                    // Condition due to space
+                    // Condition for this case: "\""
                     if (c != 34){
                         c = getc(source);
                     }
@@ -588,6 +594,7 @@ Token getToken(){
             case STATE_VAR:
                 DS_append(dynamicString, c);
                 c = getc(source);
+                // Variable can start only with alphanumeric chars or _
                 if (!isalpha(c) && c != '_'){
                     fprintf(stderr, "Variables in IFJ22 should begin with alphabetic character or underscore on line %d!\nFor examle: \"$a...\" or \"$A...\" or \"$_...\"\n", token.rowNumber);
                     ungetc(c, source);
@@ -597,7 +604,7 @@ Token getToken(){
                 while (1){
                     DS_append(dynamicString, c);
                     c = getc(source);
-                    // If character is not in set of characters for variable, stop and return token without the last read char, last char return back for next reading 
+                    // If character is not in set of characters for variable, stops and returns token without the last read char, last char return back for next reading 
                     if (!isalnum(c) && c != '_'){
                         token.type = TYPE_ID;
                         token.attribute.dString = dynamicString;
@@ -631,6 +638,7 @@ Token getToken(){
                                                     rowNumber++;
                                                     token.rowNumber = rowNumber;
                                                 }
+                                                // Checks end of block commentary
                                                 else if (c == '*'){
                                                     if ((c = getc(source)) == '/'){
                                                         c = getc(source);
@@ -716,6 +724,7 @@ Token getToken(){
             case STATE_FLOAT:
                 while (1){
                     if (isdigit(c) || c == 'e' || c == '.' || c == '-' || c == 'E' || c == '+'){
+                        // Checks right format of float for e, E and .
                         if (((c == 'e' || c == 'E') && wasE) || (c == '.' && wasDot)){
                             fprintf(stderr, "Wrong float number on line %d!\nSymbol . or character e can be used only once in float!\nExpected: 1.2 or 1.2e10 or 1.2e-10\n", token.rowNumber);
                             ungetc(c, source);
@@ -738,6 +747,7 @@ Token getToken(){
                         }
                         DS_append(dynamicString, c);
                         if (c == 'e' || c == 'E'){
+                            // Checks right format of float for -, +
                             if ((c = getc(source)) == '-' || c == '+'){
                                 int tmp = c;
                                 if (!isdigit(c = getc(source))){
@@ -749,6 +759,7 @@ Token getToken(){
                                 DS_append(dynamicString, tmp);
                                 continue;
                             }
+                            // After e or E must be digit
                             else if (!isdigit(c)){
                                 ungetc(c, source);
                                 fprintf(stderr, "Wrong float number in line %d!\nExpected number after e or E!\n", token.rowNumber);
@@ -761,7 +772,6 @@ Token getToken(){
                         }
                         c = getc(source);
                         if (c == '-' || c == '+'){
-                            //ungetc(c, source); TODO smazat pokud to nebude delat bordel
                             break;
                         }
                         continue;
