@@ -2,7 +2,7 @@
  * @file scanner.c
  * @author Filip Polomski
  * @brief scanner for IFJ22 translator
- * @version 0.1
+ * @version 1.0
  * @date 27-10-2022
  * 
  * @copyright Copyright (c) 2022
@@ -234,12 +234,6 @@ Token getToken(){
                     return token;
                 }
 
-                // MODULO
-                else if (c == '%'){
-                    token.type = TYPE_MOD;
-                    return token;
-                }
-
                 // MULTIPLICATION
                 else if (c == '*'){
                     token.type = TYPE_MUL;
@@ -367,7 +361,7 @@ Token getToken(){
                         return token;
                     }
                     ungetc(c, source);
-                    // If token is type !, return it
+                    // If token is type !, return it 
                     token.type = TYPE_NEG;
                     return token;
                 }
