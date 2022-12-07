@@ -31,7 +31,7 @@
 void CODEmain(DynamicString *dString)
 {
     DS_appendString(dString, "######MAIN######\n");
-    DS_appendString(dString, "LABEL _main\n");
+    DS_appendString(dString, "LABEL _&main\n");
     DS_appendString(dString, "DEFVAR GF@void\n");
     DS_appendString(dString, "CREATEFRAME\n");
     DS_appendString(dString, "PUSHFRAME\n");
@@ -68,15 +68,15 @@ TYPE TF@%%convType%d %s\n\
     {
     case 'i':
         codeFormat = "\
-JUMPIFEQ _convFloat2Int%d TF@%%convType%d string@float\n\
-JUMPIFEQ _convNil2Int%d TF@%%convType%d string@nil\n\
-JUMP _noConv%d\n\
+JUMPIFEQ _&convFloat2Int%d TF@%%convType%d string@float\n\
+JUMPIFEQ _&convNil2Int%d TF@%%convType%d string@nil\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convFloat2Int%d\n\
+LABEL _&convFloat2Int%d\n\
 FLOAT2INT %s %s\n\
-JUMP _noConv%d\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convNil2Int%d\n\
+LABEL _&convNil2Int%d\n\
 MOVE %s int@0\n\
 "; //, varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varName,varName,varNameNum,varNameNum,varName
 
@@ -88,38 +88,38 @@ MOVE %s int@0\n\
 
     case 'b':
         codeFormat = "\
-JUMPIFEQ _convInt2Bool%d TF@%%convType%d string@int\n\
-JUMPIFEQ _convFloat2Bool%d TF@%%convType%d string@float\n\
-JUMPIFEQ _convString2Bool%d TF@%%convType%d string@string\n\
-JUMPIFEQ _convNil2Bool%d TF@%%convType%d string@nil\n\
-JUMP _noConv%d\n\
+JUMPIFEQ _&convInt2Bool%d TF@%%convType%d string@int\n\
+JUMPIFEQ _&convFloat2Bool%d TF@%%convType%d string@float\n\
+JUMPIFEQ _&convString2Bool%d TF@%%convType%d string@string\n\
+JUMPIFEQ _&convNil2Bool%d TF@%%convType%d string@nil\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convInt2Bool%d\n\
-JUMPIFNEQ _convInt2Bool%d_true %s int@0\n\
+LABEL _&convInt2Bool%d\n\
+JUMPIFNEQ _&convInt2Bool%d_true %s int@0\n\
 MOVE %s bool@false\n\
-JUMP _noConv%d\n\
-LABEL _convInt2Bool%d_true\n\
+JUMP _&noConv%d\n\
+LABEL _&convInt2Bool%d_true\n\
 MOVE %s bool@true\n\
-JUMP _noConv%d\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convFloat2Bool%d\n\
-JUMPIFNEQ _convFloat2Bool%d_true %s float@0x0p+0\n\
+LABEL _&convFloat2Bool%d\n\
+JUMPIFNEQ _&convFloat2Bool%d_true %s float@0x0p+0\n\
 MOVE %s bool@false\n\
-JUMP _noConv%d\n\
-LABEL _convFloat2Bool%d_true\n\
+JUMP _&noConv%d\n\
+LABEL _&convFloat2Bool%d_true\n\
 MOVE %s bool@true\n\
-JUMP _noConv%d\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convString2Bool%d\n\
-JUMPIFEQ _convString2Bool%d_false %s string@\n\
-JUMPIFEQ _convString2Bool%d_false %s string@0\n\
+LABEL _&convString2Bool%d\n\
+JUMPIFEQ _&convString2Bool%d_false %s string@\n\
+JUMPIFEQ _&convString2Bool%d_false %s string@0\n\
 MOVE %s bool@true\n\
-JUMP _noConv%d\n\
-LABEL _convString2Bool%d_false\n\
+JUMP _&noConv%d\n\
+LABEL _&convString2Bool%d_false\n\
 MOVE %s bool@false\n\
-JUMP _noConv%d\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convNil2Bool%d\n\
+LABEL _&convNil2Bool%d\n\
 MOVE %s bool@false\n\
 "; /*, varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum
 ,varName,varName,varNameNum,varNameNum,varName,varNameNum,varNameNum,varNameNum,varName,varName,varNameNum,varNameNum
@@ -133,15 +133,15 @@ MOVE %s bool@false\n\
 
     case 'f':
         codeFormat = "\
-JUMPIFEQ _convInt2Float%d TF@%%convType%d string@int\n\
-JUMPIFEQ _convNil2Float%d TF@%%convType%d string@nil\n\
-JUMP _noConv%d\n\
+JUMPIFEQ _&convInt2Float%d TF@%%convType%d string@int\n\
+JUMPIFEQ _&convNil2Float%d TF@%%convType%d string@nil\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convInt2Float%d\n\
+LABEL _&convInt2Float%d\n\
 INT2FLOAT %s %s\n\
-JUMP _noConv%d\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convNil2Float%d\n\
+LABEL _&convNil2Float%d\n\
 MOVE %s float@0x0p+0\n\
 "; //, varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varNameNum,varName,varName,varNameNum,varNameNum,varName
         code = NULL;
@@ -152,12 +152,12 @@ MOVE %s float@0x0p+0\n\
 
     case 's':
         codeFormat = "\
-JUMPIFEQ _convNil2String%d TF@%%convType%d string@nil\n\
-JUMP _noConv%d\n\
+JUMPIFEQ _&convNil2String%d TF@%%convType%d string@nil\n\
+JUMP _&noConv%d\n\
 \n\
-LABEL _convNil2String%d\n\
+LABEL _&convNil2String%d\n\
 MOVE %s string@\n\
-JUMP _noConv%d\n\
+JUMP _&noConv%d\n\
 "; //, varNameNum,varNameNum,varNameNum,varNameNum,varName,varNameNum
         code = NULL;
         formatString2string(code, codeFormat, varNameNum, varNameNum, varNameNum, varNameNum, varName, varNameNum);
@@ -182,7 +182,7 @@ MOVE %s nil@nil\n\
 
     //End label
     codeFormat = "\
-LABEL _noConv%d\n\n\
+LABEL _&noConv%d\n\n\
 "; //, varNameNum
 
     code = NULL;
@@ -231,7 +231,7 @@ POPS LF@%%if_cond%d\n\
     CODEconvert2Type(dString, code, 'b');
 
     codeFormat = "\
-JUMPIFEQ _else%d LF@%%if_cond%d bool@false\n\
+JUMPIFEQ _&else%d LF@%%if_cond%d bool@false\n\
 "; //, ifCount,ifCount
 
     code = NULL;
@@ -250,8 +250,8 @@ void CODEelse(DynamicString *dString, int ifCount)
 {
     char *codeFormat = "\
 #CODEelse\n\
-JUMP _endif%d\n\
-LABEL _else%d\n\
+JUMP _&endif%d\n\
+LABEL _&else%d\n\
 ";
     char *code = NULL;
     formatString2string(code, codeFormat, ifCount, ifCount);
@@ -269,7 +269,7 @@ void CODEifEnd(DynamicString *dString, int ifCount)
 {
     char *codeFormat = "\
 #CODEifEnd\n\
-LABEL _endif%d\n\
+LABEL _&endif%d\n\
 ";
     char *code = NULL;
     formatString2string(code, codeFormat, ifCount);
@@ -303,7 +303,7 @@ void CODEwhileStart(DynamicString **dStringPtr, int whileCount, int lastUncondit
     free(code);
 
     codeFormat = "\
-LABEL _whileStart%d\n\
+LABEL _&whileStart%d\n\
 "; //, whileCount
 
     formatString2string(code, codeFormat, whileCount);
@@ -336,7 +336,7 @@ POPS LF@%%while_cond%d\n\
     CODEconvert2Type(dString, code, 'b');
 
     codeFormat = "\
-JUMPIFEQ _whileEnd%d LF@%%while_cond%d bool@false\n\
+JUMPIFEQ _&whileEnd%d LF@%%while_cond%d bool@false\n\
 "; //, whileCount,whileCount
 
     code = NULL;
@@ -357,8 +357,8 @@ void CODEwhileEnd(DynamicString *dString, int whileCount)
 {
     char *code = NULL;
     char *codeFormat = "\
-JUMP _whileStart%d\n\
-LABEL _whileEnd%d\n\
+JUMP _&whileStart%d\n\
+LABEL _&whileEnd%d\n\
 "; //, whileCount,whileCount
 
     formatString2string(code, codeFormat, whileCount, whileCount);
@@ -414,7 +414,7 @@ TYPE TF@paramType LF@%s\n\
 
     // Check parametr value type
     if(!isLower(paramType)){
-        codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@nil\n"; //, popValueCount
+        codeFormat = "JUMPIFEQ _&popParamRightType%d TF@paramType string@nil\n"; //, popValueCount
         formatString2string(code, codeFormat, popValueCount);
         DS_appendString(dString, code);
         free(code);
@@ -424,13 +424,13 @@ TYPE TF@paramType LF@%s\n\
     switch (paramType)
     {
     case 'i':
-        codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@int\n"; //, popValueCount
+        codeFormat = "JUMPIFEQ _&popParamRightType%d TF@paramType string@int\n"; //, popValueCount
         break;
     case 'f':
-        codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@float\n"; //, popValueCount
+        codeFormat = "JUMPIFEQ _&popParamRightType%d TF@paramType string@float\n"; //, popValueCount
         break;
     case 's':
-        codeFormat = "JUMPIFEQ _popParamRightType%d TF@paramType string@string\n"; //, popValueCount
+        codeFormat = "JUMPIFEQ _&popParamRightType%d TF@paramType string@string\n"; //, popValueCount
         break;
     default:
         fprintf(stderr,"Error calling CODEpopParam!\n");
@@ -444,7 +444,7 @@ TYPE TF@paramType LF@%s\n\
     codeFormat = "\
 DPRINT string@Wrong\\032type\\032of\\032argument\\032%s\\032in\\032function\\032call!\n\
 EXIT int@4\n\
-LABEL _popParamRightType%d\n\
+LABEL _&popParamRightType%d\n\
 "; //, paramName,popValueCount
 
     formatString2string(code, codeFormat, paramName,popValueCount);
@@ -502,7 +502,7 @@ TYPE TF@retValType TF@retVal\n\
     if (!isLower(returnType))
     {
         codeFormat = "\
-JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
+JUMPIFEQ _&rightReturnType%d TF@retValType string@nil\n\
 ";    //, returnNum
         code = NULL;
         formatString2string(code, codeFormat, returnNum);
@@ -516,17 +516,17 @@ JUMPIFEQ _rightReturnType%d TF@retValType string@nil\n\
     {
     case 'i':
         codeFormat = "\
-JUMPIFEQ _rightReturnType%d TF@retValType string@int\n\
+JUMPIFEQ _&rightReturnType%d TF@retValType string@int\n\
 "; //, returnNum
         break;
     case 'f':
         codeFormat = "\
-JUMPIFEQ _rightReturnType%d TF@retValType string@float\n\
+JUMPIFEQ _&rightReturnType%d TF@retValType string@float\n\
 "; //, returnNum
         break;
     case 's':
         codeFormat = "\
-JUMPIFEQ _rightReturnType%d TF@retValType string@string\n\
+JUMPIFEQ _&rightReturnType%d TF@retValType string@string\n\
 "; //, returnNum
         break;
     default:
@@ -543,7 +543,7 @@ JUMPIFEQ _rightReturnType%d TF@retValType string@string\n\
     codeFormat = "\
 DPRINT string@Wrong\\032return\\032type\\032on\\032line\\032%d\\033\\010\n\
 EXIT int@4\n\
-LABEL _rightReturnType%d\n\
+LABEL _&rightReturnType%d\n\
 PUSHS TF@retVal\n\
 POPFRAME\n\
 CREATEFRAME\n\
@@ -728,10 +728,10 @@ DEFVAR TF@%sType\n\
 
     // Check initialization
     codeFormat = "\
-JUMPIFNEQ _varInitOk%d TF@%sType string@\n\
+JUMPIFNEQ _&varInitOk%d TF@%sType string@\n\
 DPRINT string@Variable\\032%s\\032is\\032undefined\\032on\\032line\\032%d!\\010\n\
 EXIT int@5\n\
-LABEL _varInitOk%d\n\
+LABEL _&varInitOk%d\n\
 CREATEFRAME\n\
 "; //, labelCount,varName,varName,lineNum,labelCount
     formatString2string(code, codeFormat, labelCount, varName, varName, lineNum, labelCount);
@@ -802,8 +802,8 @@ void CODEarithmetic(DynamicString *dString, int ruleUsed, Token *tokenArr)
 
     if (ruleUsed > 5 && ruleUsed < 10)
     {
-        DS_appendString(dString, "CALL _convert2BiggestType\n");
-        DS_appendString(dString, "CALL _isValue\n");
+        DS_appendString(dString, "CALL _&convert2BiggestType\n");
+        DS_appendString(dString, "CALL _&isValue\n");
         switch (ruleUsed)
         {
         case 6:
@@ -849,7 +849,7 @@ PUSHFRAME\n";
     code ="\
 PUSHS LF@a\n\
 PUSHS LF@b\n\
-CALL _isString\n\
+CALL _&isString\n\
 POPFRAME\n\
 DEFVAR TF@res\n\
 CONCAT TF@res TF@a TF@b\n\
@@ -860,14 +860,14 @@ PUSHS TF@res\n";
     if (ruleUsed == 12)
     {
         // E => E === E
-        DS_appendString(dString, "CALL _isSameType\n");
+        DS_appendString(dString, "CALL _&isSameType\n");
         DS_appendString(dString, "EQS\n");
     }
 
     if (ruleUsed == 13)
     {
         // E => E !== E
-        DS_appendString(dString, "CALL _isSameType\n");
+        DS_appendString(dString, "CALL _&isSameType\n");
         DS_appendString(dString, "EQS\n");
         DS_appendString(dString, "NOTS\n");
     }
@@ -875,21 +875,21 @@ PUSHS TF@res\n";
     if (ruleUsed == 14)
     {
         // E => E < E
-        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "CALL _&convert2BiggestType\n");
         DS_appendString(dString, "LTS\n");
     }
 
     if (ruleUsed == 15)
     {
         // E => E > E
-        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "CALL _&convert2BiggestType\n");
         DS_appendString(dString, "GTS\n");
     }
 
     if (ruleUsed == 16)
     {
         // E => E <= E
-        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "CALL _&convert2BiggestType\n");
         DS_appendString(dString, "GTS\n");
         DS_appendString(dString, "NOTS\n");
     }
@@ -897,7 +897,7 @@ PUSHS TF@res\n";
     if (ruleUsed == 17)
     {
         // E => E >=  E
-        DS_appendString(dString, "CALL _convert2BiggestType\n");
+        DS_appendString(dString, "CALL _&convert2BiggestType\n");
         DS_appendString(dString, "LTS\n");
         DS_appendString(dString, "NOTS\n");
     }
@@ -906,28 +906,28 @@ PUSHS TF@res\n";
 /**
  * @brief Generates code for built-in functions and utility functions. \n
  * Built-in: write, readi, readf, reads, floatval, intval, strval, strlen, substring, ord, chr
- * Utility: _convert2BiggestType, _isString, _isValue, _isSameType
+ * Utility: _&convert2BiggestType, _&isString, _&isValue, _&isSameType
  * @param dString Dynamic string to append the code to
  */
 void CODEbuiltInFunc(DynamicString *dString)
 {
-    char *code = "\
+char *code = "\
 .IFJcode22\n\
-JUMP _main\n\n";
+JUMP _&main\n\n";
     DS_appendString(dString, code);
 
-    // write
-    code = "\
+// write
+code = "\
 ######WRITE######\n\
 LABEL write\n\
 TYPE LF@writetype LF@tmpwrite\n\
-JUMPIFEQ _writeempty LF@writetype string@nil\n\
+JUMPIFEQ _&writeempty LF@writetype string@nil\n\
 WRITE LF@tmpwrite\n\
 POPFRAME\n\
 CREATEFRAME\n\
 RETURN\n\
 #EMPTY#\n\
-LABEL _writeempty\n\
+LABEL _&writeempty\n\
 WRITE string@\n\
 POPFRAME\n\
 CREATEFRAME\n\
@@ -935,8 +935,8 @@ RETURN\n\
 \n";
     DS_appendString(dString, code);
 
-    // readi
-    code = "\
+// readi
+code = "\
 ######READI######\n\
 LABEL readi\n\
 CREATEFRAME\n\
@@ -944,19 +944,19 @@ DEFVAR TF@input\n\
 DEFVAR TF@input$type\n\
 READ TF@input int\n\
 TYPE TF@input$type TF@input\n\
-JUMPIFEQ _readiOk TF@input$type string@int\n\
+JUMPIFEQ _&readiOk TF@input$type string@int\n\
 PUSHS nil@nil\n\
 CREATEFRAME\n\
 RETURN\n\
-LABEL _readiOk\n\
+LABEL _&readiOk\n\
 PUSHS TF@input\n\
 CREATEFRAME\n\
 RETURN\n\
 \n";
     DS_appendString(dString, code);
 
-    // readf
-    code = "\
+// readf
+code = "\
 ######READF######\n\
 LABEL readf\n\
 CREATEFRAME\n\
@@ -964,11 +964,11 @@ DEFVAR TF@input\n\
 DEFVAR TF@input$type\n\
 READ TF@input float\n\
 TYPE TF@input$type TF@input\n\
-JUMPIFEQ _readfOk TF@input$type string@float\n\
+JUMPIFEQ _&readfOk TF@input$type string@float\n\
 PUSHS nil@nil\n\
 CREATEFRAME\n\
 RETURN\n\
-LABEL _readfOk\n\
+LABEL _&readfOk\n\
 PUSHS TF@input\n\
 CREATEFRAME\n\
 RETURN\n\
@@ -984,11 +984,11 @@ DEFVAR TF@input\n\
 DEFVAR TF@input$type\n\
 READ TF@input string\n\
 TYPE TF@input$type TF@input\n\
-JUMPIFEQ _readsOk TF@input$type string@string\n\
+JUMPIFEQ _&readsOk TF@input$type string@string\n\
 PUSHS nil@nil\n\
 CREATEFRAME\n\
 RETURN\n\
-LABEL _readsOk\n\
+LABEL _&readsOk\n\
 PUSHS TF@input\n\
 CREATEFRAME\n\
 RETURN\n\
@@ -1041,11 +1041,11 @@ DEFVAR LF@strval\n\
 POPS LF@strval\n\
 DEFVAR LF@strvalType\n\
 TYPE LF@strvalType LF@strval\n\
-JUMPIFEQ _strvalTypeOk LF@strvalType string@string\n\
-JUMPIFEQ _strvalTypeOk LF@strvalType string@nil\n\
+JUMPIFEQ _&strvalTypeOk LF@strvalType string@string\n\
+JUMPIFEQ _&strvalTypeOk LF@strvalType string@nil\n\
 DPRINT string@Only\\032arguments\\032of\\032type\\032null\\032or\\032string\\032are\\032supported\\032by\\032strval!\n\
 EXIT int@4\n\
-LABEL _strvalTypeOk\n\
+LABEL _&strvalTypeOk\n\
 ";
 DS_appendString(dString, code);
 CODEconvert2Type(dString,"LF@strval",'s'); // conversion to string
@@ -1066,10 +1066,10 @@ DEFVAR LF@s\n\
 POPS LF@s\n\
 DEFVAR LF@stringType\n\
 TYPE LF@stringType LF@s\n\
-JUMPIFEQ _strlenTypeOk LF@stringType string@string\n\
+JUMPIFEQ _&strlenTypeOk LF@stringType string@string\n\
 DPRINT string@Strlen\\032argument\\032is\\032not\\032of\\032type\\032string!\n\
 EXIT int@4\n\
-LABEL _strlenTypeOk\n\
+LABEL _&strlenTypeOk\n\
 \
 DEFVAR LF@strlen\n\
 STRLEN LF@strlen LF@s\n\
@@ -1096,54 +1096,54 @@ DEFVAR LF@done\n\
 #Check param types\n\
 DEFVAR LF@paramType\n\
 TYPE LF@paramType LF@s\n\
-JUMPIFEQ _substringStringTypeOk LF@paramType string@string\n\
+JUMPIFEQ _&substringStringTypeOk LF@paramType string@string\n\
 DPRINT string@Substring\\032argument\\032$s\\032is\\032not\\032of\\032type\\032string!\n\
 EXIT int@4\n\
-LABEL _substringStringTypeOk\n\
+LABEL _&substringStringTypeOk\n\
 TYPE LF@paramType LF@i\n\
-JUMPIFEQ _substringIndexITypeOk LF@paramType string@int\n\
+JUMPIFEQ _&substringIndexITypeOk LF@paramType string@int\n\
 DPRINT string@Substring\\032argument\\032$i\\032is\\032not\\032of\\032type\\032int!\n\
 EXIT int@4\n\
-LABEL _substringIndexITypeOk\n\
+LABEL _&substringIndexITypeOk\n\
 TYPE LF@paramType LF@j\n\
-JUMPIFEQ _substringIndexJTypeOk LF@paramType string@int\n\
+JUMPIFEQ _&substringIndexJTypeOk LF@paramType string@int\n\
 DPRINT string@Substring\\032argument\\032$j\\032is\\032not\\032of\\032type\\032int!\n\
 EXIT int@4\n\
-LABEL _substringIndexJTypeOk\n\
+LABEL _&substringIndexJTypeOk\n\
 \
 #Check NULL return\n\
 LT LF@done LF@i int@0\n\
-JUMPIFEQ _substringIsNull LF@done bool@true\n\
+JUMPIFEQ _&substringIsNull LF@done bool@true\n\
 LT LF@done LF@j int@0\n\
-JUMPIFEQ _substringIsNull LF@done bool@true\n\
+JUMPIFEQ _&substringIsNull LF@done bool@true\n\
 GT LF@done LF@i LF@j\n\
-JUMPIFEQ _substringIsNull LF@done bool@true\n\
+JUMPIFEQ _&substringIsNull LF@done bool@true\n\
 DEFVAR LF@stringlen\n\
 STRLEN LF@stringlen LF@s\n\
 LT LF@done LF@i LF@stringlen\n\
-JUMPIFNEQ _substringIsNull LF@done bool@true #NOT i < strlen\n\
+JUMPIFNEQ _&substringIsNull LF@done bool@true #NOT i < strlen\n\
 GT LF@done LF@j LF@stringlen\n\
-JUMPIFEQ _substringIsNull LF@done bool@true\n\
-JUMP _substringNotNull\n\
+JUMPIFEQ _&substringIsNull LF@done bool@true\n\
+JUMP _&substringNotNull\n\
 \
-LABEL _substringIsNull\n\
+LABEL _&substringIsNull\n\
 PUSHS nil@nil\n\
 POPFRAME\n\
 RETURN\n\
-LABEL _substringNotNull\n\
+LABEL _&substringNotNull\n\
 \
 #Create substring\n\
 DEFVAR LF@retString\n\
 MOVE LF@retString string@\n\
 DEFVAR LF@curChar\n\
-LABEL _substringNextChar #While i < j\n\
+LABEL _&substringNextChar #While i < j\n\
 LT LF@done LF@i LF@j\n\
-JUMPIFNEQ _substringEnd LF@done bool@true # NOT i < j\n\
+JUMPIFNEQ _&substringEnd LF@done bool@true # NOT i < j\n\
 GETCHAR LF@curChar LF@s LF@i\n\
 CONCAT LF@retString LF@retString LF@curChar\n\
 ADD LF@i LF@i int@1\n\
-JUMP _substringNextChar\n\
-LABEL _substringEnd\n\
+JUMP _&substringNextChar\n\
+LABEL _&substringEnd\n\
 \
 PUSHS LF@retString\n\
 POPFRAME\n\
@@ -1161,15 +1161,15 @@ DEFVAR LF@c\n\
 POPS LF@c\n\
 DEFVAR LF@cType\n\
 TYPE LF@cType LF@c\n\
-JUMPIFEQ _ordCTypeOk LF@cType string@string\n\
+JUMPIFEQ _&ordCTypeOk LF@cType string@string\n\
 DPRINT string@Ord\\032argument\\032is\\032not\\032of\\032type\\032string!\n\
 EXIT int@4\n\
-LABEL _ordCTypeOk\n\
-JUMPIFNEQ _%%ordRetChar LF@c string@\n\
+LABEL _&ordCTypeOk\n\
+JUMPIFNEQ _&%%ordRetChar LF@c string@\n\
 PUSHS int@0\n\
 POPFRAME\n\
 RETURN\n\
-LABEL _%%ordRetChar\n\
+LABEL _&%%ordRetChar\n\
 STRI2INT LF@c LF@c int@0\n\
 PUSHS LF@c\n\
 POPFRAME\n\
@@ -1187,10 +1187,10 @@ DEFVAR LF@i\n\
 POPS LF@i\n\
 DEFVAR LF@iType\n\
 TYPE LF@iType LF@i\n\
-JUMPIFEQ _chrITypeOk LF@iType string@int\n\
+JUMPIFEQ _&chrITypeOk LF@iType string@int\n\
 DPRINT string@Chr\\032argument\\032is\\032not\\032of\\032type\\032int!\n\
 EXIT int@4\n\
-LABEL _chrITypeOk\n\
+LABEL _&chrITypeOk\n\
 INT2CHAR LF@i LF@i\n\
 PUSHS LF@i\n\
 POPFRAME\n\
@@ -1201,7 +1201,7 @@ RETURN\n\
 //_convert2BiggestType
 code = "\
 ######convert2BiggestType######\n\
-LABEL _convert2BiggestType\n\
+LABEL _&convert2BiggestType\n\
 CREATEFRAME\n\
 DEFVAR TF@a\n\
 DEFVAR TF@b\n\
@@ -1212,41 +1212,41 @@ DEFVAR TF@btype\n\
 \
 TYPE TF@atype TF@a\n\
 TYPE TF@btype TF@b\n\
-JUMPIFNEQ _aNotNil TF@atype string@nil\n\
+JUMPIFNEQ _&aNotNil TF@atype string@nil\n\
 MOVE TF@a int@0\n\
 TYPE TF@atype TF@a\n\
-JUMPIFNEQ _aNotNil TF@btype string@string\n\
+JUMPIFNEQ _&aNotNil TF@btype string@string\n\
 MOVE TF@a string@\n\
 TYPE TF@atype TF@a\n\
-LABEL _aNotNil\n\
+LABEL _&aNotNil\n\
 \
 TYPE TF@btype TF@b\n\
-JUMPIFNEQ _bNotNil TF@btype string@nil\n\
+JUMPIFNEQ _&bNotNil TF@btype string@nil\n\
 MOVE TF@b int@0\n\
 TYPE TF@btype TF@b\n\
-JUMPIFNEQ _bNotNil TF@atype string@string\n\
+JUMPIFNEQ _&bNotNil TF@atype string@string\n\
 MOVE TF@b string@\n\
 TYPE TF@btype TF@b\n\
-LABEL _bNotNil\n\
+LABEL _&bNotNil\n\
 \
-JUMPIFEQ _sameType TF@atype TF@btype\n\
-JUMPIFEQ _convToString TF@atype string@string\n\
-JUMPIFEQ _convToString TF@btype string@string\n\
-JUMPIFEQ _bConvToFloat TF@atype string@float\n\
-JUMPIFEQ _aConvToFloat TF@btype string@float\n\
-LABEL _convToString\n\
+JUMPIFEQ _&sameType TF@atype TF@btype\n\
+JUMPIFEQ _&convToString TF@atype string@string\n\
+JUMPIFEQ _&convToString TF@btype string@string\n\
+JUMPIFEQ _&bConvToFloat TF@atype string@float\n\
+JUMPIFEQ _&aConvToFloat TF@btype string@float\n\
+LABEL _&convToString\n\
 DPRINT string@Implicit\\032convesion\\032to\\032string\\032not\\032supported!\\010\n\
 EXIT int@7\n\
-JUMP _sameType\n\
-LABEL _aConvToFloat\n\
+JUMP _&sameType\n\
+LABEL _&aConvToFloat\n\
 INT2FLOAT TF@a TF@a\n\
-JUMP _sameType\n\
+JUMP _&sameType\n\
 \
-LABEL _bConvToFloat\n\
+LABEL _&bConvToFloat\n\
 INT2FLOAT TF@b TF@b\n\
-JUMP _sameType\n\
+JUMP _&sameType\n\
 \
-LABEL _sameType\n\
+LABEL _&sameType\n\
 PUSHS TF@a\n\
 PUSHS TF@b\n\
 CREATEFRAME\n\
@@ -1256,17 +1256,17 @@ RETURN\n";
 //_isString
 code = "\
 ######isString######\n\
-LABEL _isString\n\
+LABEL _&isString\n\
 CREATEFRAME\n\
 DEFVAR TF@a\n\
 DEFVAR TF@aType\n\
 POPS TF@a\n\
 TYPE TF@aType TF@a\n\
-JUMPIFNEQ _isStringRetFalse TF@aType string@string\n\
+JUMPIFNEQ _&isStringRetFalse TF@aType string@string\n\
 PUSHS TF@a\n\
 CREATEFRAME\n\
 RETURN\n\
-LABEL _isStringRetFalse\n\
+LABEL _&isStringRetFalse\n\
 DPRINT string@Operand\\032has\\032to\\032be\\032a\\032string!\\010\n\
 EXIT int@7\n\
 CREATEFRAME\n\
@@ -1276,17 +1276,17 @@ RETURN\n";
 //_isValue
 code = "\
 ######isValue######\n\
-LABEL _isValue\n\
+LABEL _&isValue\n\
 CREATEFRAME\n\
 DEFVAR TF@a\n\
 DEFVAR TF@aType\n\
 POPS TF@a\n\
 TYPE TF@aType TF@a\n\
-JUMPIFEQ _isValueRetFalse TF@aType string@string\n\
+JUMPIFEQ _&isValueRetFalse TF@aType string@string\n\
 PUSHS TF@a\n\
 CREATEFRAME\n\
 RETURN\n\
-LABEL _isValueRetFalse\n\
+LABEL _&isValueRetFalse\n\
 DPRINT string@Operand\\032has\\032to\\032be\\032a\\032value!\\010\n\
 EXIT int@7\n\
 CREATEFRAME\n\
@@ -1296,7 +1296,7 @@ RETURN\n";
 //_isSameType
 code = "\
 ######isSameType######\n\
-LABEL _isSameType\n\
+LABEL _&isSameType\n\
 CREATEFRAME\n\
 DEFVAR TF@a\n\
 DEFVAR TF@b\n\
@@ -1306,12 +1306,12 @@ POPS TF@a\n\
 POPS TF@b\n\
 TYPE TF@aType TF@a\n\
 TYPE TF@bType TF@b\n\
-JUMPIFNEQ _isNotSameType TF@aType TF@bType\n\
+JUMPIFNEQ _&isNotSameType TF@aType TF@bType\n\
 PUSHS TF@b\n\
 PUSHS TF@a\n\
 CREATEFRAME\n\
 RETURN\n\
-LABEL _isNotSameType\n\
+LABEL _&isNotSameType\n\
 PUSHS bool@true\n\
 PUSHS bool@false\n\
 CREATEFRAME\n\

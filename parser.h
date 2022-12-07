@@ -1,18 +1,14 @@
 /**
  * @file parser.h
  * @author Jakub Mašek, Martin Zelenák
- * @brief parser header file
- * @version 0.1
+ * @brief Header file for parser.c
+ * @version 1.0
  * @date 2022-10-16
  */
-//////////////////////////
-#define scanner // use scanner
-//////////////////////////
 
 #ifndef _IFJ_PARSER
 #define _IFJ_PARSER
 
-//#include "simulation/getTokenSim.h" //simulation
 #include "scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,10 +64,7 @@ Symtable *getTable(int);
 void makeError();
 
 // Main parser function
-#ifndef scanner
-int parser(Token *);
-#else
 int parser();
-#endif
+
 
 #endif

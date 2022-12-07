@@ -1,3 +1,8 @@
+# @file Makefile
+# @brief Makefile for IFJ project
+# @author Jakub Mašek
+# @date 2022-12-6
+
 ALL_C_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c codeGenerator.c main.c
 ALL_H_FILES := parser.h scanner.h dynamicString.h symtable.h stack.h codeGenerator.h
 FLAGS := -std=c99 -Wall -Wextra

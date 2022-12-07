@@ -1,12 +1,9 @@
 /**
  * @file scanner.c
  * @author Filip Polomski
- * @brief scanner for IFJ22 translator
- * @version 0.1
- * @date 27-10-2022
- * 
- * @copyright Copyright (c) 2022
- * 
+ * @brief Scanner for IFJ22 translator
+ * @version 1.0
+ * @date 2022-10-27
  */
 
 #include "scanner.h"

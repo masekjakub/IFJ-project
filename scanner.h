@@ -2,11 +2,8 @@
  * @file scanner.h
  * @authors Jakub Mašek, Filip Polomski, Martin Zelenák, Vojtěch Kuchař
  * @brief header file for scanner.h
- * @version 0.1
- * @date 27-10-2022
- * 
- * @copyright Copyright (c) 2022
- * 
+ * @version 1.0
+ * @date 2022-10-27
  */
 
 #ifndef _IFJ_SCANNER

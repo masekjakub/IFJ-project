@@ -1,6 +1,6 @@
 /**
  * @file main.c
- * @authors Jakub Mašek
+ * @authors Jakub Mašek, Filip Polomski
  * @brief Main file for IFJ22 compiler
  * @version 1.0
  * @date 2022-12-7

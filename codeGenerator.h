@@ -14,7 +14,6 @@
 
 void CODEmain(DynamicString *);
 void CODEbuiltInFunc(DynamicString *);
-void callFunc();
 void CODEfuncDef(DynamicString *, char *);
 void CODEparam(DynamicString *, char *);
 void CODEpopParam(DynamicString *, char *, char);
