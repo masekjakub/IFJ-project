@@ -12,7 +12,7 @@
 #ifndef _IFJ_TOKENSIM
 #define _IFJ_TOKENSIM
 
-#include "scanner.h"
+#include "../scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

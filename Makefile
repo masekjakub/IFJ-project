@@ -1,15 +1,15 @@
-ALL_C_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c codeGenerator.c main.c getTokenSim.c
+ALL_C_FILES := parser.c scanner.c dynamicString.c symtable.c stack.c codeGenerator.c main.c
 FLAGS := -std=c99 -Wall -Wextra
 LIBS := -lm
 
 all: $(ALL_C_FILES)
-	@gcc $(FLAGS) $(ALL_C_FILES) -o translator $(LIBS)
+	@gcc $(FLAGS) $(ALL_C_FILES) -o IFJ22 $(LIBS)
 
 debug: $(ALL_C_FILES)
-	@gcc $(FLAGS) -g $(ALL_C_FILES) -o translator $(LIBS)
+	@gcc $(FLAGS) -g $(ALL_C_FILES) -o IFJ22 $(LIBS)
 
 parser: $(ALL_C_FILES)
-	@gcc $(FLAGS) -g tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test $(LIBS)
+	@gcc $(FLAGS) -g simulation/getTokenSim.c tests/parser-test.c parser.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test $(LIBS)
 
 scanner: $(ALL_C_FILES)
 	@gcc $(FLAGS) main.c scanner.c dynamicString.c -o main $(LIBS)
@@ -31,7 +31,7 @@ test-ds:
 	@./dynamicString-test
 
 test-parser:
-	@gcc $(FLAGS) tests/parser-test.c parser.c getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test $(LIBS)
+	@gcc $(FLAGS) tests/parser-test.c parser.c simulation/getTokenSim.c symtable.c stack.c scanner.h dynamicString.c codeGenerator.c -o parser-test $(LIBS)
 	@./parser-test
 	@rm parser-test
 	
