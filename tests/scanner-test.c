@@ -27,7 +27,7 @@ void NAME() {		                                                            \
 #define ASSERT(EXPRESSION, CODE)									            \
 if(!(EXPRESSION)){																\
 	/*ST_freeTable(table);*/													\
-	FAIL("neco spatne");                                                      \
+	FAIL("neco spatne");                                                        \
     printf("Returned: %d\n", CODE);												\
     return;																		\
 }
@@ -102,8 +102,8 @@ TEST(test_wrong_block_commentary, "Commentary: /****  dsfsd/f546&^/645  **645***
 ENDTEST
 
 // Tests for string
-TEST(test_right_string_type, "String: \"Hello World! 234&*)@$#^^$\"")
-    fprintf(file, "\"Hello World! 234&*)@$#^^$\"\n");
+TEST(test_right_string_type, "String: \"Hello World! 234&*)@#^^\"")
+    fprintf(file, "\"Hello World! 234&*)@#^^\"\n");
     fclose(file);
     file = fopen("text.php", "r");
     setSourceFile(file);
@@ -111,18 +111,19 @@ TEST(test_right_string_type, "String: \"Hello World! 234&*)@$#^^$\"")
     ASSERT(token.type == TYPE_STRING, token.type);
 ENDTEST
 
-TEST(test_right_string, "String: \"Hello World! 234&*)@$#^^$\"\\n")
-    fprintf(file, "\"Hello World! 234&*)@$#^^$\"\n");
+TEST(test_right_string, "String: \"Hello World! 234&*)@$#^^\"\\n")
+    fprintf(file, "\"Hello World! 234&*)@#^^\"\n");
     fclose(file);
     file = fopen("text.php", "r");
     setSourceFile(file);
     token = getToken();
+    printf("\n%s\n", DS_string(token.attribute.dString));
     ASSERT(token.type == TYPE_STRING, token.type);
-    ASSERT(!strcmp(DS_string(token.attribute.dString), "Hello World! 234&*)@$#^^$"), token.type);
+    ASSERT(!strcmp(DS_string(token.attribute.dString), "Hello\\032World!\\032234&*)@\\035^^"), token.type);
 ENDTEST
 
-TEST(test_wrong_string, "String: \"Hello World! 234&*)@$#^^$\\n")
-    fprintf(file, "\"Hello World! 234&*)@$#^^$\\n");
+TEST(test_wrong_string, "String: \"Hello World! 234&*)@#^^\\n")
+    fprintf(file, "\"Hello World! 234&*)@#^^\\n");
     fclose(file);
     file = fopen("text.php", "r");
     setSourceFile(file);
@@ -343,8 +344,6 @@ TEST(test_wrong_float, "Float: 12.")
     ASSERT(token.type == TYPE_LEXERR, token.type);
 ENDTEST
 
-// TODO float testy pro nespravne floaty
-
 // Test with whole programs
 TEST(test_program1, "Test program 1")
     fprintf(file, "<?php \n                                     \
@@ -409,7 +408,7 @@ TEST(test_program1, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), " "), token.type);
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "\\032"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
@@ -423,7 +422,7 @@ TEST(test_program1, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_ASSIGN, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "ahoj "), token.type);
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "ahoj\\032"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
@@ -516,7 +515,7 @@ TEST(test_program1_one_line, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), " "), token.type);
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "\\032"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_CONCAT, token.type);
     token = getToken();
@@ -530,7 +529,7 @@ TEST(test_program1_one_line, "Test program 1")
     token = getToken();
     ASSERT(token.type == TYPE_ASSIGN, token.type);
     token = getToken();
-    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "ahoj "), token.type);
+    ASSERT(token.type == TYPE_STRING && !strcmp(DS_string(token.attribute.dString), "ahoj\\032"), token.type);
     token = getToken();
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
@@ -567,6 +566,35 @@ TEST(test_program1_one_line, "Test program 1")
     ASSERT(token.type == TYPE_SEMICOLON, token.type);
     token = getToken();
     ASSERT(token.type == TYPE_END, token.type);
+ENDTEST
+
+TEST(test_wrong_string_dollar, "\"$\"")
+    fprintf(file, "\"$\"");
+    fclose(file);
+    file = fopen("text.php", "r");
+    setSourceFile(file);
+    token = getToken();
+    ASSERT(token.type == TYPE_LEXERR, token.type);
+ENDTEST
+
+TEST(test_declare_with_block_commentary, "declare(/****fsdsddf****/strict_types/****fsdsddf****/=/****fsdsddf****/1/****fsdsddf****/)")
+    fprintf(file, "declare(/****fsdsddf****/strict_types    /***fsdsddf***/    =    /**fsdsddf**/  1  /*fsa+4=45&^#*$_#$ddf*/)");
+    fclose(file);
+    file = fopen("text.php", "r");
+    setSourceFile(file);
+    token = getToken();
+    ASSERT(token.type == TYPE_DECLARE_ST, token.type);
+    getToken();
+ENDTEST
+
+TEST(test_back_slash, "\\")
+    fprintf(file, "\"\\ \"");
+    fclose(file);
+    file = fopen("text.php", "r");
+    setSourceFile(file);
+    token = getToken();
+    ASSERT(token.type == TYPE_STRING, token.type);
+    ASSERT(!strcmp(DS_string(token.attribute.dString), "\\092\\032"), token.type);
 ENDTEST
 
 int main(){
@@ -619,6 +647,11 @@ int main(){
     // Test programs
     test_program1();
     test_program1_one_line();
+
+    //TODO test
+    test_wrong_string_dollar();
+    test_declare_with_block_commentary();
+    test_back_slash();
 
     printf("================================================\n");
 	float score = (float)SUCCESSFUL_TESTS/(float)TEST_NUM;
