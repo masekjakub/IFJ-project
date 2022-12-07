@@ -231,12 +231,6 @@ Token getToken(){
                     return token;
                 }
 
-                // MODULO
-                else if (c == '%'){
-                    token.type = TYPE_MOD;
-                    return token;
-                }
-
                 // MULTIPLICATION
                 else if (c == '*'){
                     token.type = TYPE_MUL;
@@ -364,7 +358,7 @@ Token getToken(){
                         return token;
                     }
                     ungetc(c, source);
-                    // If token is type !, return it
+                    // If token is type !, return it 
                     token.type = TYPE_NEG;
                     return token;
                 }
