@@ -1,0 +1,195 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{czech}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+
+
+\begin{document}
+
+\thispagestyle{empty}
+	
+	\begin{figure}[ht]
+	    \minipage{0.5\textwidth}
+		\includegraphics[height = 3 cm]{images/fit_logo.png}
+		\label{FIT}
+		\endminipage
+	\end{figure}
+	
+	\begin{center}
+	\vspace{1.cm}
+	\LARGE
+	\textbf{Projektová dokumentace implementace překladače}\\
+	Tým xmasek19 varianta TRP\\
+	\vspace{.3cm}
+	\large
+	
+	\vspace{7.cm}
+	\textbf{Členové týmu a rozdělení bodů}\\
+            \begin{tabular}{l l l}
+            Vojtěch Kuchař & xkucha30 & 25\\
+            Jakub Mašek & xmasek19 & 25\\
+            Filip Polomski & xpolom00 & 25\\
+            Martin Zelenák & xzelen27 & 25\\
+            \end{tabular}\\
+	\vspace{1.3cm}
+	\today
+	\end{center}
+	\newpage
+	
+
+
+
+
+
+
+
+
+
+\tableofcontents
+\newpage
+
+
+
+
+\section{Návrh}
+
+Náš projekt sestává z několika menších celků. Lexikálního analyzátoru, syntaktického analyzátoru s rekurzivním sestupem pro kostru programu a precedenční analýzou pro výrazy. Dále z generátoru kódu a pomocných funkcí, které využíváme pro usnadnění implementace.
+
+\subsection{Lexikální analyzátor}
+
+Lexikální analyzátor byl navržen a implementován podle deterministického konečného automatu viz Obrázek 1. V našem řešení jsou jeho výstupem tokeny předávané souboru \emph{parser.c}. Lexikální analyzátor tvoří tokeny typů klíčová slova, EOF, identifikátory, void, aritmetické operátory, operátory přiřazení, začátek a konec programu, operátory porovnávání a speciální symboly (například závorky, středník, dolar).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{frog}
+    \caption{Konečný automat lexikálního analyzátoru}
+    \label{fig:mesh1}
+\end{figure}
+
+\subsection{Syntaktický analyzátor}
+
+\subsection{\emph{LL - gramatika}}
+
+\begin{enumerate}
+    \item $<$prog$>$ =$>$ BEGIN DECLARE\_ST $<$stat\_list$>$
+    \item $<$stat\_list$>$ =$>$ EPILOG EOF
+    \item $<$stat\_list$>$ =$>$ EOF
+    \item $<$stat\_list$>$ =$>$ $<$stat$>$ $<$stat\_list$>$ $<$return$>$
+    \item $<$stat$>$ =$>$ IF ($<$expr$>$) {$<$stat\_list$>$} ELSE {$<$stat\_list$>$}
+    \item $<$stat$>$ =$>$ WHILE ($<$expr$>$) {$<$stat\_list$>$}
+    \item $<$stat$>$ =$>$ FUNCTION FUNID ($<$params$>$) $<$funcdef$>$
+    \item $<$stat$>$ =$>$ $<$assign$>$
+    \item $<$funcdef$>$ =$>$ {$<$stat\_list$>$}
+    \item $<$funcdef$>$ =$>$ : TYPE {$<$stat\_list$>$}
+    \item $<$assign$>$ =$>$ ID = $<$expr$>$ ;
+    \item $<$assign$>$ =$>$ ID $<$expr$>$ ;
+    \item $<$assign$>$ =$>$ $<$expr$>$ ;
+    \item $<$param$>$ =$>$ TYPE ID
+    \item $<$param$>$ =$>$ ? TYPE ID
+    \item $<$params$>$ =$>$ $<$param$>$ $<$params\_2$>$ 
+    \item $<$params$>$ =$>$ epsilon
+    \item $<$params\_2$>$ =$>$ , $<$param$>$ $<$params\_2$>$ 
+    \item $<$params\_2$>$ =$>$ epsilon
+    \item $<$args$>$ =$>$ epsilon
+    \item $<$args$>$ =$>$ $<$expr$>$ $<$args\_2$>$
+    \item $<$args\_2$>$ =$>$ , $<$expr$>$ $<$args\_2$>$
+    \item $<$args\_2$>$ =$>$ epsilon
+    \item $<$return$>$ =$>$ RETURN ;
+    \item $<$return$>$ =$>$ RETURN $<$expr$>$ ;
+    \item $<$return$>$ = $>$ epsilon
+\end{enumerate}
+
+\subsection{\emph{Precedenční tabulka}}
+
+ \begin{tabular}{|l|l|l|l|l|l|l|l|l|}
+    \hline
+                & + & */ & ( & ) & id & c1 & c2 & \$            \\
+    \hline
+    +- & $>$ &  $<$ &  $<$ &  $>$ &  $<$ &  $>$ &  $>$ &  $>$   \\
+    \hline
+    */ & $>$ &  $>$ &  $<$ &  $>$ &  $<$ &  $>$ &  $>$ &  $>$   \\
+    \hline
+    ( & $<$ &  $<$ &  $<$ &  $=$ &  $<$ &  $<$ &  $<$ &         \\
+    \hline
+    ) & $>$ &  $>$ &    &  $>$ &    &  $>$ &  $>$ &  $>$        \\
+    \hline
+    id & $>$ &  $>$ &    &  $>$ &    &  $>$ &  $>$ &  $>$       \\
+    \hline
+    c1 & $<$ &  $<$ &  $<$ &  $>$ &  $<$ &    &  $>$ &  $>$     \\
+    \hline
+    c2 & $<$ &  $<$ &  $<$ &  $>$ &  $<$ &  $<$ &    &  $>$     \\
+    \hline
+    \$ & $<$ &  $<$ &  $<$ &    &  $<$ &  $<$ &  $<$ &          \\
+    \hline
+ \end{tabular}\\\\
+*c1: $<$, $>$, $<=$, $>=$\\
+*c2: $===$, $!==$
+
+
+\section{Implementace}
+
+Implementace
+
+\subsection{Členění implementačního řešení}
+
+
+\subsubsection{\emph{codeGenerator.c, codeGenerator.h}}
+Implementační řešení generování IFJcode22 kódu. V rámci našeho řešení byly často využívané funkce (například konverze typů nebo definice pomocných proměnných operandů pro aritmetické operace) implementované zvlášť jako funkce jazyka IFJcode22 a volané pomocí instrukce CALL. Generovaný kód byl postupně vkládán do jedné proměnné, ze které byl po úspěšném dokončení všech kontrol tisknut na standartní výstup. Vestavěné funkce jazyka IFJ22 byly generovány jako první a vloženy na začátek generovaného kódu. Za zmínku stojí implementace implicitní konverze typů, která je v kódu hojně využívána například při generování aritmetických operací.
+
+\subsubsection{\emph{dynamicString.c, dynamicString.h}}
+Implementace dynamicky alokovaných řetězců a oparací nad nimi. V některých případech totiž nelze při alokaci řetězce odhadonut, jak bude daný řetězec dlouhý. Soubory \emph{dynamicString.c} a \emph{dynamicString.h} jsou využívané v \emph{parser.c, scanner.c, codeGenerator.c}, které výrazně zpřehledňují. Obsahuje funkce pro konkatenaci jednoho nebo více znaků za řetězec, pro vložení jednoho, či více znaků dovnitř řetězce a pro jejich mazání.
+
+\subsubsection{\emph{error.h}}
+Enumerační list obsahující chybové hlášky.
+
+\subsubsection{\emph{main.c}}
+V souboru \emph{main.c} probíhá nastavení vstupního souboru pro \emph{scanner.c}. Čtení ze standartního vstupu a posílání IFJ22 kódu do \emph{scanner.c} pro zpracování lexikálním analyzátorem.
+
+\subsubsection{\emph{Makefile}}
+Pro překlad používáme GNUMake, který jsme mimo jiné používali také pro testování jednotlivých částí projektu. Projekt je přeložen pomocí příkazu \emph{make}. Příkaz \emph{make clean} následně vymaže všechny testy a objektové soubory.
+
+\subsubsection{\emph{parser.c, parser.h}}
+
+\subsubsection{\emph{scanner.c, scanner.h}}
+Implementace lexikálního analyzátoru. V rámci našeho řešení částečně kontrolujeme správný zápis prologu a epilogu. Ve \emph{scanner.c} zároveň probíhá překlad znaků v řetězcových literálech zapsaných v escape sekvenci ve formátu /xdd, kde dd jsou hexadecimální číslo. Obdobně zde pak probíhá překlad symbolů zapsaných jako oktalové číslo ve formátu /ddd.
+
+\subsubsection{\emph{stack.c, stack.h}}
+Stack soubory obsahují implementaci zásobníku, schopného zpracovávat tokeny typu \emph{Token}. Zásobník je v našem případě dynamicky alokovaný. Dále obsahuje implementaci řady funkcí pro operace se zásobníkem (například. push, pop). V našem řešení jsme naimplementovali i některé speciální funkce, například funkce \emph{bottom}, která vrátí ukazatel prvek nacházející se na "dně" zásobníku. Nebo funkce \emph{popBottom}, která "dno" zásobníku uvolní. Tyto funkce jsou dále využívány v souboru \emph{parser.c}.
+
+\subsubsection{\emph{symtable.c, symtable.h}}
+
+
+\subsection{Správa verzí a hosting}
+Pro správu verzí jsme používali distribuovaný systém správy verzí git a jako hosting GitHub. Zpočátku jsme implementovali v různých větvích, které jsme následně spojily, protože při dokončování projektu byl upravován převážně \emph{codeGenerator.c}. 
+
+\section{Závěr}
+S celkovým vypracováním projektu jsme spokojení. S prací na projektu jsme začali brzy a díky tomu jsme měli dostatečnou časovou rezervu, ze které jsme později mohli čerpat. Práci jsme si na začátku rozdělili podle domluvy a tehdejších znalostí a schopností jednotlivých členů. Z prvu jsme si nebyli jistí, jakým způsobem projekt pojmout a implementovat. Nejdříve jsme vypracovali návrh konečného automatu popisujícího činnost lexikálního analyzátoru a následovali tvorbou syntaktického analyzátoru. Tehdy jsme doplnili rozdělení práce o nově nabyté úkoly a doladili nedostatky s původním rozdělením. \\
+
+\subsection{Práce v týmu a rozdělení práce}
+Práce v týmu probíhala poklidně. Společně jsme v týmu komunikovali převážně osobně, případně přes komunikační kanál discord.\\\\
+\begin{tabular}{l l}
+Vojtěch Kuchař & Dokumentace, generování kódu, implementace zásobníku a pomocných funkcí\\
+Jakub Mašek & syntaktický analyzátor, generování kódu\\
+Filip Polomski & lexikální analyzátor\\
+Martin Zelenák & tabulka symbolů, generování kódu\\
+\end{tabular}
+
+
+
+\bibliographystyle{alpha}
+\bibliography{sample}
+
+\end{document}
