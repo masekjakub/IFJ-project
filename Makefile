@@ -43,14 +43,16 @@ clean:
 	@rm -f parser
 	@rm -f parser-test
 	@rm -f symtable-test
+	@rm -f stack-test
 	@rm -f dynamicString-test
-	@rm -f translator
+	@rm -f IFJ22
 	@rm -f xmasek19.zip
 	@rm -f *.o
 
 pack:
 	@zip xmasek19.zip *.c *.h dokumentace.pdf rozdeleni rozsireni Makefile
 
+#test of pack
 check:
 	@bash tests/is_it_ok.sh xmasek19.zip testdir
 	@rm -f xmasek19.zip

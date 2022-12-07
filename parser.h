@@ -12,7 +12,7 @@
 #ifndef _IFJ_PARSER
 #define _IFJ_PARSER
 
-#include "simulation/getTokenSim.h" //simulation DELETE ME
+//#include "simulation/getTokenSim.h" //simulation
 #include "scanner.h"
 #include <stdio.h>
 #include <stdlib.h>
