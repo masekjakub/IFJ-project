@@ -21,7 +21,7 @@ FILE *source;
 int rowNumber = 1;
 
 /**
- * @brief Set the Source File object
+ * @brief Set the Source File function
  * 
  * @param f 
  */
@@ -101,12 +101,12 @@ DynamicString *octNumber(DynamicString *dynamicString){
     char *tmpString = DS_string(dynamicString);
     DynamicString *tmpDynamicString = DS_init();
     DS_appendString(tmpDynamicString, DS_string(dynamicString));  
-    // Octal number to decimal
+    // Octal to decimal
     for (int i = 3; i >= 1 ; i--){
         decNumber = decNumber + (pow(8 , (3 - i)) * atoi(&dynamicString->string[i]));
         DS_deleteChar(dynamicString);
     }
-    // Checks right interval <1, 255>
+    // Checks right interval <1, 255>, if its greater or lower returns original string
     if (decNumber > 255 || decNumber < 1){
         return tmpDynamicString;
     }
@@ -136,7 +136,7 @@ DynamicString *hexNumber(DynamicString *dynamicString){
         decNumber = decNumber + (pow(16 , (2 - i)) * (int)strtol(&dynamicString->string[i], NULL, 16));
         DS_deleteChar(dynamicString);
     }
-    // Checks right interval <1, 255>
+    // Checks right interval <1, 255>, if its greater or lower returns original string
     if (decNumber > 255 || decNumber < 1){
         return tmpDynamicString;
     }
@@ -150,10 +150,8 @@ DynamicString *hexNumber(DynamicString *dynamicString){
     return dynamicString;
 }
 
-// TODO pri vraceni erroru dispose string!!!
-
 /**
- * @brief Function for getting next token
+ * @brief Function for getting new token
  * 
  * @return Token 
  */
@@ -175,7 +173,10 @@ Token getToken(){
         switch (state){
             // Starting state of finite automat
             case STATE_START:
+
+                // Skiping whitespaces
                 if (isspace(c)){
+                    // Checks whitespaces before prolog
                     if (wasProlog){
                         state = STATE_START;
                         break;
@@ -184,9 +185,11 @@ Token getToken(){
                     token.type = TYPE_LEXERR;
                     return token;
                 }
+
                 // DIV and commentary
                 else if (c == '/'){
                     c = getc(source);
+
                     // Check for commentary in line
                     if (c == '/'){
                         while (c != '\n' && c != EOF){ c = getc(source); }
@@ -194,6 +197,7 @@ Token getToken(){
                         token.type = TYPE_COMM;
                         return token;
                     }
+
                     // Check for block commentary
                     else if (c == '*'){ 
                         c = getc(source);
@@ -202,6 +206,7 @@ Token getToken(){
                                 rowNumber++;
                                 token.rowNumber = rowNumber;
                             }
+                            // Check end of block commentary
                             if (c == '*'){
                                 if ((c = getc(source)) == '/'){
                                     token.type = TYPE_COMM;
@@ -217,85 +222,101 @@ Token getToken(){
                             c = getc(source);
                         }
                     }
-                    // Check for div
                     ungetc(c, source);
                     token.type = TYPE_DIV;
                     return token;
                 }
+
                 // EOF
                 else if (c == EOF){
                     token.type = TYPE_EOF;
                     wasProlog = false;
                     return token;
                 }
+
                 // MODULO
                 else if (c == '%'){
                     token.type = TYPE_MOD;
                     return token;
                 }
+
                 // MULTIPLICATION
                 else if (c == '*'){
                     token.type = TYPE_MUL;
                     return token;
                 }
+
                 // ADDITION
                 else if (c == '+'){
                     token.type = TYPE_ADD;
                     return token;
                 }
+
                 // CONCATENATION
                 else if (c == '.'){
                     token.type = TYPE_CONCAT;
                     return token;
                 }
+
                 // SEMICOLON
                 else if (c == ';'){
                     token.type = TYPE_SEMICOLON;
                     return token;
                 }
+
                 // LEFT BRACKET
                 else if (c == '('){
                     token.type = TYPE_LBRACKET;
                     return token;
                 }
+
                 // RIGHT BRACKET
                 else if (c == ')'){
                     token.type = TYPE_RBRACKET;
                     return token;
                 }
+
                 // LEFT BRACES
                 else if (c == '{'){
                     token.type = TYPE_LBRACES;
                     return token;
                 }
+
                 // RIGHT BRACES
                 else if (c == '}'){
                     token.type = TYPE_RBRACES;
                     return token;
                 }
+
                 // COMMA
                 else if (c == ','){
                     token.type = TYPE_COMMA;
                     return token;
                 }
+
                 // COLON
                 else if (c == ':'){
                     token.type = TYPE_COLON;
                     return token;
                 }
+
                 // SUBTRACTION
                 else if (c == '-'){
                     token.type = TYPE_SUB;
                     return token;
                 }
+
                 // Checks if char is number, then go to next state -> STATE_INTEGER
                 else if (isdigit(c)){
                     state = STATE_INTEGER;
                     ungetc(c, source);
                     break;
                 }
+
                 // ?, ?>
                 else if (c == '?'){
+        
+                    // ?>
                     if ((c = getc(source)) == '>'){
                         if (isspace(c = getc(source))){
                             token.type = TYPE_LEXERR;
@@ -304,10 +325,13 @@ Token getToken(){
                         token.type = TYPE_END;
                         return token;
                     }
+
+                    // ?
                     ungetc(c, source);
                     token.type = TYPE_QMARK;
                     return token;
                 }
+
                 // =, ===
                 else if (c == '='){
                     // Checks if token is type === or invalid type ==
@@ -327,6 +351,7 @@ Token getToken(){
                     token.type = TYPE_ASSIGN;
                     return token;
                 }
+
                 // !=, !==
                 else if (c == '!'){
                     // Checks if token is type !== or invalid type !=
@@ -346,13 +371,16 @@ Token getToken(){
                     token.type = TYPE_NEG;
                     return token;
                 }
+
                 // <, <=, <?php
                 else if (c == '<'){
-                    // Checks if token is type <=
+                    
+                    // <=
                     if ((c = getc(source)) == '='){
                         token.type = TYPE_LESSEQ;
                         return token;
                     }
+
                     // Checks if token is type <?php and if it is, checks its validity
                     else if (c == '?'){
                         for (int i = 0; i < 3; i++){
@@ -369,42 +397,50 @@ Token getToken(){
                         token.type = TYPE_LEXERR;
                         return token;
                     }
+
+                    // <
                     ungetc(c, source);
-                    // If token is type <, return it
                     token.type = TYPE_LESS;
                     return token;
                 }
+
                 // >, >=
                 else if (c == '>'){
-                    // Checks if token is type >=
+                    
+                    // >=
                     c = getc(source);
                     if (c == '='){
                         token.type = TYPE_GREATEREQ;
                         return token;
                     }
+
+                    // >
                     ungetc(c, source);
-                    // If token is type >, return it
                     token.type = TYPE_GREATER;
                     return token;
                 }
+
                 // STRING
                 else if (c == '"'){
                     state = STATE_STRING;
                     break;
                 }
+
                 // VARIABLE
                 else if (c == '$'){
                     state = STATE_VAR;
                     ungetc(c, source);
                     break;
                 }
+
                 // FUNCTION
                 else if (isalpha(c) || c == '_'){
                     state = STATE_ID;
                     ungetc(c, source);
                     break;
                 }
-                // Unknown char
+
+                // UNKOWN CHAR
                 else{
                     fprintf(stderr, "%c is unknown character on line %d!\n", c, token.rowNumber);
                     token.type = TYPE_LEXERR;
@@ -432,17 +468,19 @@ Token getToken(){
                             int tmp = c;
                             c = getc(source);
                             switch (c){
+                                // "
                                 case 34:
-                                    DS_appendString(dynamicString, "\\034");        // "
+                                    DS_appendString(dynamicString, "\\034");    
                                 break;
-                                // TODO make tests for it
+                                // $
                                 case 36:
-                                    DS_appendString(dynamicString, "\\036");        // $
+                                    DS_appendString(dynamicString, "\\036");     
                                 break;
                                 // Checks octal number and converts it to decimal number
                                 case 48 ... 57:
                                     DS_append(tmpDynamicString, tmp);
                                     DS_append(tmpDynamicString, c);
+                                    // Checks if its valid octal number, if not string stays unchanged 
                                     if (isdigit(c = getc(source))){
                                         DS_append(tmpDynamicString, c);
                                         if (isdigit(c = getc(source))){
@@ -450,7 +488,6 @@ Token getToken(){
                                             DS_appendString(dynamicString, DS_string(octNumber(tmpDynamicString)));
                                             DS_dispose(tmpDynamicString);
                                         }
-                                        // For invalid input like /45
                                         else{
                                             DS_appendString(dynamicString, DS_string(tmpDynamicString));
                                             DS_dispose(tmpDynamicString);
@@ -463,20 +500,24 @@ Token getToken(){
                                         continue;
                                     }
                                 break;
+                                // back slash
                                 case 92:
-                                    DS_appendString(dynamicString, "\\092");        // /
+                                    DS_appendString(dynamicString, "\\092");       
                                 break;
+                                // \n
                                 case 110:
-                                    DS_appendString(dynamicString, "\\010");        // \n
+                                    DS_appendString(dynamicString, "\\010");        
                                 break;
+                                // \t
                                 case 116:
-                                    DS_appendString(dynamicString, "\\009");        // \t
+                                    DS_appendString(dynamicString, "\\009");      
                                 break;
                                 // Checks hexadecimal number and convetrs it to decimal number
                                 case 120: 
                                     DS_append(tmpDynamicString, tmp);
                                     int tmpForX = c;
                                     c = getc(source);
+                                    // Checks if its valid hexadecimal number, if not string stays unchanged 
                                     if ((c > 96 && c < 103) || (c > 64 && c < 71) || (c > 47 && c < 58)){
                                         int tmpAfterX = c;
                                         DS_append(tmpDynamicString, c);
@@ -503,6 +544,8 @@ Token getToken(){
                                     }
                                 break;
                                 default:
+                                    DS_append(dynamicString, '\\');
+                                    continue;
                                 break;
                             }
                             c = getc(source);
@@ -529,7 +572,6 @@ Token getToken(){
                     }
                     // Then repeat it until end of string "
                     if (c == '"'){
-                        //printf("\n%s\n", DS_string(dynamicString));
                         token.type = TYPE_STRING;
                         token.attribute.dString = dynamicString;
                         return token;
