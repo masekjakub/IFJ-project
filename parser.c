@@ -1,10 +1,11 @@
 /**
  * @file parser.c
  * @authors Jakub Mašek, Martin Zelenák
- * @brief Parser for IFJ22 translator
+ * @brief Parser for IFJ22 compiler
  * @version 1.0
- * @date 2022-10-16
+ * @date 2022-12-6
  */
+
 #include "parser.h"
 #define isKeyword(TOKEN, KEYWORD) TOKEN.attribute.keyword == KEYWORD
 #define isValueType(TYPE) (TYPE == TYPE_INT || TYPE == TYPE_FLOAT || TYPE == TYPE_STRING || TYPE == TYPE_FUNID || TYPE == TYPE_ID || TYPE == TYPE_NULL)
@@ -19,16 +20,18 @@
         exit(ERR_INTERN);                                                       \
     sprintf(DEST, FORMAT, FORMAT_ARGS);
 
-int firstError;               // first encountered error
-Symtable *globalST;           // global symtable
-Symtable *localST;            // local symtable
-int isGlobal;                 // program is not in function
+int firstError;               // First encountered error
+Symtable *globalST;           // Global symtable
+Symtable *localST;            // Local symtable
+int isGlobal;                 // Program is not in function
 DynamicString *functionTypes; // Return type and param types of currently parsed function
 Code progCode;                // Main body program code
 Code functionsCode;           // Function def. program code
 Stack *notDefinedCalls;       // Stack of not defined function calls
+Token token, prevToken;       // Current and previous token
+Token *tokenArr; // simulation DELETE ME!
 
-const int precTable[8][8] = {
+const int precTable[8][8] = {  // on top of the stack is:
     {R, L, L, R, L, R, R, R},  // +
     {R, R, L, R, L, R, R, R},  // *
     {L, L, L, E, L, L, L, N},  // (
@@ -37,33 +40,30 @@ const int precTable[8][8] = {
     {L, L, L, R, L, N, R, R},  // comparison1 (< > <= >=)
     {L, L, L, R, L, L, N, R},  // comparison2 (=== !==)
     {L, L, L, N, L, L, L, N}}; // $
-  // +  *  (  )  id c1 c2 $
-
-Token token, prevToken;
-
-Token *tokenArr; // simulation DELETE ME!
+  // +  *  (  )  id c1 c2 $  <- incoming token
 
 #define numOfExprRules 18
-// rules are flipped because of stack
+// rules are in reversed order because of stack
 const TokenType exprRules[numOfExprRules][3] = {
-    {TYPE_ID, TYPE_UNDEF, TYPE_UNDEF},         // E => ID
-    {TYPE_INT, TYPE_UNDEF, TYPE_UNDEF},        // E => INT
-    {TYPE_FLOAT, TYPE_UNDEF, TYPE_UNDEF},      // E => FLOAT
-    {TYPE_STRING, TYPE_UNDEF, TYPE_UNDEF},     // E => STRING
-    {TYPE_FUNID, TYPE_UNDEF, TYPE_UNDEF},      // E => FUNID
-    {TYPE_NULL, TYPE_UNDEF, TYPE_UNDEF},       // E => NULL
-    {TYPE_EXPR, TYPE_ADD, TYPE_EXPR},          // E => E + E
-    {TYPE_EXPR, TYPE_SUB, TYPE_EXPR},          // E => E - E
-    {TYPE_EXPR, TYPE_MUL, TYPE_EXPR},          // E => E * E
-    {TYPE_EXPR, TYPE_DIV, TYPE_EXPR},          // E => E / E
-    {TYPE_EXPR, TYPE_CONCAT, TYPE_EXPR},       // E => E . E
-    {TYPE_RBRACKET, TYPE_EXPR, TYPE_LBRACKET}, // E => (E)
-    {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},      // E => E === E
-    {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR},   // E => E !== E
-    {TYPE_EXPR, TYPE_LESS, TYPE_EXPR},         // E => E < E
-    {TYPE_EXPR, TYPE_GREATER, TYPE_EXPR},      // E => E > E
-    {TYPE_EXPR, TYPE_LESSEQ, TYPE_EXPR},       // E => E <= E
-    {TYPE_EXPR, TYPE_GREATEREQ, TYPE_EXPR}};   // E => E >= E
+    {TYPE_ID, TYPE_UNDEF, TYPE_UNDEF},         // E <- ID
+    {TYPE_INT, TYPE_UNDEF, TYPE_UNDEF},        // E <- INT
+    {TYPE_FLOAT, TYPE_UNDEF, TYPE_UNDEF},      // E <- FLOAT
+    {TYPE_STRING, TYPE_UNDEF, TYPE_UNDEF},     // E <- STRING
+    {TYPE_FUNID, TYPE_UNDEF, TYPE_UNDEF},      // E <- FUNID
+    {TYPE_NULL, TYPE_UNDEF, TYPE_UNDEF},       // E <- NULL
+    {TYPE_EXPR, TYPE_ADD, TYPE_EXPR},          // E <- E + E
+    {TYPE_EXPR, TYPE_SUB, TYPE_EXPR},          // E <- E - E
+    {TYPE_EXPR, TYPE_MUL, TYPE_EXPR},          // E <- E * E
+    {TYPE_EXPR, TYPE_DIV, TYPE_EXPR},          // E <- E / E
+    {TYPE_EXPR, TYPE_CONCAT, TYPE_EXPR},       // E <- E . E
+    {TYPE_RBRACKET, TYPE_EXPR, TYPE_LBRACKET}, // E <- (E)
+    {TYPE_EXPR, TYPE_EQTYPES, TYPE_EXPR},      // E <- E === E
+    {TYPE_EXPR, TYPE_NOTEQTYPES, TYPE_EXPR},   // E <- E !== E
+    {TYPE_EXPR, TYPE_LESS, TYPE_EXPR},         // E <- E < E
+    {TYPE_EXPR, TYPE_GREATER, TYPE_EXPR},      // E <- E > E
+    {TYPE_EXPR, TYPE_LESSEQ, TYPE_EXPR},       // E <- E <= E
+    {TYPE_EXPR, TYPE_GREATEREQ, TYPE_EXPR}     // E <- E >= E
+};
 
 /**
  * @brief Returns new token from scanner
@@ -177,7 +177,6 @@ void builtInFuncFillST(Symtable *stable)
 
     strcpy(data.funData.funTypes, "is");
     ST_insertItem(stable, "strlen", ST_ITEM_TYPE_FUNCTION, data);
-    ;
     ST_insertItem(stable, "ord", ST_ITEM_TYPE_FUNCTION, data);
 
     strcpy(data.funData.funTypes, "si");
@@ -1077,7 +1076,7 @@ ErrorType ruleReturn()
 }
 
 /**
- * @brief Get the Prec Table Index object
+ * @brief Get the precedecne table index
  *
  * @param token inspected token
  * @return int, index of token type in precedence table
@@ -1137,13 +1136,6 @@ int getPrecTableIndex(Token token)
  */
 int exprUseRule(Token *tokenArr)
 {
-
-    /*for (int i = 0; i < 3; i++)
-    {
-        printf("%d ",tokenArr[i]);
-    }
-    printf("\n");
-*/
     for (int rule = 0; rule < numOfExprRules; rule++)
     {
         int match = 1;
@@ -1175,8 +1167,8 @@ ErrorType functionCallCheckAndProcess()
     int isEmpty = 0;
 
     STItem *item = ST_searchTable(getTable(1), DS_string(funID.attribute.dString));
-    if (item == NULL)
-    { // function not defined
+    if (item == NULL) // function not defined
+    { 
         if (isGlobal)
         {
             fprintf(stderr, "Function \"%s\" on line %d is not defined!\n", DS_string(funID.attribute.dString), funID.rowNumber);
@@ -1187,6 +1179,7 @@ ErrorType functionCallCheckAndProcess()
         {
             STItemData newFuncData;
             newFuncData.funData.defined = 0;
+            newFuncData.funData.funTypes = "";
             ST_insertItem(getTable(1), DS_string(funID.attribute.dString), ST_ITEM_TYPE_FUNCTION, newFuncData);
             item = ST_searchTable(getTable(1), DS_string(funID.attribute.dString));
         }
@@ -1294,7 +1287,7 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
 
 
 /**
- * @brief process expression
+ * @brief expression analysis
  *
  * @param isEmpty pointer, stores 1 if expression is empty
  * @param usePrevToken use - 1, dont use - 0
@@ -1302,7 +1295,8 @@ ErrorType rulesSematics(int ruleUsed, Token *tokenArr, Token endToken)
  */
 ErrorType exprAnal(int *isEmpty, int usePrevToken)
 {
-    Token tmpToken, endToken = token;
+    Token tmpToken;
+    Token endToken = token; // last terminal token
     ErrorType err = 0;
     int done = 0;
     *isEmpty = 0;
@@ -1351,7 +1345,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
 
         if (STACK_top(stack)->type == TYPE_EXPR)
         {
-            // load precedence of terminal
+            // load precedence of terminal from stack
             STACK_pop(stack);
             stackPrecIndex = getPrecTableIndex(*STACK_top(stack));
             tmpToken.type = TYPE_EXPR;
@@ -1397,7 +1391,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             break;
 
         case R: // >
-            // pop beteween < and >
+            // reduct beteween < and >
             for (int i = 0; STACK_top(stack)->type != TYPE_LESSPREC; i++)
             {
                 tokenArrExpr[i] = *STACK_top(stack);
@@ -1418,10 +1412,6 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             int usedRule = exprUseRule(tokenArrExpr);
             if (usedRule == -1)
             {
-                if (token.type == TYPE_STACKEMPTY)
-                {
-                    token = endToken;
-                }
                 token = endToken;
                 fprintf(stderr, "Invalid expression on line %d!\n", token.rowNumber);
                 STACK_dispose(stack);
@@ -1438,6 +1428,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
 
         case N: // error
             STACK_dispose(stack);
+            // returning right bracket for conditions and loops
             if (token.type == TYPE_RBRACKET)
             {
                 return 0;
@@ -1446,7 +1437,6 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
             fprintf(stderr, "Invalid expression on line %d!\n", token.rowNumber);
             makeError(ERR_SYN);
             return ERR_SYN;
-            break;
         }
 
         if (token.type == TYPE_FUNID)
@@ -1466,7 +1456,7 @@ ErrorType exprAnal(int *isEmpty, int usePrevToken)
         if (done && STACK_top(stack)->type == TYPE_EXPR)
         {
             STACK_pop(stack);
-            // only TYPE_EXPR is on stack
+            // only TYPE_EXPR is on stack -> expression is correctly parsed
             if (STACK_top(stack)->type == TYPE_STACKEMPTY)
             {
                 token = endToken;
@@ -1538,6 +1528,7 @@ int parser(Token *tokenArrIN)      // sim
     progCode.string = DS_init();
     progCode.lastUnconditionedLine = -1;
 
+    // Stores built-in functions info to global symbol table
     builtInFuncFillST(globalST);
 
     // Generate code for built-in functions and label _main
@@ -1565,6 +1556,5 @@ int parser(Token *tokenArrIN)      // sim
     DS_dispose(progCode.string);
     DS_dispose(functionTypes);
     ST_freeTable(globalST);
-    // printf("Parser OK!\n");
-    return firstError; // predelat na exit
+    return firstError;
 }

@@ -1,38 +1,29 @@
+/**
+ * @file main.c
+ * @authors Jakub Mašek
+ * @brief Main file for IFJ22 compiler
+ * @version 1.0
+ * @date 2022-12-7
+ */
+
 #include <stdio.h>
 #include "scanner.h"
 #include "parser.h"
 
-//  Pro ucely testovani
+/**
+ * @brief Main function of the compiler
+ * 
+ * @return int error code
+ */
 int main(){
-    FILE *f;
     ErrorType error = 0;
 
-   /* if ((f = fopen(stdin, "r")) == NULL){
-        fprintf(stderr, "Soubor neslo otevrit\n");
-        return ERR_OTHER;
-    }*/
+    // Set source file for scanner
+    setSourceFile(stdin);
 
-    f = stdin;
-    setSourceFile(f);
+    // Call parser
     error = parser();
     
-    // Filip tester - vymazat
-    /*for (int i = 0; i < 51; i++){
-        token = getToken();
-        if (token.type == TYPE_STRING || token.type == TYPE_ID || token.type == TYPE_FUNID){
-            printf("%d --- %s\n",token.type  ,token.attribute.dString->string);
-            DS_dispose(token.attribute.dString);
-        }
-        else if (token.type == TYPE_INT){
-            printf("%d --- %d\n",token.type ,token.attribute.intV);
-        }
-        else if (token.type == TYPE_FLOAT){
-            printf("%d --- %f\n",token.type ,token.attribute.doubleV);
-        }
-        else{
-            printf("%d type\n", token.type);
-        }
-    }*/
-    fclose(f);
+    fclose(stdin);
     exit(error);
 }
