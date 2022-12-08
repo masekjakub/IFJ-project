@@ -1,13 +1,5 @@
-python3 test.py ../IFJ-project/translator ../IFJ-project/tests/ifjcode/ic22int_linux64_2022-11-24/ic22int
-./translator < text.php > tests/ifjcode/ic22int_linux64_2022-11-24/out.ifjcode
-TODO
-dokumentace
-smazat simulace (main ?)
-
-NAVOD NA SPOUSTENI MAIN:
-parser.h:
-    odkomentovat #define scanner
-
+python3 test.py ../IFJ-project/IFJ22 ../IFJ-project/tests/ifjcode/ic22int_linux64_2022-11-24/ic22int
+./IFJ22 < text.php > tests/ifjcode/ic22int_linux64_2022-11-24/out.ifjcode
 
 GRAMATIKA
 
@@ -34,99 +26,6 @@ GRAMATIKA
 <params> => epsilon
 <params_2> => , <param> <params_2> 
 <params_2> => epsilon
-
-<args> => epsilon
-<args> => <expr> <args_2>
-<args_2> => , <expr> <args_2>
-<args_2> => epsilon
-
-<return> => RETURN ;
-<return> => RETURN <expr> ;
-<return> => epsilon
-
-
-
-
-
-
-
-
-LL - tabulka for latex
-
-            BEGIN    DECLARE_ST   <stat_list>  EPILOG   EOF  <stat>   <return>     IF   (<expr>)     {<stat_list>}    ELSE     {<stat_list>}
-<prog>       
-<stat_list>
-<stat>     
-<funcdef>   
-<assign>    
-<param>     
-<params>    
-<params_2>  
-<args>      
-<args_2>    
-<return>  
-
-
-Pro latex, ale je to too big, takže to bude lepší screenshot tabulky excelu.
-
-\hline
-            &BEGIN   &DECLARE\_ST  &$<$stat\_list$>$ &EPILOG  &EOF &$<$stat$>$  &$<$return$>$    &IF  &($<$expr$>$)    &{$<$stat\_list$>$}   &ELSE    &{$<$stat\_list$>$}\\
-\hline
-$<$prog$>$      &1          & 2           &3        &       &      &           &         &       &                  &       &         &     \\      
-\hline
-$<$stat\_list$>$ &           &             &         &4      &5     &           &         &       &                  &       &         &     \\      
-\hline
-$<$stat$>$      &           &             &         &       &      &6          &         &       &                  &       &         &     \\      
-\hline
-$<$funcdef$>$   &           &             &         &       &      &           &         &       &                  &       &         &     \\      
-\hline
-$<$assign$>$    &           &             &         &       &      &           &         &       &                  &       &         &     \\      
-\hline
-$<$param$>$     &           &             &         &       &      &           &         &       &                  &       &         &     \\      
-\hline
-$<$params$>$    &           &             &         &       &      &           &         &       &                  &       &         &     \\      
-\hline
-$<$params\_2$>$  &           &             &         &       &      &           &         &       &                  &       &         &     \\      
-\hline
-$<$args$>$      &           &             &         &       &      &           &         &       &                  &       &         &     \\      
-\hline
-$<$args\_2$>$    &           &             &         &       &      &           &         &       &                  &       &         &     \\      
-\hline
-$<$return$>$    &           &             &         &       &      &           &         &       &                  &       &         &     \\      
-\hline
-
-
-
-
-
-<prog> => BEGIN DECLARE_ST <stat_list>
-
-<stat_list> => EPILOG EOF
-<stat_list> => EOF
-<stat_list> => <stat> <stat_list> <return>
-<stat> => IF (<expr>) {<stat_list>} ELSE {<stat_list>}
-<stat> => WHILE (<expr>) {<stat_list>}
-<stat> => FUNCTION FUNID (<params>) <funcdef>
-<stat> => <assign>
-
-<funcdef> => {<stat_list>}
-<funcdef> => : TYPE {<stat_list>}
-
-<assign> => ID = <expr> ;
-<assign> => ID <expr> ;
-<assign> => <expr> ;
-
-<param> => TYPE ID
-<param> => ? TYPE ID
-<params> => <param> <params_2> 
-<params> => epsilon
-<params_2> => , <param> <params_2> 
-<params_2> => epsilon
-
-<args> => epsilon
-<args> => <expr> <args_2>
-<args_2> => , <expr> <args_2>
-<args_2> => epsilon
 
 <return> => RETURN ;
 <return> => RETURN <expr> ;
